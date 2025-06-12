@@ -18,7 +18,8 @@ export const useFormResponses = () => {
     return Object.entries(responses).map(([questionId, value]) => ({
       questionId,
       value,
-      score: generateRandomScore()
+      score: generateRandomScore(),
+      category: 'QualityService' // This should be fetched from the question data
     }));
   };
 

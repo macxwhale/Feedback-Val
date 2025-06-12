@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { FeedbackHeader } from './feedback/FeedbackHeader';
 import { WelcomeScreen } from './feedback/WelcomeScreen';
@@ -25,6 +26,7 @@ export interface QuestionConfig {
   type: 'star' | 'nps' | 'likert' | 'single-choice' | 'multi-choice' | 'text' | 'emoji' | 'ranking' | 'matrix' | 'slider';
   question: string;
   required: boolean;
+  category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikeliRecommend' | 'DidWeMakeEasy' | 'Comments';
   options?: string[];
   scale?: {
     min: number;
@@ -38,6 +40,7 @@ export interface FeedbackResponse {
   questionId: string;
   value: any;
   score: number;
+  category: string;
 }
 
 const FeedbackForm = () => {

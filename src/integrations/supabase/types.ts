@@ -9,7 +9,119 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      feedback_responses: {
+        Row: {
+          created_at: string
+          id: string
+          question_category: Database["public"]["Enums"]["question_category"]
+          question_id: string
+          response_value: Json
+          score: number | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_category: Database["public"]["Enums"]["question_category"]
+          question_id: string
+          response_value: Json
+          score?: number | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_category?: Database["public"]["Enums"]["question_category"]
+          question_id?: string
+          response_value?: Json
+          score?: number | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_sessions: {
+        Row: {
+          category_scores: Json | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          started_at: string
+          status: string
+          total_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          category_scores?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          total_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          category_scores?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          total_score?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at: string
+          id: string
+          is_active: boolean
+          options: Json | null
+          order_index: number
+          question_text: string
+          question_type: string
+          required: boolean
+          scale: Json | null
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: Json | null
+          order_index: number
+          question_text: string
+          question_type: string
+          required?: boolean
+          scale?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: Json | null
+          order_index?: number
+          question_text?: string
+          question_type?: string
+          required?: boolean
+          scale?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +130,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      question_category:
+        | "QualityCommunication"
+        | "QualityStaff"
+        | "ValueForMoney"
+        | "QualityService"
+        | "LikeliRecommend"
+        | "DidWeMakeEasy"
+        | "Comments"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +252,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      question_category: [
+        "QualityCommunication",
+        "QualityStaff",
+        "ValueForMoney",
+        "QualityService",
+        "LikeliRecommend",
+        "DidWeMakeEasy",
+        "Comments",
+      ],
+    },
   },
 } as const
