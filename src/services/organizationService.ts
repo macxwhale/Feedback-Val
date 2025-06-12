@@ -86,6 +86,7 @@ export const getAllOrganizations = async (): Promise<Organization[]> => {
 
     if (error) {
       console.error('Error fetching organizations:', error);
+      // Return empty array instead of throwing to prevent UI crashes
       return [];
     }
 
@@ -98,9 +99,22 @@ export const getAllOrganizations = async (): Promise<Organization[]> => {
 
 export const createOrganization = async (orgData: CreateOrganizationData): Promise<Organization | null> => {
   try {
+    // Get current user ID for created_by_user_id
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const organizationToCreate = {
+      ...orgData,
+      created_by_user_id: user?.id || orgData.created_by_user_id,
+      is_active: true,
+      primary_color: orgData.primary_color || '#007ACE',
+      secondary_color: orgData.secondary_color || '#073763',
+      plan_type: orgData.plan_type || 'free',
+      max_responses: orgData.max_responses || 100
+    };
+
     const { data, error } = await supabase
       .from('organizations')
-      .insert(orgData)
+      .insert(organizationToCreate)
       .select()
       .single();
 
