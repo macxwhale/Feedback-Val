@@ -39,37 +39,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkUserRoles = async (userId: string) => {
     try {
-      // Check admin status with proper error handling
-      const { data: adminData, error: adminError } = await supabase
+      // Use maybeSingle() and handle errors gracefully to avoid RLS issues
+      const { data: adminData } = await supabase
         .from('admin_users')
         .select('is_super_admin')
         .eq('user_id', userId)
         .maybeSingle();
       
-      if (adminError) {
-        console.error('Error checking admin status:', adminError);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(!!adminData?.is_super_admin);
-      }
+      setIsAdmin(!!adminData?.is_super_admin);
       
-      // Check organization admin status with proper error handling
-      const { data: orgData, error: orgError } = await supabase
+      const { data: orgData } = await supabase
         .from('organization_users')
         .select('organization_id, role')
         .eq('user_id', userId);
       
-      if (orgError) {
-        console.error('Error checking organization status:', orgError);
-        setIsOrgAdmin(false);
-        setCurrentOrganization(null);
-      } else {
-        const hasOrgRole = (orgData?.length || 0) > 0;
-        setIsOrgAdmin(hasOrgRole);
-        setCurrentOrganization(orgData?.[0]?.organization_id || null);
-      }
+      const hasOrgRole = (orgData?.length || 0) > 0;
+      setIsOrgAdmin(hasOrgRole);
+      setCurrentOrganization(orgData?.[0]?.organization_id || null);
     } catch (error) {
-      console.error('Error in checkUserRoles:', error);
+      console.error('Error checking user roles:', error);
+      // Set safe defaults on error
       setIsAdmin(false);
       setIsOrgAdmin(false);
       setCurrentOrganization(null);
@@ -77,18 +66,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Use setTimeout to defer Supabase calls and prevent auth deadlock
+          // Defer role checking to avoid auth state conflicts
           setTimeout(() => {
-            checkUserRoles(session.user.id);
-          }, 0);
+            if (mounted) {
+              checkUserRoles(session.user.id);
+            }
+          }, 100);
         } else {
           setIsAdmin(false);
           setIsOrgAdmin(false);
@@ -103,6 +97,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
         if (error) {
           console.error('Error getting session:', error);
         } else {
@@ -116,13 +112,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('Error initializing auth:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     initializeAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

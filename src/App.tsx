@@ -8,7 +8,9 @@ import { OrganizationProvider } from "@/context/OrganizationContext";
 import { AuthProvider } from "@/components/auth/AuthWrapper";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { LoginPage } from "@/components/auth/LoginPage";
+import { AdminLoginPage } from "@/components/auth/AdminLoginPage";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -24,8 +26,11 @@ const App = () => (
         <AuthProvider>
           <OrganizationProvider>
             <Routes>
+              {/* Landing page */}
+              <Route path="/" element={<Landing />} />
+              
               {/* System admin routes */}
-              <Route path="/auth" element={<LoginPage />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route 
                 path="/admin" 
                 element={
@@ -34,6 +39,9 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Organization user authentication */}
+              <Route path="/auth" element={<LoginPage />} />
               
               {/* Organization admin routes */}
               <Route 
@@ -46,7 +54,6 @@ const App = () => (
               />
               
               {/* Organization feedback routes */}
-              <Route path="/" element={<Index />} />
               <Route path="/:orgSlug" element={<Index />} />
               
               {/* Legacy org routes for compatibility */}
