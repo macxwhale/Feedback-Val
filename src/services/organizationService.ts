@@ -20,6 +20,21 @@ export interface Organization {
   updated_at: string;
 }
 
+export interface CreateOrganizationData {
+  name: string;
+  slug: string;
+  domain?: string;
+  logo_url?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  plan_type?: string;
+  trial_ends_at?: string;
+  billing_email?: string;
+  max_responses?: number;
+  created_by_user_id?: string;
+  settings?: any;
+}
+
 export const getOrganizationBySlug = async (slug: string): Promise<Organization | null> => {
   try {
     const { data, error } = await supabase
@@ -27,7 +42,7 @@ export const getOrganizationBySlug = async (slug: string): Promise<Organization 
       .select('*')
       .eq('slug', slug)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching organization by slug:', error);
@@ -48,7 +63,7 @@ export const getOrganizationByDomain = async (domain: string): Promise<Organizat
       .select('*')
       .eq('domain', domain)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching organization by domain:', error);
@@ -81,11 +96,11 @@ export const getAllOrganizations = async (): Promise<Organization[]> => {
   }
 };
 
-export const createOrganization = async (orgData: Partial<Organization>): Promise<Organization | null> => {
+export const createOrganization = async (orgData: CreateOrganizationData): Promise<Organization | null> => {
   try {
     const { data, error } = await supabase
       .from('organizations')
-      .insert([orgData])
+      .insert(orgData)
       .select()
       .single();
 
