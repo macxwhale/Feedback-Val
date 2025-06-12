@@ -24,8 +24,7 @@ const App = () => (
         <AuthProvider>
           <OrganizationProvider>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/org/:slug" element={<Index />} />
+              {/* System admin routes */}
               <Route path="/auth" element={<LoginPage />} />
               <Route 
                 path="/admin" 
@@ -35,6 +34,8 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Organization admin routes */}
               <Route 
                 path="/admin/:slug" 
                 element={
@@ -43,7 +44,15 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              
+              {/* Organization feedback routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/:orgSlug" element={<Index />} />
+              
+              {/* Legacy org routes for compatibility */}
+              <Route path="/org/:slug" element={<Index />} />
+              
+              {/* Catch-all route - MUST be last */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </OrganizationProvider>
