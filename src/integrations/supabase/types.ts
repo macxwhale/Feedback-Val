@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_super_admin: boolean | null
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_super_admin?: boolean | null
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_super_admin?: boolean | null
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feedback_responses: {
         Row: {
           created_at: string
@@ -101,41 +131,160 @@ export type Database = {
           },
         ]
       }
+      organization_users: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          id: string
+          invited_at: string | null
+          organization_id: string
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          invited_at?: string | null
+          organization_id: string
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          invited_at?: string | null
+          organization_id?: string
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
+          billing_email: string | null
           created_at: string
+          created_by_user_id: string | null
           domain: string | null
           id: string
           is_active: boolean
           logo_url: string | null
+          max_responses: number | null
           name: string
+          plan_type: string | null
           primary_color: string | null
           secondary_color: string | null
+          settings: Json | null
           slug: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_email?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          domain?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          max_responses?: number | null
+          name: string
+          plan_type?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          settings?: Json | null
+          slug: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_email?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          domain?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          max_responses?: number | null
+          name?: string
+          plan_type?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          settings?: Json | null
+          slug?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      question_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
-          domain?: string | null
+          description?: string | null
           id?: string
-          is_active?: boolean
-          logo_url?: string | null
           name: string
-          primary_color?: string | null
-          secondary_color?: string | null
-          slug: string
           updated_at?: string
         }
         Update: {
           created_at?: string
-          domain?: string | null
+          description?: string | null
           id?: string
-          is_active?: boolean
-          logo_url?: string | null
           name?: string
-          primary_color?: string | null
-          secondary_color?: string | null
-          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      question_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          name: string
+          supports_options: boolean | null
+          supports_scale: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          name: string
+          supports_options?: boolean | null
+          supports_scale?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          name?: string
+          supports_options?: boolean | null
+          supports_scale?: boolean | null
           updated_at?: string
         }
         Relationships: []
@@ -143,6 +292,7 @@ export type Database = {
       questions: {
         Row: {
           category: Database["public"]["Enums"]["question_category"]
+          category_id: string
           created_at: string
           id: string
           is_active: boolean
@@ -153,10 +303,12 @@ export type Database = {
           question_type: string
           required: boolean
           scale: Json | null
+          type_id: string
           updated_at: string
         }
         Insert: {
           category: Database["public"]["Enums"]["question_category"]
+          category_id: string
           created_at?: string
           id?: string
           is_active?: boolean
@@ -167,10 +319,12 @@ export type Database = {
           question_type: string
           required?: boolean
           scale?: Json | null
+          type_id: string
           updated_at?: string
         }
         Update: {
           category?: Database["public"]["Enums"]["question_category"]
+          category_id?: string
           created_at?: string
           id?: string
           is_active?: boolean
@@ -181,14 +335,29 @@ export type Database = {
           question_type?: string
           required?: boolean
           scale?: Json | null
+          type_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "question_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "question_types"
             referencedColumns: ["id"]
           },
         ]
