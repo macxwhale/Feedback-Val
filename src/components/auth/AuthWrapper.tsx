@@ -39,23 +39,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkUserRoles = async (userId: string) => {
     try {
-      // Use maybeSingle() and handle errors gracefully to avoid RLS issues
-      const { data: adminData } = await supabase
-        .from('admin_users')
-        .select('is_super_admin')
-        .eq('user_id', userId)
-        .maybeSingle();
+      console.log('Checking user roles for:', userId);
       
-      setIsAdmin(!!adminData?.is_super_admin);
+      // Use the new security definer function to check admin status
+      const { data: adminStatus, error: adminError } = await supabase
+        .rpc('get_current_user_admin_status');
       
-      const { data: orgData } = await supabase
+      if (adminError) {
+        console.error('Error checking admin status:', adminError);
+        setIsAdmin(false);
+      } else {
+        console.log('Admin status:', adminStatus);
+        setIsAdmin(!!adminStatus);
+      }
+      
+      // Check organization memberships
+      const { data: orgData, error: orgError } = await supabase
         .from('organization_users')
         .select('organization_id, role')
         .eq('user_id', userId);
       
-      const hasOrgRole = (orgData?.length || 0) > 0;
-      setIsOrgAdmin(hasOrgRole);
-      setCurrentOrganization(orgData?.[0]?.organization_id || null);
+      if (orgError) {
+        console.error('Error checking org memberships:', orgError);
+        setIsOrgAdmin(false);
+        setCurrentOrganization(null);
+      } else {
+        console.log('Org memberships:', orgData);
+        const hasOrgRole = (orgData?.length || 0) > 0;
+        setIsOrgAdmin(hasOrgRole);
+        setCurrentOrganization(orgData?.[0]?.organization_id || null);
+      }
     } catch (error) {
       console.error('Error checking user roles:', error);
       // Set safe defaults on error

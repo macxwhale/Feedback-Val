@@ -367,7 +367,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_org_admin: {
+        Args: { org_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       question_category:
