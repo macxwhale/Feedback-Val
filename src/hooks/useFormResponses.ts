@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { FeedbackResponse } from '@/components/FeedbackForm';
 import { generateRandomScore } from '@/services/questionsService';
+import { useOrganizationContext } from '@/context/OrganizationContext';
 
 export const useFormResponses = () => {
   const [responses, setResponses] = useState<Record<string, any>>({});
+  const { organization } = useOrganizationContext();
 
   const handleResponse = (questionId: string, value: any) => {
     setResponses(prev => ({ ...prev, [questionId]: value }));
@@ -32,6 +34,7 @@ export const useFormResponses = () => {
     handleResponse,
     loadResponses,
     generateFinalResponses,
-    resetResponses
+    resetResponses,
+    organizationId: organization?.id
   };
 };

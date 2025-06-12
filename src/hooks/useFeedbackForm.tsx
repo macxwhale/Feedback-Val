@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
 import { fetchQuestions } from '@/services/questionsService';
@@ -8,6 +7,7 @@ import { useAutoSave } from './useAutoSave';
 import { useFormValidation } from './useFormValidation';
 import { useWebhooks } from './useWebhooks';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganizationContext } from '@/context/OrganizationContext';
 
 export const useFeedbackForm = () => {
   const [questions, setQuestions] = useState<QuestionConfig[]>([]);
@@ -16,6 +16,7 @@ export const useFeedbackForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   
+  const { organization } = useOrganizationContext();
   const { toast } = useToast();
   const { responses, handleResponse, generateFinalResponses, resetResponses, loadResponses } = useFormResponses();
   const { currentQuestionIndex, goToNext, goToPrevious, resetNavigation } = useFormNavigation(questions.length);
@@ -24,12 +25,14 @@ export const useFeedbackForm = () => {
   // Auto-save functionality
   const { loadSavedData, clearSavedData } = useAutoSave(
     { responses, currentQuestionIndex, completedQuestions },
-    'police-sacco-feedback'
+    organization ? `feedback-${organization.slug}` : 'feedback-default'
   );
 
   useEffect(() => {
     const loadQuestions = async () => {
-      const data = await fetchQuestions();
+      if (!organization) return;
+
+      const data = await fetchQuestions(organization.id);
       setQuestions(data);
       
       // Load saved data if exists
@@ -46,7 +49,7 @@ export const useFeedbackForm = () => {
       setIsLoading(false);
     };
     loadQuestions();
-  }, [loadSavedData, loadResponses, toast]);
+  }, [organization, loadSavedData, loadResponses, toast]);
 
   const isCurrentQuestionAnswered = () => {
     const currentQuestion = questions[currentQuestionIndex];

@@ -2,13 +2,20 @@
 import { QuestionConfig } from '@/components/FeedbackForm';
 import { supabase } from '@/integrations/supabase/client';
 
-export const fetchQuestions = async (): Promise<QuestionConfig[]> => {
+export const fetchQuestions = async (organizationId?: string): Promise<QuestionConfig[]> => {
   try {
-    const { data: questions, error } = await supabase
+    let query = supabase
       .from('questions')
       .select('*')
       .eq('is_active', true)
       .order('order_index');
+
+    // If organizationId is provided, filter by it
+    if (organizationId) {
+      query = query.eq('organization_id', organizationId);
+    }
+
+    const { data: questions, error } = await query;
 
     if (error) {
       console.error('Error fetching questions:', error);
@@ -44,7 +51,7 @@ const getFallbackQuestions = (): QuestionConfig[] => {
     {
       id: 'recommend',
       type: 'nps',
-      question: 'Would you recommend I&M Bank Rwanda to others?',
+      question: 'Would you recommend us to others?',
       required: true,
       category: 'LikeliRecommend',
       scale: { min: 0, max: 10 }
@@ -98,7 +105,7 @@ const getFallbackQuestions = (): QuestionConfig[] => {
 
 export const generateRandomScore = () => Math.floor(Math.random() * 100) + 1;
 
-export const saveFeedbackSession = async (responses: any[], sessionId?: string) => {
+export const saveFeedbackSession = async (responses: any[], organizationId: string, sessionId?: string) => {
   try {
     const categoryScores: Record<string, number[]> = {};
     const responsesToSave = [];
@@ -106,14 +113,13 @@ export const saveFeedbackSession = async (responses: any[], sessionId?: string) 
     // Calculate category scores
     for (const [questionId, value] of Object.entries(responses)) {
       const score = generateRandomScore();
-      // This would need to be updated to get the actual question from the database
-      // For now, we'll use a simplified approach
       responsesToSave.push({
         session_id: sessionId || crypto.randomUUID(),
         question_id: questionId,
         question_category: 'QualityService', // This should be fetched from the question
         response_value: value,
-        score
+        score,
+        organization_id: organizationId
       });
     }
 

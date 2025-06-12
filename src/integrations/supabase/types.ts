@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          organization_id: string
           question_category: Database["public"]["Enums"]["question_category"]
           question_id: string
           response_value: Json
@@ -22,6 +23,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          organization_id: string
           question_category: Database["public"]["Enums"]["question_category"]
           question_id: string
           response_value: Json
@@ -31,6 +33,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          organization_id?: string
           question_category?: Database["public"]["Enums"]["question_category"]
           question_id?: string
           response_value?: Json
@@ -38,6 +41,13 @@ export type Database = {
           session_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "feedback_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "feedback_responses_question_id_fkey"
             columns: ["question_id"]
@@ -53,6 +63,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           id: string
+          organization_id: string
           started_at: string
           status: string
           total_score: number | null
@@ -63,6 +74,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          organization_id: string
           started_at?: string
           status?: string
           total_score?: number | null
@@ -73,10 +85,58 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          organization_id?: string
           started_at?: string
           status?: string
           total_score?: number | null
           user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          domain: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          secondary_color: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          slug?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -88,6 +148,7 @@ export type Database = {
           is_active: boolean
           options: Json | null
           order_index: number
+          organization_id: string
           question_text: string
           question_type: string
           required: boolean
@@ -101,6 +162,7 @@ export type Database = {
           is_active?: boolean
           options?: Json | null
           order_index: number
+          organization_id: string
           question_text: string
           question_type: string
           required?: boolean
@@ -114,13 +176,22 @@ export type Database = {
           is_active?: boolean
           options?: Json | null
           order_index?: number
+          organization_id?: string
           question_text?: string
           question_type?: string
           required?: boolean
           scale?: Json | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "questions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

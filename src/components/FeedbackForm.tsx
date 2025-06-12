@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { FeedbackHeader } from './feedback/FeedbackHeader';
 import { WelcomeScreen } from './feedback/WelcomeScreen';
@@ -20,6 +19,8 @@ import { SaveContinueOptions } from './feedback/SaveContinueOptions';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
 import { useSaveContinue } from '@/hooks/useSaveContinue';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { OrganizationHeader } from './feedback/OrganizationHeader';
+import { useOrganizationContext } from '@/context/OrganizationContext';
 
 export interface QuestionConfig {
   id: string;
@@ -46,6 +47,7 @@ export interface FeedbackResponse {
 const FeedbackForm = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const { isMobile } = useMobileDetection();
+  const { organization, isLoading: orgLoading, error: orgError } = useOrganizationContext();
   
   const {
     questions,
@@ -98,6 +100,31 @@ const FeedbackForm = () => {
     setShowWelcome(true);
   };
 
+  // Show loading while organization is loading
+  if (orgLoading) {
+    return <EnhancedLoading />;
+  }
+
+  // Show error if organization failed to load
+  if (orgError || !organization) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-orange-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Organization Not Found</h2>
+          <p className="text-gray-600 mb-4">
+            {orgError || 'The requested organization could not be found or is not active.'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return <EnhancedLoading />;
   }
@@ -117,6 +144,7 @@ const FeedbackForm = () => {
       </div>
       
       <ResponsiveContainer>
+        <OrganizationHeader />
         <FeedbackHeader />
         
         <div className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 ${isMobile ? 'p-4' : 'p-8'}`}>
