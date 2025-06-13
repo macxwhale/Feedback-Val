@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { questionsAdminService } from '@/services/questionsAdminService';
@@ -8,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2, Edit, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type QuestionCategory = Database['public']['Enums']['question_category'];
 
 interface QuestionsManagementProps {
   organizationId: string;
@@ -17,7 +19,12 @@ export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organi
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ question_text: '', question_type: 'star', category: 'QualityService' as const, order_index: 1 });
+  const [formData, setFormData] = useState({ 
+    question_text: '', 
+    question_type: 'star', 
+    category: 'QualityService' as QuestionCategory, 
+    order_index: 1 
+  });
 
   const { data: questions = [] } = useQuery({
     queryKey: ['questions', organizationId],
@@ -39,7 +46,11 @@ export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organi
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question deleted' }); }
   });
 
-  const resetForm = () => { setEditingId(null); setFormData({ question_text: '', question_type: 'star', category: 'QualityService', order_index: 1 }); };
+  const resetForm = () => { 
+    setEditingId(null); 
+    setFormData({ question_text: '', question_type: 'star', category: 'QualityService' as QuestionCategory, order_index: 1 }); 
+  };
+  
   const handleSubmit = () => editingId ? updateMutation.mutate({ id: editingId, ...formData }) : createMutation.mutate({ ...formData, organization_id: organizationId, category_id: '', type_id: '' });
 
   return (
@@ -54,7 +65,7 @@ export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organi
               {['star', 'nps', 'likert', 'text', 'single-choice', 'multi-choice'].map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
+          <Select value={formData.category} onValueChange={(value: QuestionCategory) => setFormData(prev => ({ ...prev, category: value }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {['QualityService', 'QualityStaff', 'QualityCommunication', 'ValueForMoney', 'LikeliRecommend', 'DidWeMakeEasy', 'Comments'].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
