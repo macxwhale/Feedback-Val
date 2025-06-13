@@ -138,8 +138,10 @@ export type Database = {
           email: string
           id: string
           invited_at: string | null
+          invited_by_user_id: string | null
           organization_id: string
           role: string | null
+          status: string | null
           updated_at: string
           user_id: string
         }
@@ -149,8 +151,10 @@ export type Database = {
           email: string
           id?: string
           invited_at?: string | null
+          invited_by_user_id?: string | null
           organization_id: string
           role?: string | null
+          status?: string | null
           updated_at?: string
           user_id: string
         }
@@ -160,8 +164,10 @@ export type Database = {
           email?: string
           id?: string
           invited_at?: string | null
+          invited_by_user_id?: string | null
           organization_id?: string
           role?: string | null
+          status?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -362,11 +368,62 @@ export type Database = {
           },
         ]
       }
+      user_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_by_user_id: string
+          organization_id: string
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by_user_id: string
+          organization_id: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by_user_id?: string
+          organization_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      accept_organization_invitation: {
+        Args: { invitation_token: string }
+        Returns: Json
+      }
       get_current_user_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: boolean
