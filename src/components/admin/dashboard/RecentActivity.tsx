@@ -37,7 +37,7 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
           </div>
         ) : recentActivity.length > 0 ? (
           <div className="space-y-3">
-            {recentActivity.map((activity: any, index: number) => (
+            {recentActivity.map((activity, index: number) => (
               <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
                   <Clock className="w-4 h-4 text-gray-400" />

@@ -102,7 +102,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               <div className="text-2xl font-bold">
                 {card.value}{card.suffix || ''}
               </div>
-              {card.title === 'Completed Sessions' && stats?.total_sessions > 0 && (
+              {card.title === 'Completed Sessions' && stats && stats.total_sessions > 0 && (
                 <div className="mt-2">
                   <Badge variant="secondary">
                     {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}% completion rate
