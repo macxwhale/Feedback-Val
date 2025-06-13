@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { questionsAdminService } from '@/services/questionsAdminService';
-import { enhancedQuestionsService } from '@/services/enhancedQuestionsService';
+import { questionsService } from '@/services/questionsService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,6 +31,29 @@ interface QuestionFormData {
   };
 }
 
+const QUESTION_TYPES = [
+  { name: 'star', display_name: 'Star Rating', supports_scale: true },
+  { name: 'nps', display_name: 'NPS Rating', supports_scale: true },
+  { name: 'likert', display_name: 'Likert Scale', supports_scale: true },
+  { name: 'slider', display_name: 'Slider', supports_scale: true },
+  { name: 'multiple_choice', display_name: 'Multiple Choice', supports_options: true },
+  { name: 'single_choice', display_name: 'Single Choice', supports_options: true },
+  { name: 'checkbox', display_name: 'Checkbox', supports_options: true },
+  { name: 'text', display_name: 'Text Input' },
+  { name: 'emoji', display_name: 'Emoji Rating' },
+  { name: 'matrix', display_name: 'Matrix Question', supports_options: true, supports_scale: true }
+];
+
+const CATEGORIES = [
+  'QualityService',
+  'QualityStaff', 
+  'QualityCommunication',
+  'ValueForMoney',
+  'LikeliRecommend',
+  'DidWeMakeEasy',
+  'Comments'
+];
+
 export const QuestionsManagement: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -48,18 +70,14 @@ export const QuestionsManagement: React.FC = () => {
     scaleConfig: { minValue: 1, maxValue: 5 }
   });
 
-  const { data: questions = [] } = useQuery({
+  const { data: questions = [], isLoading } = useQuery({
     queryKey: ['questions'],
-    queryFn: () => questionsAdminService.getQuestions()
-  });
-
-  const { data: types = [] } = useQuery({
-    queryKey: ['question-types'],
-    queryFn: () => questionsAdminService.getQuestionTypes()
+    queryFn: () => questionsService.getQuestions(),
+    refetchOnWindowFocus: false
   });
 
   const createMutation = useMutation({
-    mutationFn: enhancedQuestionsService.createQuestionWithRelations,
+    mutationFn: questionsService.createQuestion,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['questions'] });
       toast({ title: 'Question created successfully' });
@@ -72,7 +90,7 @@ export const QuestionsManagement: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: any) => enhancedQuestionsService.updateQuestionWithRelations(id, data),
+    mutationFn: ({ id, ...data }: any) => questionsService.updateQuestion(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['questions'] });
       toast({ title: 'Question updated successfully' });
@@ -85,7 +103,7 @@ export const QuestionsManagement: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => questionsAdminService.deleteQuestion(id),
+    mutationFn: (id: string) => questionsService.deleteQuestion(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['questions'] });
       toast({ title: 'Question deleted successfully' });
@@ -117,7 +135,7 @@ export const QuestionsManagement: React.FC = () => {
       return;
     }
 
-    const selectedType = types.find(type => type.name === formData.question_type);
+    const selectedType = QUESTION_TYPES.find(type => type.name === formData.question_type);
     const maxOrder = questions.length > 0 ? Math.max(...questions.map(q => q.order_index)) : 0;
     const orderIndex = editingId ? formData.order_index : maxOrder + 1;
 
@@ -133,9 +151,46 @@ export const QuestionsManagement: React.FC = () => {
     }
   };
 
-  const selectedType = types.find(type => type.name === formData.question_type);
+  const handleEdit = (question: any) => {
+    setEditingId(question.id);
+    setFormData({
+      question_text: question.question_text,
+      question_type: question.question_type,
+      category: question.category,
+      order_index: question.order_index,
+      help_text: question.help_text || '',
+      placeholder_text: question.placeholder_text || '',
+      is_required: question.is_required || false,
+      options: question.question_options?.map((opt: any) => ({ 
+        text: opt.option_text, 
+        value: opt.option_value 
+      })) || [],
+      scaleConfig: question.question_scale_config?.[0] ? {
+        minValue: question.question_scale_config[0].min_value,
+        maxValue: question.question_scale_config[0].max_value,
+        minLabel: question.question_scale_config[0].min_label || '',
+        maxLabel: question.question_scale_config[0].max_label || '',
+        stepSize: question.question_scale_config[0].step_size
+      } : { minValue: 1, maxValue: 5 }
+    });
+  };
+
+  const selectedType = QUESTION_TYPES.find(type => type.name === formData.question_type);
   const supportsOptions = selectedType?.supports_options || false;
   const supportsScale = selectedType?.supports_scale || false;
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Questions Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">Loading questions...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -156,8 +211,8 @@ export const QuestionsManagement: React.FC = () => {
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {types.map(type => 
-                <SelectItem key={type.id} value={type.name}>{type.display_name || type.name}</SelectItem>
+              {QUESTION_TYPES.map(type => 
+                <SelectItem key={type.name} value={type.name}>{type.display_name}</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -167,7 +222,7 @@ export const QuestionsManagement: React.FC = () => {
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {['QualityService', 'QualityStaff', 'QualityCommunication', 'ValueForMoney', 'LikeliRecommend', 'DidWeMakeEasy', 'Comments'].map(cat => 
+              {CATEGORIES.map(cat => 
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               )}
             </SelectContent>
@@ -223,20 +278,7 @@ export const QuestionsManagement: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setEditingId(q.id);
-                      setFormData({
-                        question_text: q.question_text,
-                        question_type: q.question_type,
-                        category: q.category,
-                        order_index: q.order_index,
-                        help_text: q.help_text || '',
-                        placeholder_text: q.placeholder_text || '',
-                        is_required: q.is_required || false,
-                        options: [],
-                        scaleConfig: { minValue: 1, maxValue: 5 }
-                      });
-                    }}
+                    onClick={() => handleEdit(q)}
                   >
                     <Edit className="w-4 h-4" />
                   </Button>

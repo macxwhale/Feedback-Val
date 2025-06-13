@@ -80,6 +80,58 @@ function validateQuestionData(data: any): ValidationError[] {
   return errors;
 }
 
+async function getOrCreateQuestionType(supabase: any, typeName: string) {
+  const { data: existingType } = await supabase
+    .from('question_types')
+    .select('id')
+    .eq('name', typeName)
+    .single();
+  
+  if (existingType) {
+    return existingType.id;
+  }
+  
+  // Create new question type if it doesn't exist
+  const { data: newType, error } = await supabase
+    .from('question_types')
+    .insert({
+      name: typeName,
+      display_name: typeName.charAt(0).toUpperCase() + typeName.slice(1),
+      supports_options: ['multiple_choice', 'checkbox', 'single_choice', 'multi_choice'].includes(typeName),
+      supports_scale: ['scale', 'star', 'likert', 'nps', 'slider'].includes(typeName)
+    })
+    .select('id')
+    .single();
+  
+  if (error) throw error;
+  return newType.id;
+}
+
+async function getOrCreateQuestionCategory(supabase: any, categoryName: string) {
+  const { data: existingCategory } = await supabase
+    .from('question_categories')
+    .select('id')
+    .eq('name', categoryName)
+    .single();
+  
+  if (existingCategory) {
+    return existingCategory.id;
+  }
+  
+  // Create new category if it doesn't exist
+  const { data: newCategory, error } = await supabase
+    .from('question_categories')
+    .insert({
+      name: categoryName,
+      description: `Category for ${categoryName} questions`
+    })
+    .select('id')
+    .single();
+  
+  if (error) throw error;
+  return newCategory.id;
+}
+
 async function createQuestionOptions(supabase: any, questionId: string, options: { text: string; value?: string }[]) {
   const optionsData = options.map((option, index) => ({
     question_id: questionId,
@@ -235,7 +287,13 @@ serve(async (req) => {
         
         const { data, error } = await supabase
           .from('questions')
-          .select('*')
+          .select(`
+            *,
+            question_categories(name),
+            question_types(name, display_name, supports_options, supports_scale),
+            question_options(*),
+            question_scale_config(*)
+          `)
           .eq('organization_id', organizationId)
           .order('order_index');
         
@@ -259,11 +317,17 @@ serve(async (req) => {
           return createErrorResponse('Validation failed', 400, { validationErrors });
         }
         
-        // Inject organization_id server-side into all DB writes
+        // Get or create type and category IDs
+        const typeId = await getOrCreateQuestionType(supabase, body.question_type);
+        const categoryId = await getOrCreateQuestionCategory(supabase, body.category);
+        
+        // Prepare question data with normalized IDs
         const questionData = { 
           question_text: body.question_text,
-          question_type: body.question_type,
-          category: body.category,
+          question_type: body.question_type, // Keep for backward compatibility
+          category: body.category, // Keep for backward compatibility
+          type_id: typeId,
+          category_id: categoryId,
           order_index: body.order_index,
           help_text: body.help_text,
           placeholder_text: body.placeholder_text,
@@ -290,13 +354,13 @@ serve(async (req) => {
         // Handle type-specific data
         try {
           // Create options for multiple choice or checkbox questions
-          if ((body.question_type === 'multiple_choice' || body.question_type === 'checkbox') && body.options) {
+          if ((body.question_type === 'multiple_choice' || body.question_type === 'checkbox' || body.question_type === 'single_choice' || body.question_type === 'multi_choice') && body.options) {
             await createQuestionOptions(supabase, question.id, body.options);
             console.log('Created question options for question:', question.id);
           }
 
           // Create scale config for scale, star, or likert questions
-          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert') && body.scaleConfig) {
+          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert' || body.question_type === 'nps' || body.question_type === 'slider') && body.scaleConfig) {
             await createQuestionScale(supabase, question.id, body.scaleConfig);
             console.log('Created scale config for question:', question.id);
           }
@@ -343,12 +407,22 @@ serve(async (req) => {
           return createErrorResponse('Unauthorized: Question belongs to different organization', 403);
         }
         
-        console.log('Updating question:', { id, updates, organizationId });
+        // Get or create type and category IDs if they changed
+        const typeId = await getOrCreateQuestionType(supabase, body.question_type);
+        const categoryId = await getOrCreateQuestionCategory(supabase, body.category);
+        
+        const updateData = {
+          ...updates,
+          type_id: typeId,
+          category_id: categoryId
+        };
+        
+        console.log('Updating question:', { id, updateData, organizationId });
         
         // Update the base question
         const { data: question, error: updateError } = await supabase
           .from('questions')
-          .update(updates)
+          .update(updateData)
           .eq('id', id)
           .eq('organization_id', organizationId)
           .select()
@@ -362,13 +436,13 @@ serve(async (req) => {
         // Handle type-specific data updates
         try {
           // Update options for multiple choice or checkbox questions
-          if (body.question_type === 'multiple_choice' || body.question_type === 'checkbox') {
+          if (body.question_type === 'multiple_choice' || body.question_type === 'checkbox' || body.question_type === 'single_choice' || body.question_type === 'multi_choice') {
             await updateQuestionOptions(supabase, id, options || []);
             console.log('Updated question options for question:', id);
           }
 
           // Update scale config for scale, star, or likert questions
-          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert') && scaleConfig) {
+          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert' || body.question_type === 'nps' || body.question_type === 'slider') && scaleConfig) {
             await updateQuestionScale(supabase, id, scaleConfig);
             console.log('Updated scale config for question:', id);
           }
