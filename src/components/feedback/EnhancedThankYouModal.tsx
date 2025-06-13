@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,14 +14,10 @@ import { AdvancedInsightsDashboard } from './AdvancedInsightsDashboard';
 import { AnalyticsData } from '@/services/analyticsService';
 import { SuccessAnimation } from './SuccessAnimation';
 import { ThankYouActions } from './ThankYouActions';
+import { generateAdvancedInsights } from '@/services/advancedAnalyticsService';
 import { 
-  generateAdvancedInsights,
   generateSmartRecommendations,
-  generatePredictiveInsights 
-} from '@/services/advancedAnalyticsService';
-import { 
-  generateSmartRecommendations as generateIntelligentRecommendations,
-  generatePredictiveInsights as generateIntelligentPredictiveInsights
+  generatePredictiveInsights
 } from '@/services/intelligentRecommendationEngine';
 
 interface EnhancedThankYouModalProps {
@@ -47,8 +42,8 @@ export const EnhancedThankYouModal: React.FC<EnhancedThankYouModalProps> = ({
 
   // Generate advanced insights
   const advancedInsights = generateAdvancedInsights(responses);
-  const smartRecommendations = generateIntelligentRecommendations(responses, advancedInsights);
-  const predictiveInsights = generateIntelligentPredictiveInsights(responses, advancedInsights);
+  const smartRecommendations = generateSmartRecommendations(responses, advancedInsights);
+  const predictiveInsights = generatePredictiveInsights(responses, advancedInsights);
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
