@@ -1,24 +1,24 @@
 
 import React from 'react';
-import { useOrganizationContext } from '@/context/OrganizationContext';
+import { useOrganizationConfig } from '@/hooks/useOrganizationConfig';
 
 export const OrganizationHeader: React.FC = () => {
-  const { organization } = useOrganizationContext();
+  const { organization, logoAsset, colors } = useOrganizationConfig();
 
   if (!organization) return null;
 
   return (
     <div className="text-center mb-8">
-      {organization.logo_url && (
+      {logoAsset?.asset_url && (
         <img 
-          src={organization.logo_url} 
-          alt={`${organization.name} Logo`}
+          src={logoAsset.asset_url} 
+          alt={logoAsset.asset_name || `${organization.name} Logo`}
           className="mx-auto mb-4 h-16 w-auto"
         />
       )}
       <h1 
         className="text-4xl font-bold mb-2"
-        style={{ color: organization.primary_color }}
+        style={{ color: colors.primary }}
       >
         {organization.name}
       </h1>

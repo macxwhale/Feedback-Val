@@ -131,6 +131,94 @@ export type Database = {
           },
         ]
       }
+      organization_assets: {
+        Row: {
+          asset_name: string | null
+          asset_type: string
+          asset_url: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          asset_name?: string | null
+          asset_type: string
+          asset_url: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          asset_name?: string | null
+          asset_type?: string
+          asset_url?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_themes: {
+        Row: {
+          colors: Json
+          created_at: string
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          spacing: Json | null
+          theme_name: string
+          typography: Json | null
+          updated_at: string
+        }
+        Insert: {
+          colors?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          spacing?: Json | null
+          theme_name?: string
+          typography?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          colors?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          spacing?: Json | null
+          theme_name?: string
+          typography?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_themes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_users: {
         Row: {
           accepted_at: string | null
@@ -186,7 +274,11 @@ export type Database = {
           billing_email: string | null
           created_at: string
           created_by_user_id: string | null
+          custom_css: Json | null
           domain: string | null
+          feedback_header_subtitle: string | null
+          feedback_header_title: string | null
+          flow_configuration: Json | null
           id: string
           is_active: boolean
           logo_url: string | null
@@ -197,14 +289,22 @@ export type Database = {
           secondary_color: string | null
           settings: Json | null
           slug: string
+          thank_you_message: string | null
+          thank_you_title: string | null
           trial_ends_at: string | null
           updated_at: string
+          welcome_screen_description: string | null
+          welcome_screen_title: string | null
         }
         Insert: {
           billing_email?: string | null
           created_at?: string
           created_by_user_id?: string | null
+          custom_css?: Json | null
           domain?: string | null
+          feedback_header_subtitle?: string | null
+          feedback_header_title?: string | null
+          flow_configuration?: Json | null
           id?: string
           is_active?: boolean
           logo_url?: string | null
@@ -215,14 +315,22 @@ export type Database = {
           secondary_color?: string | null
           settings?: Json | null
           slug: string
+          thank_you_message?: string | null
+          thank_you_title?: string | null
           trial_ends_at?: string | null
           updated_at?: string
+          welcome_screen_description?: string | null
+          welcome_screen_title?: string | null
         }
         Update: {
           billing_email?: string | null
           created_at?: string
           created_by_user_id?: string | null
+          custom_css?: Json | null
           domain?: string | null
+          feedback_header_subtitle?: string | null
+          feedback_header_title?: string | null
+          flow_configuration?: Json | null
           id?: string
           is_active?: boolean
           logo_url?: string | null
@@ -233,8 +341,12 @@ export type Database = {
           secondary_color?: string | null
           settings?: Json | null
           slug?: string
+          thank_you_message?: string | null
+          thank_you_title?: string | null
           trial_ends_at?: string | null
           updated_at?: string
+          welcome_screen_description?: string | null
+          welcome_screen_title?: string | null
         }
         Relationships: []
       }
@@ -427,6 +539,10 @@ export type Database = {
       get_current_user_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      get_organization_config: {
+        Args: { org_slug: string }
+        Returns: Json
       }
       is_current_user_org_admin: {
         Args: { org_id: string }
