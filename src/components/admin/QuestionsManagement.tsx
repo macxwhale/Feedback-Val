@@ -1,0 +1,79 @@
+
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { questionsAdminService } from '@/services/questionsAdminService';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, Edit, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface QuestionsManagementProps {
+  organizationId: string;
+}
+
+export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organizationId }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ question_text: '', question_type: 'star', category: 'QualityService' as const, order_index: 1 });
+
+  const { data: questions = [] } = useQuery({
+    queryKey: ['questions', organizationId],
+    queryFn: () => questionsAdminService.getQuestions(organizationId)
+  });
+
+  const createMutation = useMutation({
+    mutationFn: questionsAdminService.createQuestion,
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question created' }); resetForm(); }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...data }: any) => questionsAdminService.updateQuestion(id, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question updated' }); resetForm(); }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: questionsAdminService.deleteQuestion,
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question deleted' }); }
+  });
+
+  const resetForm = () => { setEditingId(null); setFormData({ question_text: '', question_type: 'star', category: 'QualityService', order_index: 1 }); };
+  const handleSubmit = () => editingId ? updateMutation.mutate({ id: editingId, ...formData }) : createMutation.mutate({ ...formData, organization_id: organizationId, category_id: '', type_id: '' });
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Questions Management</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <Input placeholder="Question text" value={formData.question_text} onChange={(e) => setFormData(prev => ({ ...prev, question_text: e.target.value }))} />
+          <Select value={formData.question_type} onValueChange={(value) => setFormData(prev => ({ ...prev, question_type: value }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {['star', 'nps', 'likert', 'text', 'single-choice', 'multi-choice'].map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {['QualityService', 'QualityStaff', 'QualityCommunication', 'ValueForMoney', 'LikeliRecommend', 'DidWeMakeEasy', 'Comments'].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleSubmit} disabled={!formData.question_text}><Plus className="w-4 h-4 mr-1" />{editingId ? 'Update' : 'Add'}</Button>
+        </div>
+        <div className="space-y-2">
+          {questions.map(q => (
+            <div key={q.id} className="flex items-center justify-between p-2 border rounded">
+              <div className="flex-1"><span className="font-medium">{q.question_text}</span><span className="text-sm text-gray-500 ml-2">({q.question_type})</span></div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => { setEditingId(q.id); setFormData({ question_text: q.question_text, question_type: q.question_type, category: q.category, order_index: q.order_index }); }}><Edit className="w-4 h-4" /></Button>
+                <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(q.id)}><Trash2 className="w-4 h-4" /></Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

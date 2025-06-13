@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +14,7 @@ import { OrganizationHeader } from './OrganizationHeader';
 import { OrganizationOverviewStats } from './OrganizationOverviewStats';
 import { RecentActivityCard } from './RecentActivityCard';
 import { OrganizationSettingsTab } from './OrganizationSettingsTab';
+import { QuestionsManagement } from './QuestionsManagement';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
 
@@ -101,6 +101,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'members', label: 'Members', icon: Users },
     { id: 'feedback', label: 'Feedback', icon: MessageSquare },
+    { id: 'questions', label: 'Questions', icon: MessageSquare },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -111,7 +112,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full max-w-md">
+          <TabsList className="grid grid-cols-5 w-full max-w-lg">
             {tabs.map(({ id, label, icon: Icon }) => (
               <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
                 <Icon className="w-4 h-4" />
@@ -137,6 +138,10 @@ export const OrganizationAdminDashboard: React.FC = () => {
 
           <TabsContent value="feedback">
             <OrganizationSpecificStats organizationId={organization.id} />
+          </TabsContent>
+
+          <TabsContent value="questions">
+            <QuestionsManagement organizationId={organization.id} />
           </TabsContent>
 
           <TabsContent value="settings">
