@@ -2,6 +2,10 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { 
+  SidebarProvider, 
+  SidebarTrigger 
+} from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
@@ -15,17 +19,22 @@ import { OrganizationHeader } from './OrganizationHeader';
 import { OrganizationSettingsTab } from './OrganizationSettingsTab';
 import { QuestionsManagement } from './QuestionsManagement';
 import { DashboardOverview } from './dashboard/DashboardOverview';
-import { RecentActivity } from './dashboard/RecentActivity';
+import { LiveActivityFeed } from './dashboard/LiveActivityFeed';
+import { AnalyticsInsights } from './dashboard/AnalyticsInsights';
 import { QuickActions } from './dashboard/QuickActions';
 import { DashboardBreadcrumb } from './dashboard/DashboardBreadcrumb';
+import { DashboardSearch } from './dashboard/DashboardSearch';
+import { DashboardSidebar } from './dashboard/DashboardSidebar';
 import { DashboardErrorBoundary } from './dashboard/DashboardErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
+import { useOrganizationStats } from '@/hooks/useOrganizationStats';
 
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isLiveActivity, setIsLiveActivity] = useState(true);
 
   // Fetch organization data
   const { data: organization, isLoading: orgLoading } = useQuery({
@@ -42,6 +51,9 @@ export const OrganizationAdminDashboard: React.FC = () => {
     },
     enabled: !!slug
   });
+
+  // Fetch organization stats for sidebar
+  const { data: stats } = useOrganizationStats(organization?.id || '');
 
   if (orgLoading) {
     return (
@@ -91,59 +103,98 @@ export const OrganizationAdminDashboard: React.FC = () => {
     return tabMap[tabId] || 'Dashboard';
   };
 
+  const handleNavigate = (url: string) => {
+    // Simple URL to tab mapping
+    if (url.includes('members')) setActiveTab('members');
+    else if (url.includes('questions')) setActiveTab('questions');
+    else if (url.includes('feedback')) setActiveTab('feedback');
+    else if (url.includes('settings')) setActiveTab('settings');
+  };
+
   return (
     <DashboardErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        <OrganizationHeader organization={organization} />
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gray-50">
+          <DashboardSidebar
+            organizationName={organization.name}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            stats={stats}
+          />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb Navigation */}
-          <div className="mb-6">
-            <DashboardBreadcrumb 
-              organizationName={organization.name}
-              currentPage={getTabLabel(activeTab)}
-            />
-          </div>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <OrganizationHeader organization={organization} />
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-5 w-full max-w-lg">
-              {tabs.map(({ id, label, icon: Icon }) => (
-                <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <div className="flex-1 overflow-auto">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Header with Breadcrumb and Search */}
+                <div className="flex flex-col space-y-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <SidebarTrigger />
+                      <DashboardBreadcrumb 
+                        organizationName={organization.name}
+                        currentPage={getTabLabel(activeTab)}
+                      />
+                    </div>
+                    <DashboardSearch 
+                      organizationId={organization.id}
+                      onNavigate={handleNavigate}
+                    />
+                  </div>
+                </div>
 
-            <TabsContent value="overview" className="space-y-6">
-              <DashboardOverview organizationId={organization.id} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <RecentActivity organizationId={organization.id} />
-                <QuickActions {...handleQuickActions} />
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                  <TabsList className="grid grid-cols-5 w-full max-w-lg">
+                    {tabs.map(({ id, label, icon: Icon }) => (
+                      <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
+                        <Icon className="w-4 h-4" />
+                        <span className="hidden sm:inline">{label}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  <TabsContent value="overview" className="space-y-6">
+                    <DashboardOverview organizationId={organization.id} />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <LiveActivityFeed 
+                          organizationId={organization.id}
+                          isLive={isLiveActivity}
+                          onToggleLive={setIsLiveActivity}
+                        />
+                      </div>
+                      <div className="space-y-6">
+                        <AnalyticsInsights organizationId={organization.id} />
+                        <QuickActions {...handleQuickActions} />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="members">
+                    <UserManagement 
+                      organizationId={organization.id}
+                      organizationName={organization.name}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="feedback">
+                    <OrganizationSpecificStats organizationId={organization.id} />
+                  </TabsContent>
+
+                  <TabsContent value="questions">
+                    <QuestionsManagement />
+                  </TabsContent>
+
+                  <TabsContent value="settings">
+                    <OrganizationSettingsTab organization={organization} />
+                  </TabsContent>
+                </Tabs>
               </div>
-            </TabsContent>
-
-            <TabsContent value="members">
-              <UserManagement 
-                organizationId={organization.id}
-                organizationName={organization.name}
-              />
-            </TabsContent>
-
-            <TabsContent value="feedback">
-              <OrganizationSpecificStats organizationId={organization.id} />
-            </TabsContent>
-
-            <TabsContent value="questions">
-              <QuestionsManagement />
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <OrganizationSettingsTab organization={organization} />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     </DashboardErrorBoundary>
   );
 };
