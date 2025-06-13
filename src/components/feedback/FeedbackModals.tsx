@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { PrivacyNotice } from './PrivacyNotice';
-import { EnhancedThankYouModal } from './EnhancedThankYouModal';
+import { SimpleThankYouModal } from './SimpleThankYouModal';
 import { FeedbackResponse, QuestionConfig } from '../FeedbackForm';
-import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface FeedbackModalsProps {
   showPrivacyNotice: boolean;
@@ -22,14 +21,6 @@ export const FeedbackModals: React.FC<FeedbackModalsProps> = ({
   onAcceptPrivacy,
   onReset
 }) => {
-  // Generate analytics for the thank you modal
-  const responses = finalResponses.reduce((acc, response) => {
-    acc[response.questionId] = response.value;
-    return acc;
-  }, {} as Record<string, any>);
-
-  const { analytics } = useAnalytics(responses, questions.length, finalResponses);
-
   return (
     <>
       <PrivacyNotice
@@ -37,12 +28,11 @@ export const FeedbackModals: React.FC<FeedbackModalsProps> = ({
         onAccept={onAcceptPrivacy}
       />
       
-      <EnhancedThankYouModal
+      <SimpleThankYouModal
         isOpen={isComplete}
         responses={finalResponses}
         questions={questions}
-        analytics={analytics}
-        onReset={onReset}
+        onClose={onReset}
       />
     </>
   );

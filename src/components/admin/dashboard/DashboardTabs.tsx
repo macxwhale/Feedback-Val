@@ -6,15 +6,17 @@ import {
   MessageSquare, 
   BarChart3, 
   Settings,
-  Brain,
-  Activity,
-  Database
+  TrendingUp,
+  Brain
 } from 'lucide-react';
 import { EnhancedUserManagement } from '../EnhancedUserManagement';
 import { OrganizationSpecificStats } from '../OrganizationSpecificStats';
 import { OrganizationSettingsTab } from '../OrganizationSettingsTab';
 import { QuestionsManagement } from '../QuestionsManagement';
 import { AdvancedDashboardView } from './AdvancedDashboardView';
+import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
+import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
+import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -42,6 +44,9 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
 }) => {
   const tabs = [
     { id: 'overview', label: 'Analytics', icon: BarChart3 },
+    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp },
+    { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain },
+    { id: 'performance', label: 'Performance', icon: BarChart3 },
     { id: 'members', label: 'Members', icon: Users },
     { id: 'feedback', label: 'Feedback', icon: MessageSquare },
     { id: 'questions', label: 'Questions', icon: MessageSquare },
@@ -50,7 +55,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-      <TabsList className="grid grid-cols-5 w-full max-w-lg">
+      <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full">
         {tabs.map(({ id, label, icon: Icon }) => (
           <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
             <Icon className="w-4 h-4" />
@@ -70,6 +75,18 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           setIsLiveActivity={setIsLiveActivity}
           handleQuickActions={handleQuickActions}
         />
+      </TabsContent>
+
+      <TabsContent value="customer-insights">
+        <CustomerInsightsDashboard organizationId={organization.id} />
+      </TabsContent>
+
+      <TabsContent value="sentiment">
+        <SentimentAnalyticsDashboard organizationId={organization.id} />
+      </TabsContent>
+
+      <TabsContent value="performance">
+        <PerformanceAnalyticsDashboard organizationId={organization.id} />
       </TabsContent>
 
       <TabsContent value="members">

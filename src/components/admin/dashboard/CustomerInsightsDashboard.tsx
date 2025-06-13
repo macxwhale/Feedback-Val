@@ -1,0 +1,268 @@
+
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
+import { 
+  Users, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle,
+  AlertCircle,
+  BarChart3
+} from 'lucide-react';
+
+interface CustomerInsightsDashboardProps {
+  organizationId: string;
+}
+
+export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps> = ({
+  organizationId
+}) => {
+  const { data: analyticsData, isLoading } = useAnalyticsTableData(organizationId);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analyticsData) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-500">No customer insights data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Analyze completion patterns
+  const completionRates = analyticsData.questions.map(q => q.completion_rate);
+  const avgCompletionRate = completionRates.reduce((sum, rate) => sum + rate, 0) / completionRates.length;
+  
+  // Identify recurring themes
+  const themes = analyticsData.questions.reduce((acc, question) => {
+    if (question.avg_score < 3) {
+      acc.lowPerforming.push(question);
+    } else if (question.avg_score >= 4.5) {
+      acc.highPerforming.push(question);
+    }
+    
+    if (question.completion_rate < 80) {
+      acc.lowCompletion.push(question);
+    }
+    
+    return acc;
+  }, {
+    lowPerforming: [] as any[],
+    highPerforming: [] as any[],
+    lowCompletion: [] as any[]
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Customer Insights</h2>
+        <Badge variant="outline">
+          {analyticsData.summary.total_responses} total responses
+        </Badge>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium text-gray-600">Avg Completion Rate</span>
+            </div>
+            <div className="mt-2">
+              <div className="text-2xl font-bold">{Math.round(avgCompletionRate)}%</div>
+              <Progress value={avgCompletionRate} className="mt-2" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+              <span className="text-sm font-medium text-gray-600">High Performers</span>
+            </div>
+            <div className="mt-2">
+              <div className="text-2xl font-bold">{themes.highPerforming.length}</div>
+              <div className="text-sm text-gray-500">questions scoring 4.5+</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <span className="text-sm font-medium text-gray-600">Need Attention</span>
+            </div>
+            <div className="mt-2">
+              <div className="text-2xl font-bold">{themes.lowPerforming.length}</div>
+              <div className="text-sm text-gray-500">questions scoring below 3</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <Clock className="w-5 h-5 text-orange-600" />
+              <span className="text-sm font-medium text-gray-600">Low Completion</span>
+            </div>
+            <div className="mt-2">
+              <div className="text-2xl font-bold">{themes.lowCompletion.length}</div>
+              <div className="text-sm text-gray-500">questions below 80%</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Analysis */}
+      <Tabs defaultValue="trends" className="w-full">
+        <TabsList className="grid grid-cols-3 w-full max-w-md">
+          <TabsTrigger value="trends">Trends</TabsTrigger>
+          <TabsTrigger value="themes">Themes</TabsTrigger>
+          <TabsTrigger value="sessions">Sessions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="trends" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Feedback Trends</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analyticsData.categories.map((category, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium">{category.category}</h4>
+                      <p className="text-sm text-gray-600">
+                        {category.total_questions} questions • {category.total_responses} responses
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold">{category.avg_score}/5</div>
+                      <div className="text-sm text-gray-500">{category.completion_rate}% completion</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="themes" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-green-600">High Performing Questions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {themes.highPerforming.slice(0, 5).map((question, index) => (
+                    <div key={index} className="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                      <div className="font-medium text-sm">{question.question_text}</div>
+                      <div className="flex justify-between items-center mt-2">
+                        <Badge className="bg-green-100 text-green-800">
+                          {question.avg_score}/5
+                        </Badge>
+                        <span className="text-sm text-gray-600">{question.total_responses} responses</span>
+                      </div>
+                    </div>
+                  ))}
+                  {themes.highPerforming.length === 0 && (
+                    <p className="text-gray-500 text-center py-4">No high performing questions yet</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-red-600">Questions Needing Attention</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {themes.lowPerforming.slice(0, 5).map((question, index) => (
+                    <div key={index} className="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
+                      <div className="font-medium text-sm">{question.question_text}</div>
+                      <div className="flex justify-between items-center mt-2">
+                        <Badge className="bg-red-100 text-red-800">
+                          {question.avg_score}/5
+                        </Badge>
+                        <span className="text-sm text-gray-600">{question.total_responses} responses</span>
+                      </div>
+                    </div>
+                  ))}
+                  {themes.lowPerforming.length === 0 && (
+                    <p className="text-gray-500 text-center py-4">All questions performing well!</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Session Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Completion Rate by Question</h4>
+                  <div className="space-y-2">
+                    {analyticsData.questions.slice(0, 5).map((question, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm truncate flex-1 mr-2">{question.question_text}</span>
+                        <span className="text-sm font-medium">{question.completion_rate}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-3">Response Distribution</h4>
+                  <div className="space-y-2">
+                    {analyticsData.categories.map((category, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm">{category.category}</span>
+                        <div className="flex items-center space-x-2">
+                          <Progress 
+                            value={(category.total_responses / analyticsData.summary.total_responses) * 100} 
+                            className="w-16 h-2" 
+                          />
+                          <span className="text-sm font-medium">{category.total_responses}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};

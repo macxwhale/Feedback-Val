@@ -7,8 +7,6 @@ import { Label } from '@/components/ui/label';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
 import { OperationalAnalytics } from './OperationalAnalytics';
 import { RealTimeAnalytics } from './RealTimeAnalytics';
-import { CRMIntegration } from '../integration/CRMIntegration';
-import { ConversationalAnalytics } from '../ai/ConversationalAnalytics';
 import { SessionTrendsChart } from './charts/SessionTrendsChart';
 import { UserEngagementChart } from './charts/UserEngagementChart';
 import { AnalyticsInsights } from './AnalyticsInsights';
@@ -16,6 +14,7 @@ import { QuickActions } from './QuickActions';
 import { NotificationCenter } from './NotificationCenter';
 import { RecentActivityCard } from '../RecentActivityCard';
 import { StatsCards } from './StatsCards';
+import { AnalyticsTable } from './AnalyticsTable';
 import { 
   Users, 
   MessageSquare, 
@@ -23,10 +22,9 @@ import {
   Target,
   Clock,
   CheckCircle,
-  Brain,
-  Database,
   Activity,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react';
 
 interface AdvancedDashboardViewProps {
@@ -147,14 +145,10 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
       {/* Header Controls */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Advanced Analytics Dashboard</h2>
+          <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
           <p className="text-gray-600">Comprehensive insights for {organizationName}</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Badge variant="outline" className="flex items-center space-x-1">
-            <Brain className="w-4 h-4" />
-            <span>AI-Powered</span>
-          </Badge>
           <div className="flex items-center space-x-2">
             <Label htmlFor="live-activity">Live Updates</Label>
             <Switch
@@ -166,57 +160,32 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Advanced Analytics Tabs */}
-      <Tabs defaultValue="executive" className="w-full">
-        <TabsList className="grid grid-cols-6 w-full max-w-4xl">
-          <TabsTrigger value="executive" className="flex items-center space-x-2">
+      {/* Analytics Tabs */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+          <TabsTrigger value="overview" className="flex items-center space-x-2">
             <Target className="w-4 h-4" />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="executive" className="flex items-center space-x-2">
+            <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Executive</span>
           </TabsTrigger>
           <TabsTrigger value="operational" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
+            <MessageSquare className="w-4 h-4" />
             <span className="hidden sm:inline">Operational</span>
           </TabsTrigger>
           <TabsTrigger value="realtime" className="flex items-center space-x-2">
             <Activity className="w-4 h-4" />
             <span className="hidden sm:inline">Real-time</span>
           </TabsTrigger>
-          <TabsTrigger value="crm" className="flex items-center space-x-2">
-            <Database className="w-4 h-4" />
-            <span className="hidden sm:inline">CRM</span>
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center space-x-2">
-            <Brain className="w-4 h-4" />
-            <span className="hidden sm:inline">AI Assistant</span>
-          </TabsTrigger>
-          <TabsTrigger value="overview" className="flex items-center space-x-2">
-            <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Overview</span>
+          <TabsTrigger value="detailed" className="flex items-center space-x-2">
+            <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline">Detailed</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="executive" className="space-y-6">
-          <ExecutiveDashboard organizationId={organizationId} stats={stats} />
-        </TabsContent>
-
-        <TabsContent value="operational" className="space-y-6">
-          <OperationalAnalytics organizationId={organizationId} />
-        </TabsContent>
-
-        <TabsContent value="realtime" className="space-y-6">
-          <RealTimeAnalytics organizationId={organizationId} />
-        </TabsContent>
-
-        <TabsContent value="crm" className="space-y-6">
-          <CRMIntegration organizationId={organizationId} />
-        </TabsContent>
-
-        <TabsContent value="ai" className="space-y-6">
-          <ConversationalAnalytics organizationId={organizationId} />
-        </TabsContent>
-
         <TabsContent value="overview" className="space-y-6">
-          {/* Original Overview Content */}
           <StatsCards cards={cards} isLoading={statsLoading} />
 
           {!statsLoading && stats && stats.total_sessions > 0 && (
@@ -246,6 +215,22 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
             />
             <NotificationCenter />
           </div>
+        </TabsContent>
+
+        <TabsContent value="executive" className="space-y-6">
+          <ExecutiveDashboard organizationId={organizationId} stats={stats} />
+        </TabsContent>
+
+        <TabsContent value="operational" className="space-y-6">
+          <OperationalAnalytics organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="realtime" className="space-y-6">
+          <RealTimeAnalytics organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="detailed" className="space-y-6">
+          <AnalyticsTable organizationId={organizationId} />
         </TabsContent>
       </Tabs>
     </div>
