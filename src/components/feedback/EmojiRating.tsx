@@ -12,10 +12,16 @@ export const EmojiRating: React.FC<EmojiRatingProps> = ({
   onChange, 
   options 
 }) => {
+  // Filter out empty options and ensure we have valid emojis
+  const validOptions = options.filter(option => option && option.trim());
+  
+  // If no options provided, use default emojis
+  const displayOptions = validOptions.length > 0 ? validOptions : ['😞', '😐', '😊'];
+
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="flex space-x-4">
-        {options.map((emoji, index) => (
+        {displayOptions.map((emoji, index) => (
           <button
             key={index}
             type="button"

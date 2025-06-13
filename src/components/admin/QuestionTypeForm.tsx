@@ -48,11 +48,25 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
   onPlaceholderChange
 }) => {
   const [localOptions, setLocalOptions] = useState<QuestionOption[]>(
-    options.length > 0 ? options : [{ text: '' }, { text: '' }]
+    options.length > 0 ? options : getDefaultOptions()
   );
 
+  function getDefaultOptions(): QuestionOption[] {
+    if (questionType === 'emoji') {
+      return [
+        { text: '😊', value: 'happy' },
+        { text: '😐', value: 'neutral' },
+        { text: '😞', value: 'sad' }
+      ];
+    }
+    return [{ text: '' }, { text: '' }];
+  }
+
   const addOption = () => {
-    const newOptions = [...localOptions, { text: '' }];
+    const newOption = questionType === 'emoji' 
+      ? { text: '😊', value: '' }
+      : { text: '' };
+    const newOptions = [...localOptions, newOption];
     setLocalOptions(newOptions);
     onOptionsChange(newOptions);
   };
@@ -104,14 +118,21 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
         <Card>
           <CardContent className="pt-4">
             <div className="space-y-3">
-              <Label>Answer Options</Label>
+              <Label>
+                {questionType === 'emoji' ? 'Emoji Options' : 'Answer Options'}
+              </Label>
+              {questionType === 'emoji' && (
+                <p className="text-sm text-gray-600">
+                  Enter emoji characters (😊, 😐, 😞, etc.) for users to select from
+                </p>
+              )}
               {localOptions.map((option, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
                     value={option.text}
                     onChange={(e) => updateOption(index, 'text', e.target.value)}
-                    placeholder={`Option ${index + 1}`}
-                    className="flex-1"
+                    placeholder={questionType === 'emoji' ? '😊' : `Option ${index + 1}`}
+                    className={questionType === 'emoji' ? 'w-16 text-center text-2xl' : 'flex-1'}
                   />
                   {questionType !== 'emoji' && (
                     <Input
@@ -121,7 +142,15 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
                       className="w-20"
                     />
                   )}
-                  {localOptions.length > 2 && (
+                  {questionType === 'emoji' && (
+                    <Input
+                      value={option.value || ''}
+                      onChange={(e) => updateOption(index, 'value', e.target.value)}
+                      placeholder="Description"
+                      className="flex-1"
+                    />
+                  )}
+                  {localOptions.length > (questionType === 'emoji' ? 1 : 2) && (
                     <Button
                       type="button"
                       variant="outline"
@@ -141,7 +170,7 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
                 className="w-full"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add Option
+                Add {questionType === 'emoji' ? 'Emoji' : 'Option'}
               </Button>
             </div>
           </CardContent>
@@ -222,6 +251,7 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
           {supportsOptions && <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">Supports Options</span>}
           {supportsScale && <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">Supports Scale</span>}
           {questionType === 'text' && <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Text Input</span>}
+          {questionType === 'emoji' && <span className="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Emoji Selection</span>}
         </div>
       </div>
     </div>
