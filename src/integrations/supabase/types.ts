@@ -46,6 +46,9 @@ export type Database = {
           organization_id: string
           question_category: Database["public"]["Enums"]["question_category"]
           question_id: string
+          question_snapshot: Json | null
+          question_text_snapshot: string | null
+          question_type_snapshot: string | null
           response_value: Json
           score: number | null
           session_id: string
@@ -56,6 +59,9 @@ export type Database = {
           organization_id: string
           question_category: Database["public"]["Enums"]["question_category"]
           question_id: string
+          question_snapshot?: Json | null
+          question_text_snapshot?: string | null
+          question_type_snapshot?: string | null
           response_value: Json
           score?: number | null
           session_id: string
@@ -66,6 +72,9 @@ export type Database = {
           organization_id?: string
           question_category?: Database["public"]["Enums"]["question_category"]
           question_id?: string
+          question_snapshot?: Json | null
+          question_text_snapshot?: string | null
+          question_type_snapshot?: string | null
           response_value?: Json
           score?: number | null
           session_id?: string
@@ -659,7 +668,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      feedback_responses_with_context: {
+        Row: {
+          created_at: string | null
+          current_question_text: string | null
+          current_question_type: string | null
+          id: string | null
+          is_orphaned: boolean | null
+          organization_id: string | null
+          organization_name: string | null
+          question_category:
+            | Database["public"]["Enums"]["question_category"]
+            | null
+          question_id: string | null
+          question_is_active: boolean | null
+          question_snapshot: Json | null
+          question_text_snapshot: string | null
+          question_type_snapshot: string | null
+          response_value: Json | null
+          score: number | null
+          session_id: string | null
+          session_status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_organization_invitation: {
@@ -676,6 +723,10 @@ export type Database = {
       }
       is_current_user_org_admin: {
         Args: { org_id: string }
+        Returns: boolean
+      }
+      safe_delete_question: {
+        Args: { question_uuid: string }
         Returns: boolean
       }
     }

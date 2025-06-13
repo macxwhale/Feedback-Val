@@ -66,6 +66,59 @@ export const generateRandomScore = (): number => {
   return Math.floor(Math.random() * 5) + 1;
 };
 
+// Store feedback responses in database
+export const storeFeedbackResponses = async (
+  responses: Record<string, any>,
+  organizationId: string,
+  questions: any[]
+) => {
+  try {
+    // Create a feedback session
+    const { data: session, error: sessionError } = await supabase
+      .from('feedback_sessions')
+      .insert({
+        organization_id: organizationId,
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (sessionError) {
+      console.error('Error creating feedback session:', sessionError);
+      throw sessionError;
+    }
+
+    // Store individual responses
+    const responseData = Object.entries(responses).map(([questionId, value]) => {
+      const question = questions.find(q => q.id === questionId);
+      return {
+        question_id: questionId,
+        session_id: session.id,
+        organization_id: organizationId,
+        response_value: value,
+        question_category: question?.category || 'Comments',
+        score: generateRandomScore()
+      };
+    });
+
+    const { error: responsesError } = await supabase
+      .from('feedback_responses')
+      .insert(responseData);
+
+    if (responsesError) {
+      console.error('Error storing responses:', responsesError);
+      throw responsesError;
+    }
+
+    console.log('Feedback responses stored successfully:', responseData.length, 'responses');
+    return session;
+  } catch (error) {
+    console.error('Error in storeFeedbackResponses:', error);
+    throw error;
+  }
+};
+
 // Fetch questions for frontend form (optimized for user feedback)
 export const fetchQuestions = async (organizationId?: string) => {
   try {
@@ -131,13 +184,18 @@ export const questionsService = {
 
   async deleteQuestion(id: string) {
     try {
-      const headers = await getAuthHeaders();
-      const response = await fetch(FUNCTION_URL, {
-        method: 'DELETE',
-        headers,
-        body: JSON.stringify({ id })
+      // Use the safe deletion function
+      const { data, error } = await supabase.rpc('safe_delete_question', {
+        question_uuid: id
       });
-      await handleResponse(response);
+
+      if (error) {
+        console.error('Error deleting question:', error);
+        throw error;
+      }
+
+      // data will be true if actually deleted, false if archived
+      return { deleted: data, archived: !data };
     } catch (error) {
       console.error('Error deleting question:', error);
       throw error;

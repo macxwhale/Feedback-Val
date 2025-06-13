@@ -19,7 +19,15 @@ export const useFeedbackForm = () => {
   
   const { organization, isLoading: orgLoading } = useOrganization();
   const { toast } = useToast();
-  const { responses, handleResponse, generateFinalResponses, resetResponses, loadResponses } = useFormResponses();
+  const { 
+    responses, 
+    isSubmitting,
+    handleResponse, 
+    generateFinalResponses, 
+    submitResponses,
+    resetResponses, 
+    loadResponses 
+  } = useFormResponses();
   const { currentQuestionIndex, goToNext, goToPrevious, resetNavigation } = useFormNavigation(questions.length);
   const { validateQuestion, getValidationResult } = useFormValidation();
   
@@ -101,17 +109,18 @@ export const useFeedbackForm = () => {
   };
 
   const submitFeedback = async () => {
-    const responsesWithScores = generateFinalResponses();
-    setFinalResponses(responsesWithScores);
-    setIsComplete(true);
-    clearSavedData(); // Clear saved data after successful submission
-    
-    toast({
-      title: "Feedback submitted successfully!",
-      description: "Thank you for your valuable input",
-    });
-    
-    console.log('Submitting feedback:', responsesWithScores);
+    try {
+      console.log('Submitting feedback to database...');
+      await submitResponses(questions);
+      
+      const responsesWithScores = generateFinalResponses();
+      setFinalResponses(responsesWithScores);
+      setIsComplete(true);
+      clearSavedData(); // Clear saved data after successful submission
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      // Error handling is done in useFormResponses hook
+    }
   };
 
   const handleNext = () => {
@@ -141,7 +150,7 @@ export const useFeedbackForm = () => {
     responses,
     isComplete,
     finalResponses,
-    isLoading,
+    isLoading: isLoading || isSubmitting,
     completedQuestions,
     handleResponse: handleQuestionResponse,
     isCurrentQuestionAnswered,
