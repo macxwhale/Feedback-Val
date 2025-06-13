@@ -1,16 +1,15 @@
 
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Users, UserPlus, Mail, Shield, AlertTriangle } from 'lucide-react';
 import { SearchAndFilters } from './dashboard/SearchAndFilters';
-import { PaginationControls } from './dashboard/PaginationControls';
-import { EnhancedLoadingSpinner } from './dashboard/EnhancedLoadingSpinner';
 import { usePaginatedUsers } from '@/hooks/usePaginatedUsers';
 import { useAuditLogging } from '@/hooks/useAuditLogging';
 import { useToast } from '@/hooks/use-toast';
+import { UserManagementHeader } from './user-management/UserManagementHeader';
+import { UserManagementStats } from './user-management/UserManagementStats';
+import { UsersList } from './user-management/UsersList';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
 
 interface EnhancedUserManagementProps {
   organizationId: string;
@@ -75,6 +74,14 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
     setCurrentPage(0);
   };
 
+  const handleInviteUser = () => {
+    // TODO: Implement invite user functionality
+    toast({
+      title: "Feature coming soon",
+      description: "Invite user functionality will be implemented soon.",
+    });
+  };
+
   if (error) {
     return (
       <Card>
@@ -98,72 +105,16 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Enhanced User Management</h2>
-          <p className="text-gray-600">Manage members for {organizationName}</p>
-        </div>
-        <Button>
-          <UserPlus className="w-4 h-4 mr-2" />
-          Invite User
-        </Button>
-      </div>
+      <UserManagementHeader
+        organizationName={organizationName}
+        onInviteUser={handleInviteUser}
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-blue-600" />
-              <div>
-                <div className="text-2xl font-bold">{totalCount}</div>
-                <p className="text-sm text-gray-600">Total Users</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-green-600" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {users.filter(u => u.role === 'admin').length}
-                </div>
-                <p className="text-sm text-gray-600">Admins</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-purple-600" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {users.filter(u => u.status === 'active').length}
-                </div>
-                <p className="text-sm text-gray-600">Active</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Mail className="h-5 w-5 text-orange-600" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {users.filter(u => u.status === 'pending').length}
-                </div>
-                <p className="text-sm text-gray-600">Pending</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <UserManagementStats
+        totalCount={totalCount}
+        users={users}
+      />
 
-      {/* Search and Filters */}
       <SearchAndFilters
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
@@ -172,54 +123,17 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
         onClear={handleClearFilters}
       />
 
-      {/* Users List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Users ({totalCount})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <EnhancedLoadingSpinner text="Loading users..." />
-          ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div>
-                      <p className="font-medium">{user.email}</p>
-                      <p className="text-sm text-gray-600">
-                        Joined {new Date(user.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                      {user.role}
-                    </Badge>
-                    <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                      {user.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {users.length > 0 && (
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              hasMore={hasMore}
-              onPageChange={handlePageChange}
-              isLoading={isLoading}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <UsersList
+        users={users}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        searchTerm={searchTerm}
+        roleFilter={roleFilter}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        hasMore={hasMore}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };
