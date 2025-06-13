@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarRating } from './StarRating';
@@ -6,6 +7,7 @@ import { LikertScale } from './LikertScale';
 import { MultipleChoice } from './MultipleChoice';
 import { OpenText } from './OpenText';
 import { QuestionConfig } from '../FeedbackForm';
+import { useDynamicBranding } from '@/hooks/useDynamicBranding';
 
 interface QuestionRendererProps {
   question: QuestionConfig;
@@ -18,9 +20,15 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   value,
   onChange
 }) => {
+  const { colors } = useDynamicBranding();
+
+  const headerStyle = {
+    background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`
+  };
+
   return (
     <Card className="mb-8 shadow-lg border-0 animate-fade-in">
-      <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#f97316] text-white rounded-t-lg">
+      <CardHeader className="text-white rounded-t-lg" style={headerStyle}>
         <CardTitle className="text-xl">
           {question.question}
         </CardTitle>

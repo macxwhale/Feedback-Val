@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AnimatedButton } from './AnimatedButton';
+import { BrandedButton } from './BrandedButton';
 import { MobileNavigationButtons } from './MobileNavigationButtons';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
@@ -25,24 +25,24 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = (props) => {
 
   return (
     <div className="flex justify-between items-center animate-fade-in">
-      <AnimatedButton
+      <BrandedButton
         variant="outline"
         onClick={onPrevious}
         disabled={currentQuestionIndex === 0}
-        icon={ChevronLeft}
-        className="border-[#073763] text-[#073763] hover:bg-[#073763] hover:text-white"
+        className="flex items-center gap-2"
       >
+        <ChevronLeft size={16} />
         Previous
-      </AnimatedButton>
+      </BrandedButton>
 
-      <AnimatedButton
+      <BrandedButton
         onClick={onNext}
         disabled={!canGoNext}
-        icon={!isLastQuestion ? ChevronRight : undefined}
-        className="bg-gradient-to-r from-[#073763] to-[#007ACE] hover:from-[#062c52] hover:to-[#0066a6] text-white"
+        className="flex items-center gap-2"
       >
         {isLastQuestion ? 'Submit' : 'Next'}
-      </AnimatedButton>
+        {!isLastQuestion && <ChevronRight size={16} />}
+      </BrandedButton>
     </div>
   );
 };
