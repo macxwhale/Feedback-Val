@@ -1,0 +1,38 @@
+
+interface DashboardNavigationProps {
+  setActiveTab: (tab: string) => void;
+}
+
+export const useDashboardNavigation = ({ setActiveTab }: DashboardNavigationProps) => {
+  const handleNavigate = (url: string) => {
+    // Simple URL to tab mapping
+    if (url.includes('members')) setActiveTab('members');
+    else if (url.includes('questions')) setActiveTab('questions');
+    else if (url.includes('feedback')) setActiveTab('feedback');
+    else if (url.includes('settings')) setActiveTab('settings');
+  };
+
+  const getTabLabel = (tabId: string) => {
+    const tabMap: Record<string, string> = {
+      overview: 'Overview',
+      members: 'Members',
+      feedback: 'Feedback Analytics',
+      questions: 'Questions Management',
+      settings: 'Settings'
+    };
+    return tabMap[tabId] || 'Dashboard';
+  };
+
+  const handleQuickActions = {
+    onCreateQuestion: () => setActiveTab('questions'),
+    onInviteUser: () => setActiveTab('members'),
+    onExportData: () => setActiveTab('feedback'),
+    onViewSettings: () => setActiveTab('settings')
+  };
+
+  return {
+    handleNavigate,
+    getTabLabel,
+    handleQuickActions
+  };
+};

@@ -2,27 +2,13 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  SidebarProvider, 
-  SidebarTrigger 
-} from '@/components/ui/sidebar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  MessageSquare, 
-  BarChart3, 
-  Settings
-} from 'lucide-react';
-import { UserManagement } from './UserManagement';
-import { OrganizationSpecificStats } from './OrganizationSpecificStats';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { OrganizationHeader } from './OrganizationHeader';
-import { OrganizationSettingsTab } from './OrganizationSettingsTab';
-import { QuestionsManagement } from './QuestionsManagement';
-import { AdvancedDashboardView } from './dashboard/AdvancedDashboardView';
-import { DashboardBreadcrumb } from './dashboard/DashboardBreadcrumb';
-import { DashboardSearch } from './dashboard/DashboardSearch';
 import { DashboardSidebar } from './dashboard/DashboardSidebar';
 import { DashboardErrorBoundary } from './dashboard/DashboardErrorBoundary';
+import { DashboardHeader } from './dashboard/DashboardHeader';
+import { DashboardTabs } from './dashboard/DashboardTabs';
+import { useDashboardNavigation } from './dashboard/DashboardNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useOrganizationStats } from '@/hooks/useOrganizationStats';
@@ -52,6 +38,11 @@ export const OrganizationAdminDashboard: React.FC = () => {
   // Fetch organization stats for sidebar
   const { data: stats } = useOrganizationStats(organization?.id || '');
 
+  // Navigation handlers
+  const { handleNavigate, getTabLabel, handleQuickActions } = useDashboardNavigation({
+    setActiveTab
+  });
+
   if (orgLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -74,40 +65,6 @@ export const OrganizationAdminDashboard: React.FC = () => {
     );
   }
 
-  const handleQuickActions = {
-    onCreateQuestion: () => setActiveTab('questions'),
-    onInviteUser: () => setActiveTab('members'),
-    onExportData: () => setActiveTab('feedback'),
-    onViewSettings: () => setActiveTab('settings')
-  };
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'members', label: 'Members', icon: Users },
-    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
-    { id: 'questions', label: 'Questions', icon: MessageSquare },
-    { id: 'settings', label: 'Settings', icon: Settings },
-  ];
-
-  const getTabLabel = (tabId: string) => {
-    const tabMap: Record<string, string> = {
-      overview: 'Overview',
-      members: 'Members',
-      feedback: 'Feedback Analytics',
-      questions: 'Questions Management',
-      settings: 'Settings'
-    };
-    return tabMap[tabId] || 'Dashboard';
-  };
-
-  const handleNavigate = (url: string) => {
-    // Simple URL to tab mapping
-    if (url.includes('members')) setActiveTab('members');
-    else if (url.includes('questions')) setActiveTab('questions');
-    else if (url.includes('feedback')) setActiveTab('feedback');
-    else if (url.includes('settings')) setActiveTab('settings');
-  };
-
   return (
     <DashboardErrorBoundary>
       <SidebarProvider>
@@ -124,65 +81,22 @@ export const OrganizationAdminDashboard: React.FC = () => {
 
             <div className="flex-1 overflow-auto">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header with Breadcrumb and Search */}
-                <div className="flex flex-col space-y-4 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <SidebarTrigger />
-                      <DashboardBreadcrumb 
-                        organizationName={organization.name}
-                        currentPage={getTabLabel(activeTab)}
-                      />
-                    </div>
-                    <DashboardSearch 
-                      organizationId={organization.id}
-                      onNavigate={handleNavigate}
-                    />
-                  </div>
-                </div>
+                <DashboardHeader
+                  organizationName={organization.name}
+                  organizationId={organization.id}
+                  currentPage={getTabLabel(activeTab)}
+                  onNavigate={handleNavigate}
+                />
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                  <TabsList className="grid grid-cols-5 w-full max-w-lg">
-                    {tabs.map(({ id, label, icon: Icon }) => (
-                      <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
-                        <Icon className="w-4 h-4" />
-                        <span className="hidden sm:inline">{label}</span>
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-
-                  <TabsContent value="overview" className="space-y-6">
-                    <AdvancedDashboardView
-                      organizationId={organization.id}
-                      organizationName={organization.name}
-                      activeTab={activeTab}
-                      onTabChange={setActiveTab}
-                      stats={stats}
-                      isLiveActivity={isLiveActivity}
-                      setIsLiveActivity={setIsLiveActivity}
-                      handleQuickActions={handleQuickActions}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="members">
-                    <UserManagement 
-                      organizationId={organization.id}
-                      organizationName={organization.name}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="feedback">
-                    <OrganizationSpecificStats organizationId={organization.id} />
-                  </TabsContent>
-
-                  <TabsContent value="questions">
-                    <QuestionsManagement />
-                  </TabsContent>
-
-                  <TabsContent value="settings">
-                    <OrganizationSettingsTab organization={organization} />
-                  </TabsContent>
-                </Tabs>
+                <DashboardTabs
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  organization={organization}
+                  stats={stats}
+                  isLiveActivity={isLiveActivity}
+                  setIsLiveActivity={setIsLiveActivity}
+                  handleQuickActions={handleQuickActions}
+                />
               </div>
             </div>
           </div>
