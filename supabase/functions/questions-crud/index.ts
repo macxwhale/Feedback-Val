@@ -28,16 +28,8 @@ function validateQuestionData(data: any): ValidationError[] {
     errors.push({ field: 'category', message: 'Category is required' });
   }
   
-  if (data.order_index === undefined || data.order_index === null || typeof data.order_index !== 'number') {
-    errors.push({ field: 'order_index', message: 'Order index is required and must be a number' });
-  }
-  
-  if (!data.category_id || typeof data.category_id !== 'string') {
-    errors.push({ field: 'category_id', message: 'Category ID is required' });
-  }
-  
-  if (!data.type_id || typeof data.type_id !== 'string') {
-    errors.push({ field: 'type_id', message: 'Type ID is required' });
+  if (data.order_index === undefined || data.order_index === null || typeof data.order_index !== 'number' || data.order_index <= 0) {
+    errors.push({ field: 'order_index', message: 'Order index is required and must be a positive number' });
   }
   
   return errors;
@@ -59,6 +51,8 @@ function createErrorResponse(message: string, status: number = 400, details?: an
 }
 
 serve(async (req) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -74,9 +68,10 @@ serve(async (req) => {
       }
     );
 
-    // 🔐 1. Extract logged-in user and get their organization
+    // Extract logged-in user and get their organization
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.error('Authentication failed:', userError?.message);
       return createErrorResponse('Authentication required', 401, { userError: userError?.message });
     }
 
@@ -89,6 +84,7 @@ serve(async (req) => {
       .single();
 
     if (orgError || !orgUser) {
+      console.error('Organization access failed:', orgError?.message);
       return createErrorResponse('No active organization access found', 403, { orgError: orgError?.message });
     }
 
@@ -104,6 +100,8 @@ serve(async (req) => {
 
     switch (method) {
       case 'GET': {
+        console.log('Fetching questions for organization:', organizationId);
+        
         const { data, error } = await supabase
           .from('questions')
           .select('*')
@@ -111,9 +109,11 @@ serve(async (req) => {
           .order('order_index');
         
         if (error) {
+          console.error('Database error fetching questions:', error);
           return createErrorResponse('Failed to fetch questions', 500, { dbError: error.message });
         }
 
+        console.log(`Successfully fetched ${data?.length || 0} questions`);
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -122,16 +122,16 @@ serve(async (req) => {
       case 'POST': {
         const body = await req.json();
         
-        // 🧪 3. Add validation before doing any DB operation
+        // Validate input data
         const validationErrors = validateQuestionData(body);
         if (validationErrors.length > 0) {
           return createErrorResponse('Validation failed', 400, { validationErrors });
         }
         
-        // 🧱 2. Inject org_id server-side into all DB writes
+        // Inject organization_id server-side into all DB writes
         const questionData = { 
           ...body, 
-          organization_id: organizationId // Always use server-side org_id
+          organization_id: organizationId
         };
         
         console.log('Creating question with data:', questionData);
@@ -143,9 +143,11 @@ serve(async (req) => {
           .single();
         
         if (error) {
+          console.error('Database error creating question:', error);
           return createErrorResponse('Failed to create question', 500, { dbError: error.message });
         }
 
+        console.log('Successfully created question:', data.id);
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -159,13 +161,13 @@ serve(async (req) => {
           return createErrorResponse('Question ID is required for updates', 400);
         }
         
-        // 🧪 3. Add validation before doing any DB operation
+        // Validate input data
         const validationErrors = validateQuestionData(updates);
         if (validationErrors.length > 0) {
           return createErrorResponse('Validation failed', 400, { validationErrors });
         }
         
-        // 🔄 4. Ensure update actions check question ownership
+        // Ensure update actions check question ownership
         const { data: existingQuestion, error: fetchError } = await supabase
           .from('questions')
           .select('id, organization_id')
@@ -173,10 +175,12 @@ serve(async (req) => {
           .single();
         
         if (fetchError) {
+          console.error('Question not found:', fetchError);
           return createErrorResponse('Question not found', 404, { dbError: fetchError.message });
         }
         
         if (existingQuestion.organization_id !== organizationId) {
+          console.error('Unauthorized update attempt:', { questionOrg: existingQuestion.organization_id, userOrg: organizationId });
           return createErrorResponse('Unauthorized: Question belongs to different organization', 403);
         }
         
@@ -186,14 +190,16 @@ serve(async (req) => {
           .from('questions')
           .update(updates)
           .eq('id', id)
-          .eq('organization_id', organizationId) // Double-check ownership
+          .eq('organization_id', organizationId)
           .select()
           .single();
         
         if (error) {
+          console.error('Database error updating question:', error);
           return createErrorResponse('Failed to update question', 500, { dbError: error.message });
         }
 
+        console.log('Successfully updated question:', id);
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -207,7 +213,7 @@ serve(async (req) => {
           return createErrorResponse('Question ID is required for deletion', 400);
         }
         
-        // 🔄 4. Ensure delete actions check question ownership
+        // Ensure delete actions check question ownership
         const { data: existingQuestion, error: fetchError } = await supabase
           .from('questions')
           .select('id, organization_id')
@@ -215,10 +221,12 @@ serve(async (req) => {
           .single();
         
         if (fetchError) {
+          console.error('Question not found for deletion:', fetchError);
           return createErrorResponse('Question not found', 404, { dbError: fetchError.message });
         }
         
         if (existingQuestion.organization_id !== organizationId) {
+          console.error('Unauthorized delete attempt:', { questionOrg: existingQuestion.organization_id, userOrg: organizationId });
           return createErrorResponse('Unauthorized: Question belongs to different organization', 403);
         }
         
@@ -228,12 +236,14 @@ serve(async (req) => {
           .from('questions')
           .delete()
           .eq('id', id)
-          .eq('organization_id', organizationId); // Double-check ownership
+          .eq('organization_id', organizationId);
         
         if (error) {
+          console.error('Database error deleting question:', error);
           return createErrorResponse('Failed to delete question', 500, { dbError: error.message });
         }
 
+        console.log('Successfully deleted question:', id);
         return new Response(JSON.stringify({ success: true, message: 'Question deleted successfully' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });

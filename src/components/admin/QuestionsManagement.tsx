@@ -20,9 +20,7 @@ export const QuestionsManagement: React.FC = () => {
     question_text: '', 
     question_type: 'star', 
     category: 'QualityService' as QuestionCategory, 
-    order_index: 1,
-    category_id: '00000000-0000-0000-0000-000000000001', // Default UUID for category
-    type_id: '00000000-0000-0000-0000-000000000001' // Default UUID for type
+    order_index: 1
   });
 
   const { data: questions = [] } = useQuery({
@@ -30,16 +28,30 @@ export const QuestionsManagement: React.FC = () => {
     queryFn: () => questionsAdminService.getQuestions()
   });
 
+  // Fetch question categories and types for proper references
+  const { data: categories = [] } = useQuery({
+    queryKey: ['question-categories'],
+    queryFn: () => questionsAdminService.getQuestionCategories()
+  });
+
+  const { data: types = [] } = useQuery({
+    queryKey: ['question-types'],
+    queryFn: () => questionsAdminService.getQuestionTypes()
+  });
+
   const createMutation = useMutation({
     mutationFn: questionsAdminService.createQuestion,
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['questions'] }); 
-      toast({ title: 'Question created' }); 
+      toast({ title: 'Question created successfully' }); 
       resetForm(); 
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Create error:', error);
-      toast({ title: 'Failed to create question', variant: 'destructive' });
+      const errorMessage = error?.details?.validationErrors 
+        ? error.details.validationErrors.map((e: any) => e.message).join(', ')
+        : error?.message || 'Failed to create question';
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
     }
   });
 
@@ -47,12 +59,15 @@ export const QuestionsManagement: React.FC = () => {
     mutationFn: ({ id, ...data }: any) => questionsAdminService.updateQuestion(id, data),
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['questions'] }); 
-      toast({ title: 'Question updated' }); 
+      toast({ title: 'Question updated successfully' }); 
       resetForm(); 
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Update error:', error);
-      toast({ title: 'Failed to update question', variant: 'destructive' });
+      const errorMessage = error?.details?.validationErrors 
+        ? error.details.validationErrors.map((e: any) => e.message).join(', ')
+        : error?.message || 'Failed to update question';
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
     }
   });
 
@@ -60,11 +75,12 @@ export const QuestionsManagement: React.FC = () => {
     mutationFn: (id: string) => questionsAdminService.deleteQuestion(id),
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['questions'] }); 
-      toast({ title: 'Question deleted' }); 
+      toast({ title: 'Question deleted successfully' }); 
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Delete error:', error);
-      toast({ title: 'Failed to delete question', variant: 'destructive' });
+      const errorMessage = error?.message || 'Failed to delete question';
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
     }
   });
 
@@ -74,28 +90,47 @@ export const QuestionsManagement: React.FC = () => {
       question_text: '', 
       question_type: 'star', 
       category: 'QualityService' as QuestionCategory, 
-      order_index: 1,
-      category_id: '00000000-0000-0000-0000-000000000001',
-      type_id: '00000000-0000-0000-0000-000000000001'
+      order_index: 1
     }); 
   };
   
   const handleSubmit = () => {
     if (!formData.question_text.trim()) {
-      toast({ title: 'Question text is required', variant: 'destructive' });
+      toast({ title: 'Validation Error', description: 'Question text is required', variant: 'destructive' });
       return;
     }
 
+    // Get the highest order_index and increment by 1 for new questions
+    const maxOrder = questions.length > 0 ? Math.max(...questions.map(q => q.order_index)) : 0;
+    const orderIndex = editingId ? formData.order_index : maxOrder + 1;
+
+    // Find corresponding category and type IDs
+    const selectedCategory = categories.find(cat => cat.name === formData.category);
+    const selectedType = types.find(type => type.name === formData.question_type);
+
+    const questionData = {
+      ...formData,
+      order_index: orderIndex,
+      category_id: selectedCategory?.id || categories[0]?.id,
+      type_id: selectedType?.id || types[0]?.id
+    };
+
     if (editingId) {
-      updateMutation.mutate({ id: editingId, ...formData });
+      updateMutation.mutate({ id: editingId, ...questionData });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(questionData);
     }
+  };
+
+  const getNextOrderIndex = () => {
+    return questions.length > 0 ? Math.max(...questions.map(q => q.order_index)) + 1 : 1;
   };
 
   return (
     <Card>
-      <CardHeader><CardTitle>Questions Management</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Questions Management</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           <Input 
@@ -106,8 +141,8 @@ export const QuestionsManagement: React.FC = () => {
           <Select value={formData.question_type} onValueChange={(value) => setFormData(prev => ({ ...prev, question_type: value }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {['star', 'nps', 'likert', 'text', 'single-choice', 'multi-choice'].map(type => 
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+              {types.map(type => 
+                <SelectItem key={type.id} value={type.name}>{type.display_name || type.name}</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -135,41 +170,45 @@ export const QuestionsManagement: React.FC = () => {
         )}
 
         <div className="space-y-2">
-          {questions.map(q => (
-            <div key={q.id} className="flex items-center justify-between p-2 border rounded">
-              <div className="flex-1">
-                <span className="font-medium">{q.question_text}</span>
-                <span className="text-sm text-gray-500 ml-2">({q.question_type})</span>
+          {questions.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">No questions found. Create your first question above.</p>
+          ) : (
+            questions.map(q => (
+              <div key={q.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex-1">
+                  <span className="font-medium">{q.question_text}</span>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Type: {q.question_type} | Category: {q.category} | Order: {q.order_index}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => { 
+                      setEditingId(q.id); 
+                      setFormData({ 
+                        question_text: q.question_text, 
+                        question_type: q.question_type, 
+                        category: q.category, 
+                        order_index: q.order_index
+                      }); 
+                    }}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    onClick={() => deleteMutation.mutate(q.id)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => { 
-                    setEditingId(q.id); 
-                    setFormData({ 
-                      question_text: q.question_text, 
-                      question_type: q.question_type, 
-                      category: q.category, 
-                      order_index: q.order_index,
-                      category_id: q.category_id,
-                      type_id: q.type_id
-                    }); 
-                  }}
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="destructive" 
-                  onClick={() => deleteMutation.mutate(q.id)}
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </CardContent>
     </Card>

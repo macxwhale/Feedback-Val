@@ -470,6 +470,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_questions_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "question_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_questions_organization"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_questions_type"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "question_types"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "questions_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
