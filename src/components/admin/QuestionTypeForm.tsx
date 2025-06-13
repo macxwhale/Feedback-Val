@@ -113,12 +113,14 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
                     placeholder={`Option ${index + 1}`}
                     className="flex-1"
                   />
-                  <Input
-                    value={option.value || ''}
-                    onChange={(e) => updateOption(index, 'value', e.target.value)}
-                    placeholder="Value"
-                    className="w-20"
-                  />
+                  {questionType !== 'emoji' && (
+                    <Input
+                      value={option.value || ''}
+                      onChange={(e) => updateOption(index, 'value', e.target.value)}
+                      placeholder="Value"
+                      className="w-20"
+                    />
+                  )}
                   {localOptions.length > 2 && (
                     <Button
                       type="button"
@@ -212,6 +214,16 @@ export const QuestionTypeForm: React.FC<QuestionTypeFormProps> = ({
           </CardContent>
         </Card>
       )}
+
+      {/* Question Type Info */}
+      <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
+        <strong>Selected Type: {questionType}</strong>
+        <div className="mt-1">
+          {supportsOptions && <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">Supports Options</span>}
+          {supportsScale && <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">Supports Scale</span>}
+          {questionType === 'text' && <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Text Input</span>}
+        </div>
+      </div>
     </div>
   );
 };

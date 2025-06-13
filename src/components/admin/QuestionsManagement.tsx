@@ -158,9 +158,26 @@ export const QuestionsManagement: React.FC = () => {
     });
   };
 
-  const selectedType = questionTypes.find(type => type.name === formData.question_type);
-  const supportsOptions = selectedType?.supports_options || false;
-  const supportsScale = selectedType?.supports_scale || false;
+  // Determine question type capabilities
+  const getQuestionTypeCapabilities = (questionType: string) => {
+    // Define which question types support options and scale
+    const typeCapabilities = {
+      'single-choice': { supportsOptions: true, supportsScale: false },
+      'multi-choice': { supportsOptions: true, supportsScale: false },
+      'star': { supportsOptions: false, supportsScale: true },
+      'likert': { supportsOptions: false, supportsScale: true },
+      'nps': { supportsOptions: false, supportsScale: true },
+      'slider': { supportsOptions: false, supportsScale: true },
+      'emoji': { supportsOptions: true, supportsScale: false },
+      'ranking': { supportsOptions: true, supportsScale: false },
+      'matrix': { supportsOptions: true, supportsScale: true },
+      'text': { supportsOptions: false, supportsScale: false }
+    };
+
+    return typeCapabilities[questionType as keyof typeof typeCapabilities] || { supportsOptions: false, supportsScale: false };
+  };
+
+  const capabilities = getQuestionTypeCapabilities(formData.question_type);
 
   if (isLoading) {
     return (
@@ -189,7 +206,13 @@ export const QuestionsManagement: React.FC = () => {
           />
           <Select 
             value={formData.question_type} 
-            onValueChange={(value) => setFormData(prev => ({ ...prev, question_type: value }))}
+            onValueChange={(value) => setFormData(prev => ({ 
+              ...prev, 
+              question_type: value,
+              // Reset options and scale when type changes
+              options: [],
+              scaleConfig: { minValue: 1, maxValue: 5 }
+            }))}
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -213,8 +236,8 @@ export const QuestionsManagement: React.FC = () => {
 
         <QuestionTypeForm
           questionType={formData.question_type}
-          supportsOptions={supportsOptions}
-          supportsScale={supportsScale}
+          supportsOptions={capabilities.supportsOptions}
+          supportsScale={capabilities.supportsScale}
           options={formData.options}
           scaleConfig={formData.scaleConfig}
           helpText={formData.help_text}
