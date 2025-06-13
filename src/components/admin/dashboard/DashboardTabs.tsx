@@ -7,7 +7,7 @@ import {
   BarChart3, 
   Settings
 } from 'lucide-react';
-import { UserManagement } from '../UserManagement';
+import { EnhancedUserManagement } from '../EnhancedUserManagement';
 import { OrganizationSpecificStats } from '../OrganizationSpecificStats';
 import { OrganizationSettingsTab } from '../OrganizationSettingsTab';
 import { QuestionsManagement } from '../QuestionsManagement';
@@ -70,7 +70,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="members">
-        <UserManagement 
+        <EnhancedUserManagement 
           organizationId={organization.id}
           organizationName={organization.name}
         />

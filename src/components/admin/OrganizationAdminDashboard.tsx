@@ -11,7 +11,9 @@ import { DashboardTabs } from './dashboard/DashboardTabs';
 import { useDashboardNavigation } from './dashboard/DashboardNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
-import { useOrganizationStats } from '@/hooks/useOrganizationStats';
+import { useEnhancedOrganizationStats } from '@/hooks/useEnhancedOrganizationStats';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
+import { EnhancedLoadingSpinner } from './dashboard/EnhancedLoadingSpinner';
 
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -20,23 +22,33 @@ export const OrganizationAdminDashboard: React.FC = () => {
   const [isLiveActivity, setIsLiveActivity] = useState(true);
 
   // Fetch organization data
-  const { data: organization, isLoading: orgLoading } = useQuery({
+  const { data: organization, isLoading: orgLoading, error: orgError } = useQuery({
     queryKey: ['organization', slug],
     queryFn: async () => {
+      console.log('Fetching organization by slug:', slug);
       const { data, error } = await supabase
         .from('organizations')
         .select('*')
         .eq('slug', slug)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching organization:', error);
+        throw error;
+      }
+      console.log('Organization fetched successfully:', data);
       return data;
     },
-    enabled: !!slug
+    enabled: !!slug,
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Fetch organization stats for sidebar
-  const { data: stats } = useOrganizationStats(organization?.id || '');
+  // Fetch enhanced organization stats
+  const { data: stats, isLoading: statsLoading } = useEnhancedOrganizationStats(organization?.id || '');
+
+  // Set up real-time updates
+  useRealtimeUpdates(organization?.id || '');
 
   // Navigation handlers
   const { handleNavigate, getTabLabel, handleQuickActions } = useDashboardNavigation({
@@ -46,20 +58,29 @@ export const OrganizationAdminDashboard: React.FC = () => {
   if (orgLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading organization...</p>
-        </div>
+        <EnhancedLoadingSpinner size="lg" text="Loading organization dashboard..." />
       </div>
     );
   }
 
-  if (!organization) {
+  if (orgError || !organization) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Organization Not Found</h2>
-          <p className="text-gray-600">The organization you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {orgError ? 'Error Loading Organization' : 'Organization Not Found'}
+          </h2>
+          <p className="text-gray-600">
+            {orgError 
+              ? 'There was an error loading the organization. Please try again.'
+              : "The organization you're looking for doesn't exist."
+            }
+          </p>
+          {orgError && (
+            <p className="text-sm text-red-600 mt-2">
+              Error: {orgError.message}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -74,6 +95,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             stats={stats}
+            isLoading={statsLoading}
           />
 
           <div className="flex-1 flex flex-col overflow-hidden">

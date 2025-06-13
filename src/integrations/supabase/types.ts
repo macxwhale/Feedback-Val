@@ -48,6 +48,57 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log_enhanced: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          organization_id: string | null
+          resource_id: string | null
+          resource_type: string
+          session_id: string | null
+          severity: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          session_id?: string | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          session_id?: string | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -705,6 +756,45 @@ export type Database = {
           },
         ]
       }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_activity: string | null
+          organization_id: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          organization_id?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          organization_id?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       feedback_responses_with_context: {
@@ -764,9 +854,36 @@ export type Database = {
         Args: { org_id: string }
         Returns: Json
       }
+      get_organization_stats_enhanced: {
+        Args: { org_id: string }
+        Returns: Json
+      }
+      get_paginated_organization_users: {
+        Args: {
+          org_id: string
+          page_size?: number
+          page_offset?: number
+          search_term?: string
+          role_filter?: string
+        }
+        Returns: Json
+      }
       is_current_user_org_admin: {
         Args: { org_id: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_resource_type: string
+          p_resource_id?: string
+          p_organization_id?: string
+          p_old_values?: Json
+          p_new_values?: Json
+          p_severity?: string
+          p_metadata?: Json
+        }
+        Returns: string
       }
       safe_delete_question: {
         Args: { question_uuid: string }

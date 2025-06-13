@@ -1,129 +1,89 @@
 
 import React from 'react';
-import { 
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { 
-  BarChart3,
-  Users,
-  MessageSquare,
-  Settings,
-  Activity,
-  Building,
-  HelpCircle,
-  LogOut
-} from 'lucide-react';
+import { BarChart3, Users, MessageSquare, Settings, TrendingUp } from 'lucide-react';
+import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
 
 interface DashboardSidebarProps {
   organizationName: string;
   activeTab: string;
   onTabChange: (tab: string) => void;
-  stats?: {
-    active_members: number;
-    total_questions: number;
-    total_sessions: number;
-  };
+  stats?: any;
+  isLoading?: boolean;
 }
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   organizationName,
   activeTab,
   onTabChange,
-  stats
+  stats,
+  isLoading = false
 }) => {
-  const mainMenuItems = [
-    {
-      id: 'overview',
-      title: 'Overview',
+  const menuItems = [
+    { 
+      id: 'overview', 
+      label: 'Overview', 
       icon: BarChart3,
-      badge: null
+      badge: stats?.growth_metrics?.growth_rate && stats.growth_metrics.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined
     },
-    {
-      id: 'members',
-      title: 'Members',
+    { 
+      id: 'members', 
+      label: 'Members', 
       icon: Users,
       badge: stats?.active_members || 0
     },
-    {
-      id: 'feedback',
-      title: 'Feedback',
+    { 
+      id: 'feedback', 
+      label: 'Feedback', 
       icon: MessageSquare,
-      badge: stats?.total_sessions || 0
+      badge: stats?.total_responses || 0
     },
-    {
-      id: 'questions',
-      title: 'Questions',
+    { 
+      id: 'questions', 
+      label: 'Questions', 
       icon: MessageSquare,
       badge: stats?.total_questions || 0
-    }
-  ];
-
-  const settingsItems = [
-    {
-      id: 'settings',
-      title: 'Settings',
-      icon: Settings,
-      badge: null
-    }
-  ];
-
-  const bottomItems = [
-    {
-      id: 'help',
-      title: 'Help & Support',
-      icon: HelpCircle,
-      action: () => console.log('Help clicked')
     },
-    {
-      id: 'logout',
-      title: 'Sign Out',
-      icon: LogOut,
-      action: () => console.log('Logout clicked')
-    }
+    { 
+      id: 'settings', 
+      label: 'Settings', 
+      icon: Settings
+    },
   ];
 
   return (
-    <Sidebar>
+    <Sidebar className="border-r bg-white">
       <SidebarHeader className="border-b p-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Building className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-sm truncate">{organizationName}</h2>
-            <p className="text-xs text-muted-foreground">Dashboard</p>
-          </div>
-        </div>
+        <h2 className="font-semibold text-lg truncate" title={organizationName}>
+          {organizationName}
+        </h2>
       </SidebarHeader>
-
+      
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainMenuItems.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     onClick={() => onTabChange(item.id)}
                     isActive={activeTab === item.id}
-                    className="w-full"
+                    className="flex items-center justify-between w-full"
                   >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.title}</span>
-                    {item.badge !== null && (
-                      <Badge variant="secondary" className="ml-auto">
-                        {item.badge}
-                      </Badge>
+                    <div className="flex items-center">
+                      <item.icon className="mr-2 h-4 w-4" />
+                      <span>{item.label}</span>
+                    </div>
+                    {isLoading ? (
+                      <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
+                    ) : (
+                      item.badge && (
+                        <Badge variant="secondary" className="ml-2">
+                          {item.badge}
+                        </Badge>
+                      )
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -132,47 +92,42 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Administration</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onTabChange(item.id)}
-                    isActive={activeTab === item.id}
-                    className="w-full"
-                  >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.title}</span>
-                    {item.badge !== null && (
-                      <Badge variant="secondary" className="ml-auto">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Quick Stats */}
+        {stats && !isLoading && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Quick Stats</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className="px-3 py-2 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Completion Rate</span>
+                  <span className="font-medium">
+                    {stats.total_sessions > 0 
+                      ? Math.round((stats.completed_sessions / stats.total_sessions) * 100)
+                      : 0}%
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Avg Score</span>
+                  <span className="font-medium">
+                    {stats.avg_session_score || 0}/5
+                  </span>
+                </div>
+                {stats.growth_metrics?.growth_rate && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Growth</span>
+                    <span className={`font-medium flex items-center ${
+                      stats.growth_metrics.growth_rate > 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      {stats.growth_metrics.growth_rate}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
-
-      <SidebarFooter className="border-t p-4">
-        <SidebarMenu>
-          {bottomItems.map((item) => (
-            <SidebarMenuItem key={item.id}>
-              <SidebarMenuButton
-                onClick={item.action}
-                className="w-full text-muted-foreground hover:text-foreground"
-              >
-                <item.icon className="w-4 h-4" />
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 };
