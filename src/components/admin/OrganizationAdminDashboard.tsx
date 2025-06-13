@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,10 +12,11 @@ import {
 import { UserManagement } from './UserManagement';
 import { OrganizationSpecificStats } from './OrganizationSpecificStats';
 import { OrganizationHeader } from './OrganizationHeader';
-import { OrganizationOverviewStats } from './OrganizationOverviewStats';
-import { RecentActivityCard } from './RecentActivityCard';
 import { OrganizationSettingsTab } from './OrganizationSettingsTab';
 import { QuestionsManagement } from './QuestionsManagement';
+import { DashboardOverview } from './dashboard/DashboardOverview';
+import { RecentActivity } from './dashboard/RecentActivity';
+import { QuickActions } from './dashboard/QuickActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
 
@@ -39,42 +41,6 @@ export const OrganizationAdminDashboard: React.FC = () => {
     enabled: !!slug
   });
 
-  // Fetch organization statistics
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['organization-stats', organization?.id],
-    queryFn: async () => {
-      if (!organization?.id) return null;
-
-      // Get member count
-      const { data: membersData } = await supabase
-        .from('organization_users')
-        .select('id')
-        .eq('organization_id', organization.id)
-        .eq('status', 'active');
-
-      // Get feedback sessions count
-      const { data: sessionsData } = await supabase
-        .from('feedback_sessions')
-        .select('id')
-        .eq('organization_id', organization.id);
-
-      // Get recent feedback sessions
-      const { data: recentSessions } = await supabase
-        .from('feedback_sessions')
-        .select('*')
-        .eq('organization_id', organization.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      return {
-        memberCount: membersData?.length || 0,
-        sessionCount: sessionsData?.length || 0,
-        recentSessions: recentSessions || []
-      };
-    },
-    enabled: !!organization?.id
-  });
-
   if (orgLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,6 +63,13 @@ export const OrganizationAdminDashboard: React.FC = () => {
     );
   }
 
+  const handleQuickActions = {
+    onCreateQuestion: () => setActiveTab('questions'),
+    onInviteUser: () => setActiveTab('members'),
+    onExportData: () => setActiveTab('feedback'),
+    onViewSettings: () => setActiveTab('settings')
+  };
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'members', label: 'Members', icon: Users },
@@ -109,7 +82,6 @@ export const OrganizationAdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <OrganizationHeader organization={organization} />
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-5 w-full max-w-lg">
@@ -122,11 +94,11 @@ export const OrganizationAdminDashboard: React.FC = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <OrganizationOverviewStats stats={stats} statsLoading={statsLoading} />
-            <RecentActivityCard 
-              recentSessions={stats?.recentSessions} 
-              statsLoading={statsLoading} 
-            />
+            <DashboardOverview organizationId={organization.id} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RecentActivity organizationId={organization.id} />
+              <QuickActions {...handleQuickActions} />
+            </div>
           </TabsContent>
 
           <TabsContent value="members">

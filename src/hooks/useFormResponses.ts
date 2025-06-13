@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { FeedbackResponse } from '@/components/FeedbackForm';
-import { generateRandomScore, storeFeedbackResponses } from '@/services/questionsService';
+import { supabase } from '@/integrations/supabase/client';
 import { useOrganizationContext } from '@/context/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,8 +23,8 @@ export const useFormResponses = () => {
     return Object.entries(responses).map(([questionId, value]) => ({
       questionId,
       value,
-      score: generateRandomScore(),
-      category: 'QualityService' // This should be fetched from the question data
+      score: Math.floor(Math.random() * 5) + 1,
+      category: 'QualityService'
     }));
   };
 
@@ -35,16 +35,30 @@ export const useFormResponses = () => {
 
     setIsSubmitting(true);
     try {
-      console.log('Submitting responses to database:', responses);
-      const session = await storeFeedbackResponses(responses, organization.id, questions);
+      console.log('Submitting feedback via Edge Function...');
       
-      toast({
-        title: "Feedback submitted successfully!",
-        description: "Thank you for your valuable input",
+      // Call the Edge Function instead of direct database operations
+      const { data, error } = await supabase.functions.invoke('submit-feedback', {
+        body: {
+          responses,
+          organizationId: organization.id,
+          questions
+        }
       });
 
-      console.log('Feedback stored with session ID:', session.id);
-      return session;
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to submit feedback');
+      }
+
+      toast({
+        title: "Feedback submitted successfully!",
+        description: `${data.responseCount} responses recorded`,
+      });
+
+      console.log('Feedback submitted successfully:', data);
+      return { id: data.sessionId, total_score: data.totalScore };
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
