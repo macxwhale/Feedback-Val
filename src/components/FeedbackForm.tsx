@@ -1,25 +1,15 @@
+
 import React, { useEffect, useState } from 'react';
-import { FeedbackHeader } from './feedback/FeedbackHeader';
 import { WelcomeScreen } from './feedback/WelcomeScreen';
-import { EnhancedProgressBar } from './feedback/EnhancedProgressBar';
-import { EnhancedQuestionRenderer } from './feedback/EnhancedQuestionRenderer';
-import { NavigationButtons } from './feedback/NavigationButtons';
-import { KeyboardNavigation } from './feedback/KeyboardNavigation';
-import { ThankYouModal } from './ThankYouModal';
 import { EnhancedLoading } from './feedback/EnhancedLoading';
-import { SuccessAnimation } from './feedback/SuccessAnimation';
-import { ResponsiveContainer } from './feedback/ResponsiveContainer';
+import { FeedbackContainer } from './feedback/FeedbackContainer';
+import { FeedbackContent } from './feedback/FeedbackContent';
+import { FeedbackModals } from './feedback/FeedbackModals';
+import { FeedbackErrorBoundary } from './feedback/FeedbackErrorBoundary';
 import { useFeedbackForm } from '@/hooks/useFeedbackForm';
-import { ProgressInsights } from './feedback/ProgressInsights';
-import { SmartSuggestions } from './feedback/SmartSuggestions';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { PrivacyNotice } from './feedback/PrivacyNotice';
-import { DataUsageInfo } from './feedback/DataUsageInfo';
-import { SaveContinueOptions } from './feedback/SaveContinueOptions';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
 import { useSaveContinue } from '@/hooks/useSaveContinue';
-import { useMobileDetection } from '@/hooks/useMobileDetection';
-import { OrganizationHeader } from './feedback/OrganizationHeader';
 import { useOrganizationContext } from '@/context/OrganizationContext';
 
 export interface QuestionConfig {
@@ -46,7 +36,6 @@ export interface FeedbackResponse {
 
 const FeedbackForm = () => {
   const [showWelcome, setShowWelcome] = useState(true);
-  const { isMobile } = useMobileDetection();
   const { organization, isLoading: orgLoading, error: orgError } = useOrganizationContext();
   
   const {
@@ -69,8 +58,7 @@ const FeedbackForm = () => {
     trackQuestionStart,
     trackQuestionResponse,
     getAverageResponseTime,
-    getEstimatedTimeRemaining,
-    engagementScore
+    getEstimatedTimeRemaining
   } = useAnalytics(responses, questions.length, finalResponses);
 
   const { hasConsented, showPrivacyNotice, acceptPrivacy } = usePrivacyConsent();
@@ -100,30 +88,16 @@ const FeedbackForm = () => {
     setShowWelcome(true);
   };
 
-  // Show loading while organization is loading
-  if (orgLoading) {
-    return <EnhancedLoading />;
-  }
-
-  // Show error if organization failed to load
-  if (orgError || !organization) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-orange-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Organization Not Found</h2>
-          <p className="text-gray-600 mb-4">
-            {orgError || 'The requested organization could not be found or is not active.'}
-          </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Error boundary check
+  const errorBoundary = (
+    <FeedbackErrorBoundary 
+      orgLoading={orgLoading}
+      orgError={orgError}
+      organization={organization}
+    />
+  );
+  
+  if (errorBoundary) return errorBoundary;
 
   if (isLoading) {
     return <EnhancedLoading />;
@@ -133,102 +107,35 @@ const FeedbackForm = () => {
     return <WelcomeScreen onStart={handleStart} />;
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-orange-50 ${isMobile ? 'pb-24' : ''}`}>
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl" />
-      </div>
-      
-      <ResponsiveContainer>
-        <OrganizationHeader />
-        <FeedbackHeader />
-        
-        <div className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 ${isMobile ? 'p-4' : 'p-8'}`}>
-          <PrivacyNotice
-            isVisible={showPrivacyNotice}
-            onAccept={acceptPrivacy}
-          />
-
-          {hasConsented && (
-            <>
-              <EnhancedProgressBar 
-                currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={questions.length}
-                completedQuestions={completedQuestions}
-              />
-
-              {!isMobile && (
-                <>
-                  <SaveContinueOptions
-                    onSave={saveProgress}
-                    onPause={pauseAndExit}
-                    hasUnsavedChanges={hasUnsavedChanges}
-                  />
-
-                  <ProgressInsights
-                    currentIndex={currentQuestionIndex}
-                    totalQuestions={questions.length}
-                    completedQuestions={completedQuestions}
-                    estimatedTimeRemaining={getEstimatedTimeRemaining(currentQuestionIndex)}
-                    averageResponseTime={getAverageResponseTime()}
-                  />
-                </>
-              )}
-
-              <EnhancedQuestionRenderer
-                question={currentQuestion}
-                value={responses[currentQuestion?.id]}
-                onChange={(value) => handleQuestionResponse(currentQuestion.id, value)}
-                validation={getValidationResult(currentQuestion?.id)}
-              />
-
-              {!isMobile && (
-                <SmartSuggestions
-                  currentQuestion={currentQuestion}
-                  responses={responses}
-                  onSuggestionClick={(value) => handleQuestionResponse(currentQuestion.id, value)}
-                />
-              )}
-
-              <NavigationButtons
-                currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={questions.length}
-                canGoNext={isCurrentQuestionAnswered()}
-                onPrevious={goToPrevious}
-                onNext={goToNext}
-              />
-
-              {!isMobile && <DataUsageInfo />}
-            </>
-          )}
-        </div>
-      </ResponsiveContainer>
-
-      {hasConsented && !isMobile && (
-        <KeyboardNavigation
-          onNext={goToNext}
-          onPrevious={goToPrevious}
-          canGoNext={isCurrentQuestionAnswered()}
-          isFirstQuestion={currentQuestionIndex === 0}
-        />
-      )}
-
-      <SuccessAnimation 
-        show={isComplete && !finalResponses.length}
-        message="Feedback Submitted!"
-      />
-
-      <ThankYouModal
-        isOpen={isComplete}
-        responses={finalResponses}
+    <FeedbackContainer>
+      <FeedbackContent
         questions={questions}
-        onClose={handleReset}
+        currentQuestionIndex={currentQuestionIndex}
+        responses={responses}
+        completedQuestions={completedQuestions}
+        hasConsented={hasConsented}
+        canGoNext={isCurrentQuestionAnswered()}
+        estimatedTimeRemaining={getEstimatedTimeRemaining(currentQuestionIndex)}
+        averageResponseTime={getAverageResponseTime()}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onQuestionResponse={handleQuestionResponse}
+        onNext={goToNext}
+        onPrevious={goToPrevious}
+        onSaveProgress={saveProgress}
+        onPauseAndExit={pauseAndExit}
+        getValidationResult={getValidationResult}
       />
-    </div>
+
+      <FeedbackModals
+        showPrivacyNotice={showPrivacyNotice}
+        isComplete={isComplete}
+        finalResponses={finalResponses}
+        questions={questions}
+        onAcceptPrivacy={acceptPrivacy}
+        onReset={handleReset}
+      />
+    </FeedbackContainer>
   );
 };
 
