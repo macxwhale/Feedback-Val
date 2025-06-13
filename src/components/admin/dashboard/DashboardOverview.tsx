@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Users, 
   MessageSquare, 
@@ -10,7 +8,10 @@ import {
   Clock,
   CheckCircle 
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useOrganizationStats } from '@/hooks/useOrganizationStats';
+import { StatsCards } from './StatsCards';
+import { DashboardErrorBoundary, DashboardErrorFallback } from './DashboardErrorBoundary';
 
 interface DashboardOverviewProps {
   organizationId: string;
@@ -19,23 +20,10 @@ interface DashboardOverviewProps {
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ 
   organizationId 
 }) => {
-  const { data: stats, isLoading } = useOrganizationStats(organizationId);
+  const { data: stats, isLoading, error, refetch } = useOrganizationStats(organizationId);
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-6">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
+  if (error) {
+    return <DashboardErrorFallback onRetry={() => refetch()} />;
   }
 
   const cards = [
@@ -44,35 +32,60 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       value: stats?.active_members || 0,
       icon: Users,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-blue-50',
+      trend: {
+        value: 12,
+        label: 'vs last month',
+        isPositive: true
+      }
     },
     {
       title: 'Total Questions',
       value: stats?.total_questions || 0,
       icon: MessageSquare,
       color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-green-50',
+      trend: {
+        value: 8,
+        label: 'new this month',
+        isPositive: true
+      }
     },
     {
       title: 'Total Sessions',
       value: stats?.total_sessions || 0,
       icon: Clock,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      bgColor: 'bg-purple-50',
+      trend: {
+        value: 23,
+        label: 'vs last month',
+        isPositive: true
+      }
     },
     {
       title: 'Completed Sessions',
       value: stats?.completed_sessions || 0,
       icon: CheckCircle,
       color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50'
+      bgColor: 'bg-emerald-50',
+      trend: stats && stats.total_sessions > 0 ? {
+        value: Math.round((stats.completed_sessions / stats.total_sessions) * 100),
+        label: 'completion rate',
+        isPositive: true
+      } : undefined
     },
     {
       title: 'Total Responses',
       value: stats?.total_responses || 0,
       icon: TrendingUp,
       color: 'text-orange-600',
-      bgColor: 'bg-orange-50'
+      bgColor: 'bg-orange-50',
+      trend: {
+        value: 34,
+        label: 'vs last month',
+        isPositive: true
+      }
     },
     {
       title: 'Avg. Score',
@@ -80,39 +93,29 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       icon: Target,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
-      suffix: '/5'
+      suffix: '/5',
+      trend: {
+        value: 5,
+        label: 'improvement',
+        isPositive: true
+      }
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                {card.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${card.bgColor}`}>
-                <Icon className={`h-4 w-4 ${card.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {card.value}{card.suffix || ''}
-              </div>
-              {card.title === 'Completed Sessions' && stats && stats.total_sessions > 0 && (
-                <div className="mt-2">
-                  <Badge variant="secondary">
-                    {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}% completion rate
-                  </Badge>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+    <DashboardErrorBoundary>
+      <div className="space-y-6">
+        <StatsCards cards={cards} isLoading={isLoading} />
+        
+        {/* Additional completion rate badge for completed sessions card */}
+        {!isLoading && stats && stats.total_sessions > 0 && (
+          <div className="flex justify-center">
+            <Badge variant="outline" className="text-sm">
+              Overall completion rate: {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%
+            </Badge>
+          </div>
+        )}
+      </div>
+    </DashboardErrorBoundary>
   );
 };

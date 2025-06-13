@@ -17,6 +17,8 @@ import { QuestionsManagement } from './QuestionsManagement';
 import { DashboardOverview } from './dashboard/DashboardOverview';
 import { RecentActivity } from './dashboard/RecentActivity';
 import { QuickActions } from './dashboard/QuickActions';
+import { DashboardBreadcrumb } from './dashboard/DashboardBreadcrumb';
+import { DashboardErrorBoundary } from './dashboard/DashboardErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
 
@@ -78,49 +80,70 @@ export const OrganizationAdminDashboard: React.FC = () => {
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
+  const getTabLabel = (tabId: string) => {
+    const tabMap: Record<string, string> = {
+      overview: 'Overview',
+      members: 'Members',
+      feedback: 'Feedback Analytics',
+      questions: 'Questions Management',
+      settings: 'Settings'
+    };
+    return tabMap[tabId] || 'Dashboard';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <OrganizationHeader organization={organization} />
+    <DashboardErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <OrganizationHeader organization={organization} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full max-w-lg">
-            {tabs.map(({ id, label, icon: Icon }) => (
-              <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <DashboardOverview organizationId={organization.id} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RecentActivity organizationId={organization.id} />
-              <QuickActions {...handleQuickActions} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="members">
-            <UserManagement 
-              organizationId={organization.id}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb Navigation */}
+          <div className="mb-6">
+            <DashboardBreadcrumb 
               organizationName={organization.name}
+              currentPage={getTabLabel(activeTab)}
             />
-          </TabsContent>
+          </div>
 
-          <TabsContent value="feedback">
-            <OrganizationSpecificStats organizationId={organization.id} />
-          </TabsContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid grid-cols-5 w-full max-w-lg">
+              {tabs.map(({ id, label, icon: Icon }) => (
+                <TabsTrigger key={id} value={id} className="flex items-center space-x-2">
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          <TabsContent value="questions">
-            <QuestionsManagement />
-          </TabsContent>
+            <TabsContent value="overview" className="space-y-6">
+              <DashboardOverview organizationId={organization.id} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RecentActivity organizationId={organization.id} />
+                <QuickActions {...handleQuickActions} />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="settings">
-            <OrganizationSettingsTab organization={organization} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="members">
+              <UserManagement 
+                organizationId={organization.id}
+                organizationName={organization.name}
+              />
+            </TabsContent>
+
+            <TabsContent value="feedback">
+              <OrganizationSpecificStats organizationId={organization.id} />
+            </TabsContent>
+
+            <TabsContent value="questions">
+              <QuestionsManagement />
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <OrganizationSettingsTab organization={organization} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+    </DashboardErrorBoundary>
   );
 };
