@@ -52,29 +52,58 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('organization_users')
-        .select('*')
+        .select(`
+          id,
+          user_id,
+          email,
+          role,
+          status,
+          created_at,
+          accepted_at,
+          invited_by_user_id
+        `)
         .eq('organization_id', organizationId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Member[];
+      
+      // Transform the data to match our Member interface
+      return (data || []).map(item => ({
+        ...item,
+        invited_by: null // We'll handle this separately if needed
+      })) as Member[];
     }
   });
 
-  // Fetch pending invitations using RPC to bypass type issues
+  // Fetch pending invitations
   const { data: invitations, isLoading: invitationsLoading } = useQuery({
     queryKey: ['organization-invitations', organizationId],
     queryFn: async () => {
-      // Use a direct query with proper casting
       const { data, error } = await supabase
-        .rpc('get_organization_invitations', { org_id: organizationId });
+        .from('user_invitations')
+        .select(`
+          id,
+          email,
+          role,
+          status,
+          created_at,
+          expires_at,
+          invited_by_user_id
+        `)
+        .eq('organization_id', organizationId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
       if (error) {
-        // Fallback to a simpler approach if RPC doesn't exist
-        console.log('RPC not available, using direct query');
+        console.log('Error fetching invitations:', error);
         return [];
       }
-      return data as Invitation[];
+      
+      // Transform the data to match our Invitation interface
+      return (data || []).map(item => ({
+        ...item,
+        invited_by: null // We'll handle this separately if needed
+      })) as Invitation[];
     }
   });
 
@@ -83,31 +112,20 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
       const { data: userData } = await supabase.auth.getUser();
       
+      // Insert directly into user_invitations table
       const { data, error } = await supabase
-        .rpc('create_user_invitation', {
-          org_id: organizationId,
-          invite_email: email,
-          invite_role: role,
-          inviter_id: userData.user?.id
-        });
+        .from('user_invitations')
+        .insert({
+          organization_id: organizationId,
+          email,
+          role,
+          invited_by_user_id: userData.user?.id || '',
+          status: 'pending'
+        })
+        .select()
+        .single();
 
-      if (error) {
-        // Fallback to direct insert if RPC doesn't exist
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('organization_users')
-          .insert({
-            organization_id: organizationId,
-            email,
-            role,
-            user_id: userData.user?.id || '',
-            status: 'invited'
-          })
-          .select()
-          .single();
-
-        if (fallbackError) throw fallbackError;
-        return fallbackData;
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
@@ -182,12 +200,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     }
   });
 
-  // Cancel invitation mutation (simplified for now)
+  // Cancel invitation mutation
   const cancelInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      // For now, we'll update the status in organization_users table
       const { error } = await supabase
-        .from('organization_users')
+        .from('user_invitations')
         .update({ status: 'cancelled' })
         .eq('id', invitationId);
 
@@ -195,7 +212,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-invitations'] });
-      queryClient.invalidateQueries({ queryKey: ['organization-members'] });
       toast({
         title: "Invitation cancelled",
         description: "The invitation has been cancelled.",
@@ -226,9 +242,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     cancelInvitationMutation.mutate(invitationId);
   };
 
-  // Filter members and invitations from the same data source for now
+  // Filter members and invitations
   const activeMembers = members?.filter(m => m.status === 'active') || [];
-  const pendingInvitations = members?.filter(m => m.status === 'invited') || [];
+  const pendingInvitations = invitations || [];
 
   const tabs = [
     { id: 'members', label: 'Members', icon: Users, count: activeMembers.length },
@@ -322,15 +338,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
 
       {activeTab === 'invitations' && (
         <PendingInvitations
-          invitations={pendingInvitations.map(inv => ({
-            id: inv.id,
-            email: inv.email,
-            role: inv.role,
-            status: inv.status,
-            created_at: inv.created_at,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-            invited_by: inv.invited_by
-          }))}
+          invitations={pendingInvitations}
           loading={invitationsLoading}
           onCancelInvitation={handleCancelInvitation}
         />
