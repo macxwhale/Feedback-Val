@@ -1,161 +1,149 @@
 
 import React, { useState } from 'react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, Check, X, AlertCircle, Info, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  Bell, 
+  AlertCircle, 
+  CheckCircle, 
+  Info,
+  X
+} from 'lucide-react';
 
 interface Notification {
   id: string;
   type: 'info' | 'warning' | 'success' | 'error';
   title: string;
   message: string;
-  timestamp: Date;
-  read: boolean;
+  timestamp: string;
+  isRead: boolean;
 }
 
-export const NotificationCenter: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'info',
-      title: 'New Feedback Received',
-      message: 'You have 3 new feedback responses from today',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      read: false
-    },
-    {
-      id: '2',
-      type: 'success',
-      title: 'Export Complete',
-      message: 'Your CSV export has been generated successfully',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60),
-      read: false
-    },
-    {
-      id: '3',
-      type: 'warning',
-      title: 'Low Response Rate',
-      message: 'Your response rate has dropped below 50% this week',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      read: true
-    }
-  ]);
+interface NotificationCenterProps {
+  notifications?: Notification[];
+}
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({
+  notifications = []
+}) => {
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>(
+    notifications.length > 0 ? notifications : [
+      {
+        id: '1',
+        type: 'info',
+        title: 'New Feedback Session',
+        message: '5 new feedback sessions completed today',
+        timestamp: '2 minutes ago',
+        isRead: false
+      },
+      {
+        id: '2',
+        type: 'success',
+        title: 'User Invitation Accepted',
+        message: 'john.doe@example.com has joined your organization',
+        timestamp: '1 hour ago',
+        isRead: false
+      },
+      {
+        id: '3',
+        type: 'warning',
+        title: 'Low Response Rate',
+        message: 'Response rate has dropped below 80% this week',
+        timestamp: '3 hours ago',
+        isRead: true
+      }
+    ]
+  );
+
+  const unreadCount = localNotifications.filter(n => !n.isRead).length;
+
+  const getIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'info': return Info;
+      case 'warning': return AlertCircle;
+      case 'success': return CheckCircle;
+      case 'error': return AlertCircle;
+      default: return Info;
+    }
+  };
+
+  const getVariant = (type: Notification['type']) => {
+    switch (type) {
+      case 'info': return 'secondary';
+      case 'warning': return 'destructive';
+      case 'success': return 'default';
+      case 'error': return 'destructive';
+      default: return 'secondary';
+    }
+  };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    setLocalNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
     );
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
   const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const getNotificationIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'info':
-        return <Info className="w-4 h-4 text-blue-500" />;
-      case 'warning':
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case 'success':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
-    }
-  };
-
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    
-    if (minutes < 60) {
-      return `${minutes}m ago`;
-    } else if (hours < 24) {
-      return `${hours}h ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
+    setLocalNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Notifications</h3>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Bell className="w-5 h-5" />
+            <span>Notifications</span>
             {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                <Check className="w-4 h-4 mr-1" />
-                Mark all read
-              </Button>
+              <Badge variant="destructive" className="text-xs">
+                {unreadCount}
+              </Badge>
             )}
           </div>
-        </div>
-        <ScrollArea className="h-96">
-          {notifications.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground">
-              No notifications
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {localNotifications.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>No notifications</p>
             </div>
           ) : (
-            <div className="p-0">
-              {notifications.map((notification) => (
+            localNotifications.map((notification) => {
+              const Icon = getIcon(notification.type);
+              return (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b hover:bg-muted/50 transition-colors ${
-                    !notification.read ? 'bg-blue-50/50' : ''
+                  className={`p-3 border rounded-lg transition-opacity ${
+                    notification.isRead ? 'opacity-60' : ''
                   }`}
                 >
-                  <div className="flex items-start justify-between space-x-2">
-                    <div className="flex items-start space-x-3 flex-1">
-                      {getNotificationIcon(notification.type)}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {notification.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {formatTime(notification.timestamp)}
-                        </p>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <Icon className={`w-5 h-5 mt-0.5 ${
+                        notification.type === 'warning' || notification.type === 'error' 
+                          ? 'text-red-600' 
+                          : notification.type === 'success'
+                          ? 'text-green-600'
+                          : 'text-blue-600'
+                      }`} />
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{notification.title}</p>
+                        <p className="text-sm text-gray-600">{notification.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">{notification.timestamp}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-1">
-                      {!notification.read && (
+                      {!notification.isRead && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => markAsRead(notification.id)}
                           className="h-6 w-6 p-0"
                         >
-                          <Check className="w-3 h-3" />
+                          <CheckCircle className="w-4 h-4" />
                         </Button>
                       )}
                       <Button
@@ -164,16 +152,16 @@ export const NotificationCenter: React.FC = () => {
                         onClick={() => removeNotification(notification.id)}
                         className="h-6 w-6 p-0"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })
           )}
-        </ScrollArea>
-      </PopoverContent>
-    </Popover>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
