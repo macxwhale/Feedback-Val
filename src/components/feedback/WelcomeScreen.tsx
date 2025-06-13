@@ -1,157 +1,88 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Shield, Clock, Users, Heart } from 'lucide-react';
-import { useOrganizationConfig } from '@/hooks/useOrganizationConfig';
+import { Clock, Users, Shield, Star } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onStart: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
-  const { 
-    organization, 
-    logoAsset, 
-    colors, 
-    welcomeTitle, 
-    welcomeDescription,
-    flowConfig 
-  } = useOrganizationConfig();
-
-  if (!organization) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-orange-50 flex items-center justify-center p-4">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{ backgroundColor: colors.primary }}
-        />
-        <div 
-          className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{ backgroundColor: colors.accent }}
-        />
-      </div>
-
-      <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 max-w-2xl w-full text-center">
-        {/* Logo */}
-        <div className="mb-8">
-          <div className="relative inline-block">
-            <img 
-              src={logoAsset?.asset_url || organization.logo_url || "/placeholder.svg"} 
-              alt={logoAsset?.asset_name || `${organization.name} Logo`}
-              className="h-20 mx-auto mb-6 drop-shadow-lg transform transition-transform duration-300 hover:scale-105"
-            />
-            <div 
-              className="absolute -inset-4 rounded-full blur-xl opacity-20"
-              style={{ 
-                background: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})` 
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Welcome Content */}
-        <div className="space-y-6 mb-8">
-          <h1 
-            className="text-4xl md:text-5xl font-bold bg-gradient-to-r bg-clip-text text-transparent"
-            style={{ 
-              backgroundImage: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})` 
-            }}
-          >
-            {welcomeTitle}
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-orange-600 flex items-center justify-center p-4">
+      <Card className="max-w-2xl w-full shadow-2xl border-0 overflow-hidden">
+        <div className="bg-gradient-to-r from-[#073763] to-[#f97316] p-8 text-white text-center">
+          <img 
+            src="/lovable-uploads/367347fe-02da-4338-b8ba-91138293d303.png" 
+            alt="Police Sacco Logo" 
+            className="h-20 mx-auto mb-6 drop-shadow-lg"
+          />
+          <h1 className="text-4xl font-bold mb-3">
+            Share Your Experience
           </h1>
-          
-          <p className="text-xl text-gray-700 leading-relaxed max-w-lg mx-auto">
-            {welcomeDescription}
+          <p className="text-xl text-blue-100">
+            Help us serve you better with your valuable feedback
           </p>
-
-          {/* Features */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-            <div className="flex flex-col items-center space-y-2">
-              <div 
-                className="p-3 rounded-full"
-                style={{ backgroundColor: `${colors.primary}15` }}
-              >
-                <Clock 
-                  className="w-6 h-6"
-                  style={{ color: colors.primary }}
-                />
+        </div>
+        
+        <CardContent className="p-8">
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Clock className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">Quick & Easy</span>
+              <div>
+                <h3 className="font-semibold text-gray-800">Quick & Easy</h3>
+                <p className="text-gray-600 text-sm">Takes only 3-5 minutes</p>
+              </div>
             </div>
             
-            <div className="flex flex-col items-center space-y-2">
-              <div 
-                className="p-3 rounded-full"
-                style={{ backgroundColor: `${colors.primary}15` }}
-              >
-                <Shield 
-                  className="w-6 h-6"
-                  style={{ color: colors.primary }}
-                />
+            <div className="flex items-center space-x-3">
+              <div className="bg-green-100 p-3 rounded-full">
+                <Shield className="h-6 w-6 text-green-600" />
               </div>
-              <span className="text-sm text-gray-600">Confidential</span>
+              <div>
+                <h3 className="font-semibold text-gray-800">Confidential</h3>
+                <p className="text-gray-600 text-sm">Your privacy is protected</p>
+              </div>
             </div>
             
-            <div className="flex flex-col items-center space-y-2">
-              <div 
-                className="p-3 rounded-full"
-                style={{ backgroundColor: `${colors.primary}15` }}
-              >
-                <Users 
-                  className="w-6 h-6"
-                  style={{ color: colors.primary }}
-                />
+            <div className="flex items-center space-x-3">
+              <div className="bg-orange-100 p-3 rounded-full">
+                <Users className="h-6 w-6 text-orange-600" />
               </div>
-              <span className="text-sm text-gray-600">Your Voice Matters</span>
+              <div>
+                <h3 className="font-semibold text-gray-800">Your Voice Matters</h3>
+                <p className="text-gray-600 text-sm">Every response helps improve our services</p>
+              </div>
             </div>
-
-            <div className="flex flex-col items-center space-y-2">
-              <div 
-                className="p-3 rounded-full"
-                style={{ backgroundColor: `${colors.accent}15` }}
-              >
-                <Heart 
-                  className="w-6 h-6"
-                  style={{ color: colors.accent }}
-                />
+            
+            <div className="flex items-center space-x-3">
+              <div className="bg-purple-100 p-3 rounded-full">
+                <Star className="h-6 w-6 text-purple-600" />
               </div>
-              <span className="text-sm text-gray-600">Make a Difference</span>
+              <div>
+                <h3 className="font-semibold text-gray-800">Make a Difference</h3>
+                <p className="text-gray-600 text-sm">Shape the future of our services</p>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Start Button */}
-        <Button
-          onClick={onStart}
-          size="lg"
-          className="text-white font-semibold px-8 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-          style={{ 
-            backgroundColor: colors.accent,
-            background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`
-          }}
-        >
-          Start Feedback
-          <ArrowRight className="ml-2 w-5 h-5" />
-        </Button>
-
-        {/* Privacy Notice */}
-        <p className="text-xs text-gray-500 mt-6 leading-relaxed">
-          Your responses are confidential and will be used solely to improve our services. 
-          This survey takes approximately 3-5 minutes to complete.
-        </p>
-      </div>
+          
+          <div className="text-center">
+            <Button
+              onClick={onStart}
+              size="lg"
+              className="bg-gradient-to-r from-[#073763] to-[#f97316] hover:from-[#062c52] hover:to-[#e8640f] text-white px-12 py-4 text-lg font-semibold transform transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              Start Feedback Survey
+            </Button>
+            <p className="text-gray-500 text-sm mt-4">
+              Your responses are anonymous and help us improve our services
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
