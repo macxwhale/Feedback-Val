@@ -14,23 +14,36 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAdmin = false,
   requireOrgAdmin = false 
 }) => {
-  const { user, isAdmin, isOrgAdmin, loading } = useAuth();
+  try {
+    const { user, isAdmin, isOrgAdmin, loading } = useAuth();
 
-  if (loading) {
-    return <div className="p-8">Loading...</div>;
-  }
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      );
+    }
 
-  if (!user) {
+    if (!user) {
+      return <Navigate to="/auth" replace />;
+    }
+
+    if (requireAdmin && !isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+
+    if (requireOrgAdmin && !isOrgAdmin && !isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+
+    return <>{children}</>;
+  } catch (error) {
+    // If useAuth fails (context not available), redirect to auth
+    console.error('Auth context not available:', error);
     return <Navigate to="/auth" replace />;
   }
-
-  if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  if (requireOrgAdmin && !isOrgAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
 };
