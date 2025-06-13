@@ -20,7 +20,9 @@ export const QuestionsManagement: React.FC = () => {
     question_text: '', 
     question_type: 'star', 
     category: 'QualityService' as QuestionCategory, 
-    order_index: 1 
+    order_index: 1,
+    category_id: '00000000-0000-0000-0000-000000000001', // Default UUID for category
+    type_id: '00000000-0000-0000-0000-000000000001' // Default UUID for type
   });
 
   const { data: questions = [] } = useQuery({
@@ -68,7 +70,14 @@ export const QuestionsManagement: React.FC = () => {
 
   const resetForm = () => { 
     setEditingId(null); 
-    setFormData({ question_text: '', question_type: 'star', category: 'QualityService' as QuestionCategory, order_index: 1 }); 
+    setFormData({ 
+      question_text: '', 
+      question_type: 'star', 
+      category: 'QualityService' as QuestionCategory, 
+      order_index: 1,
+      category_id: '00000000-0000-0000-0000-000000000001',
+      type_id: '00000000-0000-0000-0000-000000000001'
+    }); 
   };
   
   const handleSubmit = () => {
@@ -142,7 +151,9 @@ export const QuestionsManagement: React.FC = () => {
                       question_text: q.question_text, 
                       question_type: q.question_type, 
                       category: q.category, 
-                      order_index: q.order_index 
+                      order_index: q.order_index,
+                      category_id: q.category_id,
+                      type_id: q.type_id
                     }); 
                   }}
                 >
