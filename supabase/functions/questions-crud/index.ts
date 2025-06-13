@@ -13,6 +13,24 @@ interface ValidationError {
   message: string;
 }
 
+interface QuestionData {
+  question_text: string;
+  question_type: string;
+  category: string;
+  order_index: number;
+  help_text?: string;
+  placeholder_text?: string;
+  is_required?: boolean;
+  options?: { text: string; value?: string }[];
+  scaleConfig?: {
+    minValue: number;
+    maxValue: number;
+    minLabel?: string;
+    maxLabel?: string;
+    stepSize?: number;
+  };
+}
+
 function validateQuestionData(data: any): ValidationError[] {
   const errors: ValidationError[] = [];
   
@@ -31,8 +49,121 @@ function validateQuestionData(data: any): ValidationError[] {
   if (data.order_index === undefined || data.order_index === null || typeof data.order_index !== 'number' || data.order_index <= 0) {
     errors.push({ field: 'order_index', message: 'Order index is required and must be a positive number' });
   }
+
+  // Validate type-specific requirements
+  if (data.question_type === 'multiple_choice' || data.question_type === 'checkbox') {
+    if (!data.options || !Array.isArray(data.options) || data.options.length === 0) {
+      errors.push({ field: 'options', message: `${data.question_type} questions require at least one option` });
+    } else {
+      data.options.forEach((option: any, index: number) => {
+        if (!option.text || typeof option.text !== 'string' || option.text.trim().length === 0) {
+          errors.push({ field: `options[${index}].text`, message: 'Option text is required' });
+        }
+      });
+    }
+  }
+
+  if (data.question_type === 'scale' || data.question_type === 'star' || data.question_type === 'likert') {
+    if (data.scaleConfig) {
+      const { minValue, maxValue, stepSize } = data.scaleConfig;
+      if (typeof minValue !== 'number' || typeof maxValue !== 'number') {
+        errors.push({ field: 'scaleConfig', message: 'Scale min and max values must be numbers' });
+      } else if (minValue >= maxValue) {
+        errors.push({ field: 'scaleConfig', message: 'Scale max value must be greater than min value' });
+      }
+      if (stepSize !== undefined && (typeof stepSize !== 'number' || stepSize <= 0)) {
+        errors.push({ field: 'scaleConfig.stepSize', message: 'Step size must be a positive number' });
+      }
+    }
+  }
   
   return errors;
+}
+
+async function createQuestionOptions(supabase: any, questionId: string, options: { text: string; value?: string }[]) {
+  const optionsData = options.map((option, index) => ({
+    question_id: questionId,
+    option_text: option.text,
+    option_value: option.value || option.text,
+    display_order: index + 1
+  }));
+
+  const { error } = await supabase
+    .from('question_options')
+    .insert(optionsData);
+  
+  if (error) {
+    console.error('Error creating question options:', error);
+    throw error;
+  }
+}
+
+async function createQuestionScale(supabase: any, questionId: string, scaleConfig: any) {
+  const scaleData = {
+    question_id: questionId,
+    min_value: scaleConfig.minValue,
+    max_value: scaleConfig.maxValue,
+    min_label: scaleConfig.minLabel,
+    max_label: scaleConfig.maxLabel,
+    step_size: scaleConfig.stepSize || 1
+  };
+
+  const { error } = await supabase
+    .from('question_scale_config')
+    .insert(scaleData);
+  
+  if (error) {
+    console.error('Error creating question scale config:', error);
+    throw error;
+  }
+}
+
+async function updateQuestionOptions(supabase: any, questionId: string, options: { text: string; value?: string }[]) {
+  // Delete existing options
+  await supabase
+    .from('question_options')
+    .delete()
+    .eq('question_id', questionId);
+  
+  // Create new options if provided
+  if (options && options.length > 0) {
+    await createQuestionOptions(supabase, questionId, options);
+  }
+}
+
+async function updateQuestionScale(supabase: any, questionId: string, scaleConfig: any) {
+  if (!scaleConfig) return;
+
+  // Check if scale config exists
+  const { data: existingConfig } = await supabase
+    .from('question_scale_config')
+    .select('id')
+    .eq('question_id', questionId)
+    .single();
+
+  const scaleData = {
+    min_value: scaleConfig.minValue,
+    max_value: scaleConfig.maxValue,
+    min_label: scaleConfig.minLabel,
+    max_label: scaleConfig.maxLabel,
+    step_size: scaleConfig.stepSize || 1
+  };
+
+  if (existingConfig) {
+    // Update existing config
+    const { error } = await supabase
+      .from('question_scale_config')
+      .update(scaleData)
+      .eq('question_id', questionId);
+    
+    if (error) {
+      console.error('Error updating question scale config:', error);
+      throw error;
+    }
+  } else {
+    // Create new config
+    await createQuestionScale(supabase, questionId, scaleConfig);
+  }
 }
 
 function createErrorResponse(message: string, status: number = 400, details?: any) {
@@ -120,7 +251,7 @@ serve(async (req) => {
       }
 
       case 'POST': {
-        const body = await req.json();
+        const body: QuestionData = await req.json();
         
         // Validate input data
         const validationErrors = validateQuestionData(body);
@@ -130,39 +261,67 @@ serve(async (req) => {
         
         // Inject organization_id server-side into all DB writes
         const questionData = { 
-          ...body, 
+          question_text: body.question_text,
+          question_type: body.question_type,
+          category: body.category,
+          order_index: body.order_index,
+          help_text: body.help_text,
+          placeholder_text: body.placeholder_text,
+          is_required: body.is_required || false,
           organization_id: organizationId
         };
         
         console.log('Creating question with data:', questionData);
         
-        const { data, error } = await supabase
+        // Create the base question
+        const { data: question, error: questionError } = await supabase
           .from('questions')
           .insert(questionData)
           .select()
           .single();
         
-        if (error) {
-          console.error('Database error creating question:', error);
-          return createErrorResponse('Failed to create question', 500, { dbError: error.message });
+        if (questionError) {
+          console.error('Database error creating question:', questionError);
+          return createErrorResponse('Failed to create question', 500, { dbError: questionError.message });
         }
 
-        console.log('Successfully created question:', data.id);
-        return new Response(JSON.stringify(data), {
+        console.log('Successfully created question:', question.id);
+
+        // Handle type-specific data
+        try {
+          // Create options for multiple choice or checkbox questions
+          if ((body.question_type === 'multiple_choice' || body.question_type === 'checkbox') && body.options) {
+            await createQuestionOptions(supabase, question.id, body.options);
+            console.log('Created question options for question:', question.id);
+          }
+
+          // Create scale config for scale, star, or likert questions
+          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert') && body.scaleConfig) {
+            await createQuestionScale(supabase, question.id, body.scaleConfig);
+            console.log('Created scale config for question:', question.id);
+          }
+        } catch (relatedError) {
+          // If related data creation fails, we should clean up the question
+          console.error('Error creating related data, cleaning up question:', relatedError);
+          await supabase.from('questions').delete().eq('id', question.id);
+          return createErrorResponse('Failed to create question with related data', 500, { dbError: relatedError.message });
+        }
+
+        return new Response(JSON.stringify(question), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
       case 'PUT': {
-        const body = await req.json();
-        const { id, ...updates } = body;
+        const body: QuestionData & { id: string } = await req.json();
+        const { id, options, scaleConfig, ...updates } = body;
         
         if (!id) {
           return createErrorResponse('Question ID is required for updates', 400);
         }
         
         // Validate input data
-        const validationErrors = validateQuestionData(updates);
+        const validationErrors = validateQuestionData(body);
         if (validationErrors.length > 0) {
           return createErrorResponse('Validation failed', 400, { validationErrors });
         }
@@ -186,7 +345,8 @@ serve(async (req) => {
         
         console.log('Updating question:', { id, updates, organizationId });
         
-        const { data, error } = await supabase
+        // Update the base question
+        const { data: question, error: updateError } = await supabase
           .from('questions')
           .update(updates)
           .eq('id', id)
@@ -194,13 +354,31 @@ serve(async (req) => {
           .select()
           .single();
         
-        if (error) {
-          console.error('Database error updating question:', error);
-          return createErrorResponse('Failed to update question', 500, { dbError: error.message });
+        if (updateError) {
+          console.error('Database error updating question:', updateError);
+          return createErrorResponse('Failed to update question', 500, { dbError: updateError.message });
+        }
+
+        // Handle type-specific data updates
+        try {
+          // Update options for multiple choice or checkbox questions
+          if (body.question_type === 'multiple_choice' || body.question_type === 'checkbox') {
+            await updateQuestionOptions(supabase, id, options || []);
+            console.log('Updated question options for question:', id);
+          }
+
+          // Update scale config for scale, star, or likert questions
+          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert') && scaleConfig) {
+            await updateQuestionScale(supabase, id, scaleConfig);
+            console.log('Updated scale config for question:', id);
+          }
+        } catch (relatedError) {
+          console.error('Error updating related data:', relatedError);
+          return createErrorResponse('Failed to update question related data', 500, { dbError: relatedError.message });
         }
 
         console.log('Successfully updated question:', id);
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify(question), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
@@ -230,8 +408,13 @@ serve(async (req) => {
           return createErrorResponse('Unauthorized: Question belongs to different organization', 403);
         }
         
-        console.log('Deleting question:', { id, organizationId });
+        console.log('Deleting question and related data:', { id, organizationId });
         
+        // Delete related data first (foreign key constraints)
+        await supabase.from('question_options').delete().eq('question_id', id);
+        await supabase.from('question_scale_config').delete().eq('question_id', id);
+        
+        // Delete the question
         const { error } = await supabase
           .from('questions')
           .delete()
