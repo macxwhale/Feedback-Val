@@ -31,7 +31,8 @@ export const useEnhancedOrganizationStats = (organizationId: string) => {
 
       if (error) throw error;
       
-      return data as EnhancedOrganizationStats;
+      // Properly cast the Json response to our interface
+      return data as unknown as EnhancedOrganizationStats;
     },
     enabled: !!organizationId,
     staleTime: 30000,

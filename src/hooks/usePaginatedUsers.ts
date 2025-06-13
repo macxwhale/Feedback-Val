@@ -38,7 +38,8 @@ export const usePaginatedUsers = ({
 
       if (error) throw error;
       
-      return data;
+      // Properly cast the Json response to our interface
+      return data as unknown as PaginatedUsersResult;
     },
     enabled: !!organizationId,
     staleTime: 30000,
