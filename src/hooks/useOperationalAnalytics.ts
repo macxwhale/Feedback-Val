@@ -17,6 +17,42 @@ export interface DepartmentMetrics {
   }>;
 }
 
+// Helper function to analyze common issues
+function analyzeCommonIssues(responses: any[]): Array<{title: string; count: number; trend: 'up' | 'down' | 'stable'}> {
+  // This is a simplified analysis - in a real implementation, you might use NLP
+  const lowScoreResponses = responses.filter(r => r.score && r.score <= 2);
+  const mediumScoreResponses = responses.filter(r => r.score && r.score === 3);
+  
+  const issues = [];
+  
+  if (lowScoreResponses.length > 0) {
+    issues.push({
+      title: 'Low satisfaction scores',
+      count: lowScoreResponses.length,
+      trend: 'up' as const
+    });
+  }
+  
+  if (mediumScoreResponses.length > 0) {
+    issues.push({
+      title: 'Neutral feedback requiring attention',
+      count: mediumScoreResponses.length,
+      trend: 'stable' as const
+    });
+  }
+  
+  // Add general improvement opportunities
+  if (responses.length > 10) {
+    issues.push({
+      title: 'Process optimization opportunities',
+      count: Math.floor(responses.length * 0.2),
+      trend: 'down' as const
+    });
+  }
+  
+  return issues.slice(0, 3); // Return top 3 issues
+}
+
 export const useOperationalAnalytics = (organizationId: string) => {
   return useQuery({
     queryKey: ['operational-analytics', organizationId],
@@ -78,7 +114,7 @@ export const useOperationalAnalytics = (organizationId: string) => {
             : 0;
           
           // Analyze common issues from response values
-          const issues = this.analyzeCommonIssues(categoryResponses);
+          const issues = analyzeCommonIssues(categoryResponses);
           
           departmentData[category.toLowerCase().replace(/\s+/g, '-')] = {
             name: category,
@@ -99,39 +135,3 @@ export const useOperationalAnalytics = (organizationId: string) => {
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
-
-// Helper function to analyze common issues
-function analyzeCommonIssues(responses: any[]): Array<{title: string; count: number; trend: 'up' | 'down' | 'stable'}> {
-  // This is a simplified analysis - in a real implementation, you might use NLP
-  const lowScoreResponses = responses.filter(r => r.score && r.score <= 2);
-  const mediumScoreResponses = responses.filter(r => r.score && r.score === 3);
-  
-  const issues = [];
-  
-  if (lowScoreResponses.length > 0) {
-    issues.push({
-      title: 'Low satisfaction scores',
-      count: lowScoreResponses.length,
-      trend: 'up' as const
-    });
-  }
-  
-  if (mediumScoreResponses.length > 0) {
-    issues.push({
-      title: 'Neutral feedback requiring attention',
-      count: mediumScoreResponses.length,
-      trend: 'stable' as const
-    });
-  }
-  
-  // Add general improvement opportunities
-  if (responses.length > 10) {
-    issues.push({
-      title: 'Process optimization opportunities',
-      count: Math.floor(responses.length * 0.2),
-      trend: 'down' as const
-    });
-  }
-  
-  return issues.slice(0, 3); // Return top 3 issues
-}
