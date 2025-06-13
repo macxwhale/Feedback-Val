@@ -18,10 +18,7 @@ import { OrganizationSpecificStats } from './OrganizationSpecificStats';
 import { OrganizationHeader } from './OrganizationHeader';
 import { OrganizationSettingsTab } from './OrganizationSettingsTab';
 import { QuestionsManagement } from './QuestionsManagement';
-import { DashboardOverview } from './dashboard/DashboardOverview';
-import { LiveActivityFeed } from './dashboard/LiveActivityFeed';
-import { AnalyticsInsights } from './dashboard/AnalyticsInsights';
-import { QuickActions } from './dashboard/QuickActions';
+import { AdvancedDashboardView } from './dashboard/AdvancedDashboardView';
 import { DashboardBreadcrumb } from './dashboard/DashboardBreadcrumb';
 import { DashboardSearch } from './dashboard/DashboardSearch';
 import { DashboardSidebar } from './dashboard/DashboardSidebar';
@@ -155,20 +152,16 @@ export const OrganizationAdminDashboard: React.FC = () => {
                   </TabsList>
 
                   <TabsContent value="overview" className="space-y-6">
-                    <DashboardOverview organizationId={organization.id} />
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="lg:col-span-2">
-                        <LiveActivityFeed 
-                          organizationId={organization.id}
-                          isLive={isLiveActivity}
-                          onToggleLive={setIsLiveActivity}
-                        />
-                      </div>
-                      <div className="space-y-6">
-                        <AnalyticsInsights organizationId={organization.id} />
-                        <QuickActions {...handleQuickActions} />
-                      </div>
-                    </div>
+                    <AdvancedDashboardView
+                      organizationId={organization.id}
+                      organizationName={organization.name}
+                      activeTab={activeTab}
+                      onTabChange={setActiveTab}
+                      stats={stats}
+                      isLiveActivity={isLiveActivity}
+                      setIsLiveActivity={setIsLiveActivity}
+                      handleQuickActions={handleQuickActions}
+                    />
                   </TabsContent>
 
                   <TabsContent value="members">
