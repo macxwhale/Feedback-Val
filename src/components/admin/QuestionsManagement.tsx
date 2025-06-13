@@ -9,14 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { QuestionTypeForm } from './QuestionTypeForm';
 import { Trash2, Edit, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Database } from '@/integrations/supabase/types';
-
-type QuestionCategory = Database['public']['Enums']['question_category'];
 
 interface QuestionFormData {
   question_text: string;
   question_type: string;
-  category: QuestionCategory;
+  category: string;
   order_index: number;
   help_text?: string;
   placeholder_text?: string;
@@ -31,29 +28,6 @@ interface QuestionFormData {
   };
 }
 
-const QUESTION_TYPES = [
-  { name: 'star', display_name: 'Star Rating', supports_scale: true },
-  { name: 'nps', display_name: 'NPS Rating', supports_scale: true },
-  { name: 'likert', display_name: 'Likert Scale', supports_scale: true },
-  { name: 'slider', display_name: 'Slider', supports_scale: true },
-  { name: 'multiple_choice', display_name: 'Multiple Choice', supports_options: true },
-  { name: 'single_choice', display_name: 'Single Choice', supports_options: true },
-  { name: 'checkbox', display_name: 'Checkbox', supports_options: true },
-  { name: 'text', display_name: 'Text Input' },
-  { name: 'emoji', display_name: 'Emoji Rating' },
-  { name: 'matrix', display_name: 'Matrix Question', supports_options: true, supports_scale: true }
-];
-
-const CATEGORIES = [
-  'QualityService',
-  'QualityStaff', 
-  'QualityCommunication',
-  'ValueForMoney',
-  'LikeliRecommend',
-  'DidWeMakeEasy',
-  'Comments'
-];
-
 export const QuestionsManagement: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -61,7 +35,7 @@ export const QuestionsManagement: React.FC = () => {
   const [formData, setFormData] = useState<QuestionFormData>({
     question_text: '',
     question_type: 'star',
-    category: 'QualityService' as QuestionCategory,
+    category: 'QualityService',
     order_index: 1,
     help_text: '',
     placeholder_text: '',
@@ -70,12 +44,25 @@ export const QuestionsManagement: React.FC = () => {
     scaleConfig: { minValue: 1, maxValue: 5 }
   });
 
+  // Fetch questions
   const { data: questions = [], isLoading } = useQuery({
     queryKey: ['questions'],
     queryFn: () => questionsService.getQuestions(),
-    refetchOnWindowFocus: false
   });
 
+  // Fetch question types from database
+  const { data: questionTypes = [] } = useQuery({
+    queryKey: ['question-types'],
+    queryFn: () => questionsService.getQuestionTypes(),
+  });
+
+  // Fetch categories from database
+  const { data: categories = [] } = useQuery({
+    queryKey: ['question-categories'],
+    queryFn: () => questionsService.getQuestionCategories(),
+  });
+
+  // Mutations
   const createMutation = useMutation({
     mutationFn: questionsService.createQuestion,
     onSuccess: () => {
@@ -84,7 +71,6 @@ export const QuestionsManagement: React.FC = () => {
       resetForm();
     },
     onError: (error: any) => {
-      console.error('Create error:', error);
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
@@ -97,7 +83,6 @@ export const QuestionsManagement: React.FC = () => {
       resetForm();
     },
     onError: (error: any) => {
-      console.error('Update error:', error);
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
@@ -109,7 +94,6 @@ export const QuestionsManagement: React.FC = () => {
       toast({ title: 'Question deleted successfully' });
     },
     onError: (error: any) => {
-      console.error('Delete error:', error);
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
@@ -119,7 +103,7 @@ export const QuestionsManagement: React.FC = () => {
     setFormData({
       question_text: '',
       question_type: 'star',
-      category: 'QualityService' as QuestionCategory,
+      category: 'QualityService',
       order_index: 1,
       help_text: '',
       placeholder_text: '',
@@ -135,7 +119,6 @@ export const QuestionsManagement: React.FC = () => {
       return;
     }
 
-    const selectedType = QUESTION_TYPES.find(type => type.name === formData.question_type);
     const maxOrder = questions.length > 0 ? Math.max(...questions.map(q => q.order_index)) : 0;
     const orderIndex = editingId ? formData.order_index : maxOrder + 1;
 
@@ -175,7 +158,7 @@ export const QuestionsManagement: React.FC = () => {
     });
   };
 
-  const selectedType = QUESTION_TYPES.find(type => type.name === formData.question_type);
+  const selectedType = questionTypes.find(type => type.name === formData.question_type);
   const supportsOptions = selectedType?.supports_options || false;
   const supportsScale = selectedType?.supports_scale || false;
 
@@ -198,7 +181,6 @@ export const QuestionsManagement: React.FC = () => {
         <CardTitle>Questions Management</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Basic Question Fields */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
             placeholder="Question text"
@@ -211,25 +193,24 @@ export const QuestionsManagement: React.FC = () => {
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {QUESTION_TYPES.map(type => 
-                <SelectItem key={type.name} value={type.name}>{type.display_name}</SelectItem>
+              {questionTypes.map(type => 
+                <SelectItem key={type.id} value={type.name}>{type.display_name}</SelectItem>
               )}
             </SelectContent>
           </Select>
           <Select 
             value={formData.category} 
-            onValueChange={(value: QuestionCategory) => setFormData(prev => ({ ...prev, category: value }))}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map(cat => 
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              {categories.map(cat => 
+                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
               )}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Type-specific configuration */}
         <QuestionTypeForm
           questionType={formData.question_type}
           supportsOptions={supportsOptions}
@@ -244,7 +225,6 @@ export const QuestionsManagement: React.FC = () => {
           onPlaceholderChange={(placeholder_text) => setFormData(prev => ({ ...prev, placeholder_text }))}
         />
 
-        {/* Action Buttons */}
         <div className="flex gap-2">
           <Button
             onClick={handleSubmit}
@@ -260,7 +240,6 @@ export const QuestionsManagement: React.FC = () => {
           )}
         </div>
 
-        {/* Questions List */}
         <div className="space-y-2">
           {questions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No questions found. Create your first question above.</p>

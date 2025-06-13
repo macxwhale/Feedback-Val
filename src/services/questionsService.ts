@@ -1,12 +1,7 @@
 
-import { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 
-type Question = Database['public']['Tables']['questions']['Row'];
-type QuestionInsert = Database['public']['Tables']['questions']['Insert'];
-type QuestionUpdate = Database['public']['Tables']['questions']['Update'];
-type QuestionCategory = Database['public']['Tables']['question_categories']['Row'];
-type QuestionType = Database['public']['Tables']['question_types']['Row'];
+const FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/questions-crud';
 
 interface QuestionFormData {
   question_text: string;
@@ -26,9 +21,7 @@ interface QuestionFormData {
   };
 }
 
-const FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/questions-crud';
-
-// Helper function to get auth headers using Supabase client
+// Helper to get auth headers
 const getAuthHeaders = async () => {
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.access_token) {
@@ -41,18 +34,13 @@ const getAuthHeaders = async () => {
   };
 };
 
-// Helper function to handle API responses
+// Helper to handle API responses
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
   }
   return await response.json();
-};
-
-// Generate random score for testing/demo purposes
-export const generateRandomScore = (): number => {
-  return Math.floor(Math.random() * 5) + 1;
 };
 
 // Transform database question to frontend format
@@ -73,13 +61,16 @@ const transformQuestion = (dbQuestion: any) => {
   };
 };
 
-// Fetch questions for frontend form
+// Generate random score for testing/demo purposes
+export const generateRandomScore = (): number => {
+  return Math.floor(Math.random() * 5) + 1;
+};
+
+// Fetch questions for frontend form (optimized for user feedback)
 export const fetchQuestions = async (organizationId?: string) => {
   try {
     const headers = await getAuthHeaders();
-    const url = organizationId ? `${FUNCTION_URL}?organization_id=${organizationId}` : FUNCTION_URL;
-    
-    const response = await fetch(url, {
+    const response = await fetch(FUNCTION_URL, {
       method: 'GET',
       headers
     });
@@ -92,8 +83,9 @@ export const fetchQuestions = async (organizationId?: string) => {
   }
 };
 
+// Main questions service for admin operations
 export const questionsService = {
-  async getQuestions(): Promise<Question[]> {
+  async getQuestions() {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(FUNCTION_URL, {
@@ -107,7 +99,7 @@ export const questionsService = {
     }
   },
 
-  async createQuestion(question: QuestionFormData): Promise<Question> {
+  async createQuestion(question: QuestionFormData) {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(FUNCTION_URL, {
@@ -122,7 +114,7 @@ export const questionsService = {
     }
   },
 
-  async updateQuestion(id: string, updates: QuestionFormData): Promise<Question> {
+  async updateQuestion(id: string, updates: QuestionFormData) {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(FUNCTION_URL, {
@@ -137,7 +129,7 @@ export const questionsService = {
     }
   },
 
-  async deleteQuestion(id: string): Promise<void> {
+  async deleteQuestion(id: string) {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(FUNCTION_URL, {
@@ -152,22 +144,7 @@ export const questionsService = {
     }
   },
 
-  async getQuestionCategories(): Promise<QuestionCategory[]> {
-    try {
-      const { data, error } = await supabase
-        .from('question_categories')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching question categories:', error);
-      return [];
-    }
-  },
-
-  async getQuestionTypes(): Promise<QuestionType[]> {
+  async getQuestionTypes() {
     try {
       const { data, error } = await supabase
         .from('question_types')
@@ -178,6 +155,21 @@ export const questionsService = {
       return data || [];
     } catch (error) {
       console.error('Error fetching question types:', error);
+      return [];
+    }
+  },
+
+  async getQuestionCategories() {
+    try {
+      const { data, error } = await supabase
+        .from('question_categories')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching question categories:', error);
       return [];
     }
   }

@@ -512,7 +512,7 @@ export type Database = {
       }
       questions: {
         Row: {
-          category: Database["public"]["Enums"]["question_category"]
+          category: string | null
           category_id: string
           conditional_logic: Json | null
           created_at: string
@@ -520,20 +520,17 @@ export type Database = {
           id: string
           is_active: boolean
           is_required: boolean | null
-          options: Json | null
           order_index: number
           organization_id: string
           placeholder_text: string | null
           question_text: string
-          question_type: string
-          required: boolean
-          scale: Json | null
+          question_type: string | null
           type_id: string
           updated_at: string
           validation_rules: Json | null
         }
         Insert: {
-          category: Database["public"]["Enums"]["question_category"]
+          category?: string | null
           category_id: string
           conditional_logic?: Json | null
           created_at?: string
@@ -541,20 +538,17 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_required?: boolean | null
-          options?: Json | null
           order_index: number
           organization_id: string
           placeholder_text?: string | null
           question_text: string
-          question_type: string
-          required?: boolean
-          scale?: Json | null
+          question_type?: string | null
           type_id: string
           updated_at?: string
           validation_rules?: Json | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["question_category"]
+          category?: string | null
           category_id?: string
           conditional_logic?: Json | null
           created_at?: string
@@ -562,14 +556,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_required?: boolean | null
-          options?: Json | null
           order_index?: number
           organization_id?: string
           placeholder_text?: string | null
           question_text?: string
-          question_type?: string
-          required?: boolean
-          scale?: Json | null
+          question_type?: string | null
           type_id?: string
           updated_at?: string
           validation_rules?: Json | null

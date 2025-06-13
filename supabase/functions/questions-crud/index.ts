@@ -8,11 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
 };
 
-interface ValidationError {
-  field: string;
-  message: string;
-}
-
 interface QuestionData {
   question_text: string;
   question_type: string;
@@ -31,203 +26,9 @@ interface QuestionData {
   };
 }
 
-function validateQuestionData(data: any): ValidationError[] {
-  const errors: ValidationError[] = [];
-  
-  if (!data.question_text || typeof data.question_text !== 'string' || data.question_text.trim().length === 0) {
-    errors.push({ field: 'question_text', message: 'Question text is required and cannot be empty' });
-  }
-  
-  if (!data.question_type || typeof data.question_type !== 'string') {
-    errors.push({ field: 'question_type', message: 'Question type is required' });
-  }
-  
-  if (!data.category || typeof data.category !== 'string') {
-    errors.push({ field: 'category', message: 'Category is required' });
-  }
-  
-  if (data.order_index === undefined || data.order_index === null || typeof data.order_index !== 'number' || data.order_index <= 0) {
-    errors.push({ field: 'order_index', message: 'Order index is required and must be a positive number' });
-  }
-
-  // Validate type-specific requirements
-  if (data.question_type === 'multiple_choice' || data.question_type === 'checkbox') {
-    if (!data.options || !Array.isArray(data.options) || data.options.length === 0) {
-      errors.push({ field: 'options', message: `${data.question_type} questions require at least one option` });
-    } else {
-      data.options.forEach((option: any, index: number) => {
-        if (!option.text || typeof option.text !== 'string' || option.text.trim().length === 0) {
-          errors.push({ field: `options[${index}].text`, message: 'Option text is required' });
-        }
-      });
-    }
-  }
-
-  if (data.question_type === 'scale' || data.question_type === 'star' || data.question_type === 'likert') {
-    if (data.scaleConfig) {
-      const { minValue, maxValue, stepSize } = data.scaleConfig;
-      if (typeof minValue !== 'number' || typeof maxValue !== 'number') {
-        errors.push({ field: 'scaleConfig', message: 'Scale min and max values must be numbers' });
-      } else if (minValue >= maxValue) {
-        errors.push({ field: 'scaleConfig', message: 'Scale max value must be greater than min value' });
-      }
-      if (stepSize !== undefined && (typeof stepSize !== 'number' || stepSize <= 0)) {
-        errors.push({ field: 'scaleConfig.stepSize', message: 'Step size must be a positive number' });
-      }
-    }
-  }
-  
-  return errors;
-}
-
-async function getOrCreateQuestionType(supabase: any, typeName: string) {
-  const { data: existingType } = await supabase
-    .from('question_types')
-    .select('id')
-    .eq('name', typeName)
-    .single();
-  
-  if (existingType) {
-    return existingType.id;
-  }
-  
-  // Create new question type if it doesn't exist
-  const { data: newType, error } = await supabase
-    .from('question_types')
-    .insert({
-      name: typeName,
-      display_name: typeName.charAt(0).toUpperCase() + typeName.slice(1),
-      supports_options: ['multiple_choice', 'checkbox', 'single_choice', 'multi_choice'].includes(typeName),
-      supports_scale: ['scale', 'star', 'likert', 'nps', 'slider'].includes(typeName)
-    })
-    .select('id')
-    .single();
-  
-  if (error) throw error;
-  return newType.id;
-}
-
-async function getOrCreateQuestionCategory(supabase: any, categoryName: string) {
-  const { data: existingCategory } = await supabase
-    .from('question_categories')
-    .select('id')
-    .eq('name', categoryName)
-    .single();
-  
-  if (existingCategory) {
-    return existingCategory.id;
-  }
-  
-  // Create new category if it doesn't exist
-  const { data: newCategory, error } = await supabase
-    .from('question_categories')
-    .insert({
-      name: categoryName,
-      description: `Category for ${categoryName} questions`
-    })
-    .select('id')
-    .single();
-  
-  if (error) throw error;
-  return newCategory.id;
-}
-
-async function createQuestionOptions(supabase: any, questionId: string, options: { text: string; value?: string }[]) {
-  const optionsData = options.map((option, index) => ({
-    question_id: questionId,
-    option_text: option.text,
-    option_value: option.value || option.text,
-    display_order: index + 1
-  }));
-
-  const { error } = await supabase
-    .from('question_options')
-    .insert(optionsData);
-  
-  if (error) {
-    console.error('Error creating question options:', error);
-    throw error;
-  }
-}
-
-async function createQuestionScale(supabase: any, questionId: string, scaleConfig: any) {
-  const scaleData = {
-    question_id: questionId,
-    min_value: scaleConfig.minValue,
-    max_value: scaleConfig.maxValue,
-    min_label: scaleConfig.minLabel,
-    max_label: scaleConfig.maxLabel,
-    step_size: scaleConfig.stepSize || 1
-  };
-
-  const { error } = await supabase
-    .from('question_scale_config')
-    .insert(scaleData);
-  
-  if (error) {
-    console.error('Error creating question scale config:', error);
-    throw error;
-  }
-}
-
-async function updateQuestionOptions(supabase: any, questionId: string, options: { text: string; value?: string }[]) {
-  // Delete existing options
-  await supabase
-    .from('question_options')
-    .delete()
-    .eq('question_id', questionId);
-  
-  // Create new options if provided
-  if (options && options.length > 0) {
-    await createQuestionOptions(supabase, questionId, options);
-  }
-}
-
-async function updateQuestionScale(supabase: any, questionId: string, scaleConfig: any) {
-  if (!scaleConfig) return;
-
-  // Check if scale config exists
-  const { data: existingConfig } = await supabase
-    .from('question_scale_config')
-    .select('id')
-    .eq('question_id', questionId)
-    .single();
-
-  const scaleData = {
-    min_value: scaleConfig.minValue,
-    max_value: scaleConfig.maxValue,
-    min_label: scaleConfig.minLabel,
-    max_label: scaleConfig.maxLabel,
-    step_size: scaleConfig.stepSize || 1
-  };
-
-  if (existingConfig) {
-    // Update existing config
-    const { error } = await supabase
-      .from('question_scale_config')
-      .update(scaleData)
-      .eq('question_id', questionId);
-    
-    if (error) {
-      console.error('Error updating question scale config:', error);
-      throw error;
-    }
-  } else {
-    // Create new config
-    await createQuestionScale(supabase, questionId, scaleConfig);
-  }
-}
-
-function createErrorResponse(message: string, status: number = 400, details?: any) {
-  const errorResponse = {
-    error: message,
-    timestamp: new Date().toISOString(),
-    ...(details && { details })
-  };
-  
-  console.error('API Error:', errorResponse);
-  
-  return new Response(JSON.stringify(errorResponse), {
+function createErrorResponse(message: string, status: number = 400) {
+  console.error('API Error:', message);
+  return new Response(JSON.stringify({ error: message }), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
@@ -251,14 +52,13 @@ serve(async (req) => {
       }
     );
 
-    // Extract logged-in user and get their organization
+    // Get authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      console.error('Authentication failed:', userError?.message);
-      return createErrorResponse('Authentication required', 401, { userError: userError?.message });
+      return createErrorResponse('Authentication required', 401);
     }
 
-    // Query user's organization securely from organization_users table
+    // Get user's organization
     const { data: orgUser, error: orgError } = await supabase
       .from('organization_users')
       .select('organization_id, role')
@@ -267,30 +67,20 @@ serve(async (req) => {
       .single();
 
     if (orgError || !orgUser) {
-      console.error('Organization access failed:', orgError?.message);
-      return createErrorResponse('No active organization access found', 403, { orgError: orgError?.message });
+      return createErrorResponse('No active organization access found', 403);
     }
 
     const organizationId = orgUser.organization_id;
     const { method } = req;
 
-    console.log('questions-crud function called:', { 
-      method, 
-      userId: user.id, 
-      organizationId,
-      userRole: orgUser.role 
-    });
+    console.log('Questions CRUD called:', { method, userId: user.id, organizationId });
 
     switch (method) {
       case 'GET': {
-        console.log('Fetching questions for organization:', organizationId);
-        
         const { data, error } = await supabase
           .from('questions')
           .select(`
             *,
-            question_categories(name),
-            question_types(name, display_name, supports_options, supports_scale),
             question_options(*),
             question_scale_config(*)
           `)
@@ -298,12 +88,12 @@ serve(async (req) => {
           .order('order_index');
         
         if (error) {
-          console.error('Database error fetching questions:', error);
-          return createErrorResponse('Failed to fetch questions', 500, { dbError: error.message });
+          console.error('Database error:', error);
+          return createErrorResponse('Failed to fetch questions', 500);
         }
 
-        console.log(`Successfully fetched ${data?.length || 0} questions`);
-        return new Response(JSON.stringify(data), {
+        console.log(`Fetched ${data?.length || 0} questions`);
+        return new Response(JSON.stringify(data || []), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
@@ -311,64 +101,67 @@ serve(async (req) => {
       case 'POST': {
         const body: QuestionData = await req.json();
         
-        // Validate input data
-        const validationErrors = validateQuestionData(body);
-        if (validationErrors.length > 0) {
-          return createErrorResponse('Validation failed', 400, { validationErrors });
+        if (!body.question_text?.trim()) {
+          return createErrorResponse('Question text is required');
         }
-        
-        // Get or create type and category IDs
-        const typeId = await getOrCreateQuestionType(supabase, body.question_type);
-        const categoryId = await getOrCreateQuestionCategory(supabase, body.category);
-        
-        // Prepare question data with normalized IDs
-        const questionData = { 
-          question_text: body.question_text,
-          question_type: body.question_type, // Keep for backward compatibility
-          category: body.category, // Keep for backward compatibility
-          type_id: typeId,
-          category_id: categoryId,
-          order_index: body.order_index,
-          help_text: body.help_text,
-          placeholder_text: body.placeholder_text,
-          is_required: body.is_required || false,
-          organization_id: organizationId
-        };
-        
-        console.log('Creating question with data:', questionData);
-        
-        // Create the base question
+
+        // Insert question
         const { data: question, error: questionError } = await supabase
           .from('questions')
-          .insert(questionData)
+          .insert({
+            question_text: body.question_text,
+            question_type: body.question_type,
+            category: body.category,
+            order_index: body.order_index,
+            help_text: body.help_text,
+            placeholder_text: body.placeholder_text,
+            is_required: body.is_required || false,
+            organization_id: organizationId,
+            type_id: '00000000-0000-0000-0000-000000000000', // Placeholder
+            category_id: '00000000-0000-0000-0000-000000000000' // Placeholder
+          })
           .select()
           .single();
         
         if (questionError) {
-          console.error('Database error creating question:', questionError);
-          return createErrorResponse('Failed to create question', 500, { dbError: questionError.message });
+          console.error('Question creation error:', questionError);
+          return createErrorResponse('Failed to create question', 500);
         }
 
-        console.log('Successfully created question:', question.id);
+        // Create options if provided
+        if (body.options?.length) {
+          const optionsData = body.options.map((option, index) => ({
+            question_id: question.id,
+            option_text: option.text,
+            option_value: option.value || option.text,
+            display_order: index + 1
+          }));
 
-        // Handle type-specific data
-        try {
-          // Create options for multiple choice or checkbox questions
-          if ((body.question_type === 'multiple_choice' || body.question_type === 'checkbox' || body.question_type === 'single_choice' || body.question_type === 'multi_choice') && body.options) {
-            await createQuestionOptions(supabase, question.id, body.options);
-            console.log('Created question options for question:', question.id);
+          const { error: optionsError } = await supabase
+            .from('question_options')
+            .insert(optionsData);
+          
+          if (optionsError) {
+            console.error('Options creation error:', optionsError);
           }
+        }
 
-          // Create scale config for scale, star, or likert questions
-          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert' || body.question_type === 'nps' || body.question_type === 'slider') && body.scaleConfig) {
-            await createQuestionScale(supabase, question.id, body.scaleConfig);
-            console.log('Created scale config for question:', question.id);
+        // Create scale config if provided
+        if (body.scaleConfig) {
+          const { error: scaleError } = await supabase
+            .from('question_scale_config')
+            .insert({
+              question_id: question.id,
+              min_value: body.scaleConfig.minValue,
+              max_value: body.scaleConfig.maxValue,
+              min_label: body.scaleConfig.minLabel,
+              max_label: body.scaleConfig.maxLabel,
+              step_size: body.scaleConfig.stepSize || 1
+            });
+          
+          if (scaleError) {
+            console.error('Scale config creation error:', scaleError);
           }
-        } catch (relatedError) {
-          // If related data creation fails, we should clean up the question
-          console.error('Error creating related data, cleaning up question:', relatedError);
-          await supabase.from('questions').delete().eq('id', question.id);
-          return createErrorResponse('Failed to create question with related data', 500, { dbError: relatedError.message });
         }
 
         return new Response(JSON.stringify(question), {
@@ -381,114 +174,69 @@ serve(async (req) => {
         const { id, options, scaleConfig, ...updates } = body;
         
         if (!id) {
-          return createErrorResponse('Question ID is required for updates', 400);
+          return createErrorResponse('Question ID is required');
         }
-        
-        // Validate input data
-        const validationErrors = validateQuestionData(body);
-        if (validationErrors.length > 0) {
-          return createErrorResponse('Validation failed', 400, { validationErrors });
-        }
-        
-        // Ensure update actions check question ownership
-        const { data: existingQuestion, error: fetchError } = await supabase
-          .from('questions')
-          .select('id, organization_id')
-          .eq('id', id)
-          .single();
-        
-        if (fetchError) {
-          console.error('Question not found:', fetchError);
-          return createErrorResponse('Question not found', 404, { dbError: fetchError.message });
-        }
-        
-        if (existingQuestion.organization_id !== organizationId) {
-          console.error('Unauthorized update attempt:', { questionOrg: existingQuestion.organization_id, userOrg: organizationId });
-          return createErrorResponse('Unauthorized: Question belongs to different organization', 403);
-        }
-        
-        // Get or create type and category IDs if they changed
-        const typeId = await getOrCreateQuestionType(supabase, body.question_type);
-        const categoryId = await getOrCreateQuestionCategory(supabase, body.category);
-        
-        const updateData = {
-          ...updates,
-          type_id: typeId,
-          category_id: categoryId
-        };
-        
-        console.log('Updating question:', { id, updateData, organizationId });
-        
-        // Update the base question
+
+        // Update question
         const { data: question, error: updateError } = await supabase
           .from('questions')
-          .update(updateData)
+          .update(updates)
           .eq('id', id)
           .eq('organization_id', organizationId)
           .select()
           .single();
         
         if (updateError) {
-          console.error('Database error updating question:', updateError);
-          return createErrorResponse('Failed to update question', 500, { dbError: updateError.message });
+          console.error('Question update error:', updateError);
+          return createErrorResponse('Failed to update question', 500);
         }
 
-        // Handle type-specific data updates
-        try {
-          // Update options for multiple choice or checkbox questions
-          if (body.question_type === 'multiple_choice' || body.question_type === 'checkbox' || body.question_type === 'single_choice' || body.question_type === 'multi_choice') {
-            await updateQuestionOptions(supabase, id, options || []);
-            console.log('Updated question options for question:', id);
-          }
+        // Update options
+        if (options !== undefined) {
+          await supabase.from('question_options').delete().eq('question_id', id);
+          
+          if (options.length > 0) {
+            const optionsData = options.map((option, index) => ({
+              question_id: id,
+              option_text: option.text,
+              option_value: option.value || option.text,
+              display_order: index + 1
+            }));
 
-          // Update scale config for scale, star, or likert questions
-          if ((body.question_type === 'scale' || body.question_type === 'star' || body.question_type === 'likert' || body.question_type === 'nps' || body.question_type === 'slider') && scaleConfig) {
-            await updateQuestionScale(supabase, id, scaleConfig);
-            console.log('Updated scale config for question:', id);
+            await supabase.from('question_options').insert(optionsData);
           }
-        } catch (relatedError) {
-          console.error('Error updating related data:', relatedError);
-          return createErrorResponse('Failed to update question related data', 500, { dbError: relatedError.message });
         }
 
-        console.log('Successfully updated question:', id);
+        // Update scale config
+        if (scaleConfig) {
+          await supabase.from('question_scale_config').delete().eq('question_id', id);
+          await supabase.from('question_scale_config').insert({
+            question_id: id,
+            min_value: scaleConfig.minValue,
+            max_value: scaleConfig.maxValue,
+            min_label: scaleConfig.minLabel,
+            max_label: scaleConfig.maxLabel,
+            step_size: scaleConfig.stepSize || 1
+          });
+        }
+
         return new Response(JSON.stringify(question), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
       case 'DELETE': {
-        const body = await req.json();
-        const { id } = body;
+        const { id } = await req.json();
         
         if (!id) {
-          return createErrorResponse('Question ID is required for deletion', 400);
+          return createErrorResponse('Question ID is required');
         }
-        
-        // Ensure delete actions check question ownership
-        const { data: existingQuestion, error: fetchError } = await supabase
-          .from('questions')
-          .select('id, organization_id')
-          .eq('id', id)
-          .single();
-        
-        if (fetchError) {
-          console.error('Question not found for deletion:', fetchError);
-          return createErrorResponse('Question not found', 404, { dbError: fetchError.message });
-        }
-        
-        if (existingQuestion.organization_id !== organizationId) {
-          console.error('Unauthorized delete attempt:', { questionOrg: existingQuestion.organization_id, userOrg: organizationId });
-          return createErrorResponse('Unauthorized: Question belongs to different organization', 403);
-        }
-        
-        console.log('Deleting question and related data:', { id, organizationId });
-        
-        // Delete related data first (foreign key constraints)
+
+        // Delete related data first
         await supabase.from('question_options').delete().eq('question_id', id);
         await supabase.from('question_scale_config').delete().eq('question_id', id);
         
-        // Delete the question
+        // Delete question
         const { error } = await supabase
           .from('questions')
           .delete()
@@ -496,23 +244,20 @@ serve(async (req) => {
           .eq('organization_id', organizationId);
         
         if (error) {
-          console.error('Database error deleting question:', error);
-          return createErrorResponse('Failed to delete question', 500, { dbError: error.message });
+          console.error('Question deletion error:', error);
+          return createErrorResponse('Failed to delete question', 500);
         }
 
-        console.log('Successfully deleted question:', id);
-        return new Response(JSON.stringify({ success: true, message: 'Question deleted successfully' }), {
+        return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
       default:
-        return createErrorResponse('Method not allowed', 405, { allowedMethods: ['GET', 'POST', 'PUT', 'DELETE'] });
+        return createErrorResponse('Method not allowed', 405);
     }
   } catch (error) {
-    console.error('Unexpected error in questions-crud function:', error);
-    return createErrorResponse('Internal server error', 500, { 
-      message: error instanceof Error ? error.message : 'Unknown error' 
-    });
+    console.error('Unexpected error:', error);
+    return createErrorResponse('Internal server error', 500);
   }
 });
