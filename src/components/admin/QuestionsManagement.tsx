@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { questionsAdminService } from '@/services/questionsAdminService';
@@ -11,11 +12,7 @@ import { Database } from '@/integrations/supabase/types';
 
 type QuestionCategory = Database['public']['Enums']['question_category'];
 
-interface QuestionsManagementProps {
-  organizationId: string;
-}
-
-export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organizationId }) => {
+export const QuestionsManagement: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -27,23 +24,34 @@ export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organi
   });
 
   const { data: questions = [] } = useQuery({
-    queryKey: ['questions', organizationId],
-    queryFn: () => questionsAdminService.getQuestions(organizationId)
+    queryKey: ['questions'],
+    queryFn: () => questionsAdminService.getQuestions()
   });
 
   const createMutation = useMutation({
     mutationFn: questionsAdminService.createQuestion,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question created' }); resetForm(); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['questions'] }); 
+      toast({ title: 'Question created' }); 
+      resetForm(); 
+    }
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, ...data }: any) => questionsAdminService.updateQuestion(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question updated' }); resetForm(); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['questions'] }); 
+      toast({ title: 'Question updated' }); 
+      resetForm(); 
+    }
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => questionsAdminService.deleteQuestion(id, organizationId),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question deleted' }); }
+    mutationFn: (id: string) => questionsAdminService.deleteQuestion(id),
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['questions'] }); 
+      toast({ title: 'Question deleted' }); 
+    }
   });
 
   const resetForm = () => { 
@@ -51,7 +59,7 @@ export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organi
     setFormData({ question_text: '', question_type: 'star', category: 'QualityService' as QuestionCategory, order_index: 1 }); 
   };
   
-  const handleSubmit = () => editingId ? updateMutation.mutate({ id: editingId, ...formData }) : createMutation.mutate({ ...formData, organization_id: organizationId, category_id: '', type_id: '' });
+  const handleSubmit = () => editingId ? updateMutation.mutate({ id: editingId, ...formData }) : createMutation.mutate({ ...formData, category_id: '', type_id: '' });
 
   return (
     <Card>

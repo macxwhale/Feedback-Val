@@ -16,21 +16,41 @@ serve(async (req) => {
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
     );
 
-    const { method } = req;
-    const url = new URL(req.url);
-    const organizationId = url.searchParams.get('organizationId');
-
-    console.log('questions-crud function called:', { method, organizationId });
-
-    if (!organizationId) {
-      return new Response(JSON.stringify({ error: 'Organization ID required' }), {
-        status: 400,
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
+    // Get user's organization
+    const { data: orgUser, error: orgError } = await supabase
+      .from('organization_users')
+      .select('organization_id, role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (orgError || !orgUser) {
+      return new Response(JSON.stringify({ error: 'No organization access' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { method } = req;
+    const organizationId = orgUser.organization_id;
+
+    console.log('questions-crud function called:', { method, userId: user.id, organizationId });
 
     switch (method) {
       case 'GET': {
@@ -48,11 +68,12 @@ serve(async (req) => {
 
       case 'POST': {
         const body = await req.json();
-        console.log('Creating question with data:', body);
+        const questionData = { ...body, organization_id: organizationId };
+        console.log('Creating question with data:', questionData);
         
         const { data, error } = await supabase
           .from('questions')
-          .insert(body)
+          .insert(questionData)
           .select()
           .single();
         
@@ -71,6 +92,7 @@ serve(async (req) => {
           .from('questions')
           .update(updates)
           .eq('id', id)
+          .eq('organization_id', organizationId)
           .select()
           .single();
         
@@ -88,7 +110,8 @@ serve(async (req) => {
         const { error } = await supabase
           .from('questions')
           .delete()
-          .eq('id', id);
+          .eq('id', id)
+          .eq('organization_id', organizationId);
         
         if (error) throw error;
         return new Response(JSON.stringify({ success: true }), {

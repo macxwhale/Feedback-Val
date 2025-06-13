@@ -141,7 +141,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="questions">
-            <QuestionsManagement organizationId={organization.id} />
+            <QuestionsManagement />
           </TabsContent>
 
           <TabsContent value="settings">
