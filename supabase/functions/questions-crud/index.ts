@@ -105,7 +105,29 @@ serve(async (req) => {
           return createErrorResponse('Question text is required');
         }
 
-        // Insert question
+        // Get type_id from question_types table
+        const { data: questionType, error: typeError } = await supabase
+          .from('question_types')
+          .select('id')
+          .eq('name', body.question_type)
+          .single();
+
+        if (typeError || !questionType) {
+          return createErrorResponse(`Invalid question type: ${body.question_type}`);
+        }
+
+        // Get category_id from question_categories table
+        const { data: questionCategory, error: categoryError } = await supabase
+          .from('question_categories')
+          .select('id')
+          .eq('name', body.category)
+          .single();
+
+        if (categoryError || !questionCategory) {
+          return createErrorResponse(`Invalid question category: ${body.category}`);
+        }
+
+        // Insert question with proper foreign keys
         const { data: question, error: questionError } = await supabase
           .from('questions')
           .insert({
@@ -117,8 +139,8 @@ serve(async (req) => {
             placeholder_text: body.placeholder_text,
             is_required: body.is_required || false,
             organization_id: organizationId,
-            type_id: '00000000-0000-0000-0000-000000000000', // Placeholder
-            category_id: '00000000-0000-0000-0000-000000000000' // Placeholder
+            type_id: questionType.id,
+            category_id: questionCategory.id
           })
           .select()
           .single();
@@ -177,10 +199,46 @@ serve(async (req) => {
           return createErrorResponse('Question ID is required');
         }
 
+        // Get type_id and category_id if updating those fields
+        let typeId, categoryId;
+        
+        if (updates.question_type) {
+          const { data: questionType, error: typeError } = await supabase
+            .from('question_types')
+            .select('id')
+            .eq('name', updates.question_type)
+            .single();
+
+          if (typeError || !questionType) {
+            return createErrorResponse(`Invalid question type: ${updates.question_type}`);
+          }
+          typeId = questionType.id;
+        }
+
+        if (updates.category) {
+          const { data: questionCategory, error: categoryError } = await supabase
+            .from('question_categories')
+            .select('id')
+            .eq('name', updates.category)
+            .single();
+
+          if (categoryError || !questionCategory) {
+            return createErrorResponse(`Invalid question category: ${updates.category}`);
+          }
+          categoryId = questionCategory.id;
+        }
+
+        // Prepare update data with foreign keys
+        const updateData = {
+          ...updates,
+          ...(typeId && { type_id: typeId }),
+          ...(categoryId && { category_id: categoryId })
+        };
+
         // Update question
         const { data: question, error: updateError } = await supabase
           .from('questions')
-          .update(updates)
+          .update(updateData)
           .eq('id', id)
           .eq('organization_id', organizationId)
           .select()
