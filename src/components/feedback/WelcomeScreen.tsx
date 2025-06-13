@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Shield, Clock, Users } from 'lucide-react';
+import { ArrowRight, Shield, Clock, Users, Heart } from 'lucide-react';
 import { useOrganizationConfig } from '@/hooks/useOrganizationConfig';
 
 interface WelcomeScreenProps {
@@ -39,7 +39,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         />
         <div 
           className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{ backgroundColor: colors.secondary }}
+          style={{ backgroundColor: colors.accent }}
         />
       </div>
 
@@ -77,7 +77,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           </p>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
             <div className="flex flex-col items-center space-y-2">
               <div 
                 className="p-3 rounded-full"
@@ -101,7 +101,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   style={{ color: colors.primary }}
                 />
               </div>
-              <span className="text-sm text-gray-600">Secure & Private</span>
+              <span className="text-sm text-gray-600">Confidential</span>
             </div>
             
             <div className="flex flex-col items-center space-y-2">
@@ -116,6 +116,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
               </div>
               <span className="text-sm text-gray-600">Your Voice Matters</span>
             </div>
+
+            <div className="flex flex-col items-center space-y-2">
+              <div 
+                className="p-3 rounded-full"
+                style={{ backgroundColor: `${colors.accent}15` }}
+              >
+                <Heart 
+                  className="w-6 h-6"
+                  style={{ color: colors.accent }}
+                />
+              </div>
+              <span className="text-sm text-gray-600">Make a Difference</span>
+            </div>
           </div>
         </div>
 
@@ -125,8 +138,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           size="lg"
           className="text-white font-semibold px-8 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           style={{ 
-            backgroundColor: colors.primary,
-            background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
+            backgroundColor: colors.accent,
+            background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`
           }}
         >
           Start Feedback

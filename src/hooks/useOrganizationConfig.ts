@@ -54,17 +54,18 @@ export const useOrganizationConfig = () => {
     ...config,
     isLoading,
     organization,
-    // Helper getters for common values
+    // Helper getters for common values with Police Sacco defaults
     colors: config.theme?.colors || {
-      primary: organization?.primary_color || '#007ACE',
-      secondary: organization?.secondary_color || '#073763'
+      primary: organization?.primary_color || '#073763',
+      secondary: organization?.secondary_color || '#007ACE',
+      accent: '#f97316'
     },
     flowConfig: organization?.flow_configuration || {},
-    headerTitle: organization?.feedback_header_title || 'Customer Feedback',
-    headerSubtitle: organization?.feedback_header_subtitle || 'We value your feedback',
-    welcomeTitle: organization?.welcome_screen_title || 'Welcome',
-    welcomeDescription: organization?.welcome_screen_description || 'Please share your feedback with us',
-    thankYouTitle: organization?.thank_you_title || 'Thank You!',
-    thankYouMessage: organization?.thank_you_message || 'Your feedback has been submitted successfully'
+    headerTitle: organization?.feedback_header_title || 'Share Your Experience',
+    headerSubtitle: organization?.feedback_header_subtitle || 'Help us serve you better with your valuable feedback',
+    welcomeTitle: organization?.welcome_screen_title || 'Share Your Experience',
+    welcomeDescription: organization?.welcome_screen_description || 'Help us serve you better with your valuable feedback. Your input helps us improve our services and better serve our community.',
+    thankYouTitle: organization?.thank_you_title || 'Thank You for Your Feedback!',
+    thankYouMessage: organization?.thank_you_message || 'Your valuable feedback has been received and will help us improve our services.'
   };
 };

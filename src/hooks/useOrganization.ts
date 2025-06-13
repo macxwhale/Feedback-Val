@@ -28,7 +28,7 @@ export const useOrganization = () => {
           org = await getOrganizationByDomain(hostname);
         }
 
-        // Method 2: Check for subdomain (e.g., im-bank.feedback.com)
+        // Method 2: Check for subdomain (e.g., police-sacco.feedback.com)
         if (!org && hostname.includes('.')) {
           const subdomain = hostname.split('.')[0];
           if (subdomain !== 'www' && subdomain !== 'feedback') {
@@ -36,7 +36,7 @@ export const useOrganization = () => {
           }
         }
 
-        // Method 3: Check for direct organization routing (e.g., /im-bank)
+        // Method 3: Check for direct organization routing (e.g., /police-sacco)
         if (!org) {
           // Extract org slug from various route patterns
           let orgSlug: string | undefined;
@@ -64,9 +64,9 @@ export const useOrganization = () => {
           }
         }
 
-        // Method 4: Default to I&M Bank for root path only (fallback for development)
+        // Method 4: Default to Police Sacco for root path (fallback for development)
         if (!org && pathname === '/') {
-          org = await getOrganizationBySlug('im-bank');
+          org = await getOrganizationBySlug('police-sacco');
         }
 
         if (!org && pathname !== '/auth' && pathname !== '/admin') {
