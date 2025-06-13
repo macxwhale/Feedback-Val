@@ -50,6 +50,48 @@ const handleResponse = async (response: Response) => {
   return await response.json();
 };
 
+// Generate random score for testing/demo purposes
+export const generateRandomScore = (): number => {
+  return Math.floor(Math.random() * 5) + 1;
+};
+
+// Transform database question to frontend format
+const transformQuestion = (dbQuestion: any) => {
+  return {
+    id: dbQuestion.id,
+    type: dbQuestion.question_type,
+    question: dbQuestion.question_text,
+    required: dbQuestion.is_required || false,
+    category: dbQuestion.category,
+    options: dbQuestion.question_options?.map((opt: any) => opt.option_text) || [],
+    scale: dbQuestion.question_scale_config?.[0] ? {
+      min: dbQuestion.question_scale_config[0].min_value,
+      max: dbQuestion.question_scale_config[0].max_value,
+      minLabel: dbQuestion.question_scale_config[0].min_label,
+      maxLabel: dbQuestion.question_scale_config[0].max_label
+    } : undefined
+  };
+};
+
+// Fetch questions for frontend form
+export const fetchQuestions = async (organizationId?: string) => {
+  try {
+    const headers = await getAuthHeaders();
+    const url = organizationId ? `${FUNCTION_URL}?organization_id=${organizationId}` : FUNCTION_URL;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    });
+    
+    const questions = await handleResponse(response);
+    return questions.map(transformQuestion);
+  } catch (error) {
+    console.error('Error fetching questions for form:', error);
+    throw error;
+  }
+};
+
 export const questionsService = {
   async getQuestions(): Promise<Question[]> {
     try {
