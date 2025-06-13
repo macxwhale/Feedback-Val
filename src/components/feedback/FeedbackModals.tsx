@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { PrivacyNotice } from './PrivacyNotice';
-import { ThankYouModal } from '../ThankYouModal';
-import { SuccessAnimation } from './SuccessAnimation';
-import { QuestionConfig, FeedbackResponse } from '../FeedbackForm';
+import { EnhancedThankYouModal } from './EnhancedThankYouModal';
+import { FeedbackResponse, QuestionConfig } from '../FeedbackForm';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface FeedbackModalsProps {
   showPrivacyNotice: boolean;
@@ -22,23 +22,27 @@ export const FeedbackModals: React.FC<FeedbackModalsProps> = ({
   onAcceptPrivacy,
   onReset
 }) => {
+  // Generate analytics for the thank you modal
+  const responses = finalResponses.reduce((acc, response) => {
+    acc[response.questionId] = response.value;
+    return acc;
+  }, {} as Record<string, any>);
+
+  const { analytics } = useAnalytics(responses, questions.length, finalResponses);
+
   return (
     <>
       <PrivacyNotice
-        isVisible={showPrivacyNotice}
+        isOpen={showPrivacyNotice}
         onAccept={onAcceptPrivacy}
       />
-
-      <SuccessAnimation 
-        show={isComplete && !finalResponses.length}
-        message="Feedback Submitted!"
-      />
-
-      <ThankYouModal
+      
+      <EnhancedThankYouModal
         isOpen={isComplete}
         responses={finalResponses}
         questions={questions}
-        onClose={onReset}
+        analytics={analytics}
+        onReset={onReset}
       />
     </>
   );
