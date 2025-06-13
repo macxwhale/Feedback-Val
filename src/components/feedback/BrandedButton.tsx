@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 interface BrandedButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'default' | 'lg';
   variant?: 'primary' | 'secondary' | 'outline';
   className?: string;
   disabled?: boolean;
