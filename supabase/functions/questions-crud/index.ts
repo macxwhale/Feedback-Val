@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
 };
 
 serve(async (req) => {
@@ -21,6 +22,8 @@ serve(async (req) => {
     const { method } = req;
     const url = new URL(req.url);
     const organizationId = url.searchParams.get('organizationId');
+
+    console.log('questions-crud function called:', { method, organizationId });
 
     if (!organizationId) {
       return new Response(JSON.stringify({ error: 'Organization ID required' }), {
@@ -45,6 +48,8 @@ serve(async (req) => {
 
       case 'POST': {
         const body = await req.json();
+        console.log('Creating question with data:', body);
+        
         const { data, error } = await supabase
           .from('questions')
           .insert(body)
@@ -60,6 +65,8 @@ serve(async (req) => {
       case 'PUT': {
         const body = await req.json();
         const { id, ...updates } = body;
+        console.log('Updating question:', { id, updates });
+        
         const { data, error } = await supabase
           .from('questions')
           .update(updates)
@@ -76,6 +83,8 @@ serve(async (req) => {
       case 'DELETE': {
         const body = await req.json();
         const { id } = body;
+        console.log('Deleting question:', { id });
+        
         const { error } = await supabase
           .from('questions')
           .delete()

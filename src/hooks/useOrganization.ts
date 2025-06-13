@@ -55,7 +55,7 @@ export const useOrganization = () => {
         // Method 2: Check for subdomain (e.g., police-sacco.feedback.com)
         if (!org && hostname.includes('.')) {
           const subdomain = hostname.split('.')[0];
-          if (subdomain !== 'www' && subdomain !== 'feedback') {
+          if (subdomain !== 'www' && subdomain !== 'feedback' && !subdomain.includes('preview--')) {
             console.log('useOrganization - Checking subdomain:', subdomain);
             try {
               org = await getOrganizationBySlug(subdomain);
@@ -66,12 +66,17 @@ export const useOrganization = () => {
           }
         }
 
-        // Method 3: Check for direct organization routing (e.g., /org/police-sacco)
+        // Method 3: Check for direct organization routing (e.g., /org/police-sacco or /admin/im-bank)
         if (!org) {
           let orgSlug: string | undefined;
 
+          // Admin route: /admin/:slug
+          if (params.slug && currentPath.startsWith('/admin/')) {
+            orgSlug = params.slug;
+            console.log('useOrganization - Admin route detected, slug:', orgSlug);
+          }
           // Legacy org route: /org/:slug
-          if (params.slug && currentPath.startsWith('/org/')) {
+          else if (params.slug && currentPath.startsWith('/org/')) {
             orgSlug = params.slug;
           }
           // Direct organization route: /:orgSlug (but not admin/auth routes)
