@@ -34,8 +34,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 <Clock className="h-6 w-6" style={{ color: colors.secondary }} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Quick & Easy</h3>
-                <p className="text-gray-600 text-sm">Takes only 3-5 minutes</p>
+                <h3 className="font-semibold" style={{ color: colors.textPrimary }}>Quick & Easy</h3>
+                <p className="text-sm" style={{ color: colors.textSecondary }}>Takes only 3-5 minutes</p>
               </div>
             </div>
             
@@ -44,8 +44,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 <Shield className="h-6 w-6" style={{ color: colors.accent }} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Confidential</h3>
-                <p className="text-gray-600 text-sm">Your privacy is protected</p>
+                <h3 className="font-semibold" style={{ color: colors.textPrimary }}>Confidential</h3>
+                <p className="text-sm" style={{ color: colors.textSecondary }}>Your privacy is protected</p>
               </div>
             </div>
             
@@ -54,8 +54,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 <Users className="h-6 w-6" style={{ color: colors.primary }} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Your Voice Matters</h3>
-                <p className="text-gray-600 text-sm">Every response helps improve our services</p>
+                <h3 className="font-semibold" style={{ color: colors.textPrimary }}>Your Voice Matters</h3>
+                <p className="text-sm" style={{ color: colors.textSecondary }}>Every response helps improve our services</p>
               </div>
             </div>
             
@@ -64,8 +64,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 <Star className="h-6 w-6" style={{ color: colors.accent }} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Make a Difference</h3>
-                <p className="text-gray-600 text-sm">Shape the future of our services</p>
+                <h3 className="font-semibold" style={{ color: colors.textPrimary }}>Make a Difference</h3>
+                <p className="text-sm" style={{ color: colors.textSecondary }}>Shape the future of our services</p>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             >
               Start Feedback Survey
             </BrandedButton>
-            <p className="text-gray-500 text-sm mt-4">
+            <p className="text-sm mt-4" style={{ color: colors.textSecondary }}>
               Your responses are anonymous and help us improve our services
             </p>
           </div>
