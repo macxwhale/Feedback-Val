@@ -22,13 +22,16 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const logAction = useAuditLogging();
 
   const pageSize = 20;
   const pageOffset = currentPage * pageSize;
+
+  // Convert "all" to undefined for the API call
+  const apiRoleFilter = roleFilter === 'all' ? undefined : roleFilter;
 
   const { 
     data: usersData, 
@@ -39,7 +42,7 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
     pageSize,
     pageOffset,
     searchTerm: searchTerm || undefined,
-    roleFilter: roleFilter || undefined
+    roleFilter: apiRoleFilter
   });
 
   const users = usersData?.users || [];
@@ -70,7 +73,7 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
 
   const handleClearFilters = () => {
     setSearchTerm('');
-    setRoleFilter('');
+    setRoleFilter('all');
     setCurrentPage(0);
   };
 

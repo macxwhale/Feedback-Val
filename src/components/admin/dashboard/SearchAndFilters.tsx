@@ -39,7 +39,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             <SelectValue placeholder="Role" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Roles</SelectItem>
+            <SelectItem value="all">All Roles</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
             <SelectItem value="member">Member</SelectItem>
           </SelectContent>
