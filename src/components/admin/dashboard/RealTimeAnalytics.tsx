@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useRealTimeAnalytics } from '@/hooks/useRealTimeAnalytics';
 import { 
   Activity, 
   Users, 
@@ -22,57 +23,34 @@ export const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({
   organizationId
 }) => {
   const [isLive, setIsLive] = useState(true);
-  const [liveData, setLiveData] = useState({
-    activeUsers: 12,
-    feedbackSubmissions: 3,
-    averageScore: 4.2,
-    responseTime: 1.8,
-    alerts: []
-  });
-
-  // Simulate real-time data updates
-  useEffect(() => {
-    if (!isLive) return;
-
-    const interval = setInterval(() => {
-      setLiveData(prev => ({
-        ...prev,
-        activeUsers: Math.max(1, prev.activeUsers + Math.floor(Math.random() * 3) - 1),
-        feedbackSubmissions: prev.feedbackSubmissions + (Math.random() > 0.7 ? 1 : 0),
-        averageScore: Math.round((prev.averageScore + (Math.random() - 0.5) * 0.1) * 10) / 10,
-        responseTime: Math.round((prev.responseTime + (Math.random() - 0.5) * 0.2) * 10) / 10
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isLive]);
+  const { liveData, isLoading } = useRealTimeAnalytics(organizationId);
 
   const recentActivity = [
     {
       id: 1,
       type: 'feedback_submitted',
-      message: 'New 5-star feedback from customer',
+      message: `${liveData.feedbackSubmissions} new feedback submissions in last 10 minutes`,
       timestamp: '2 minutes ago',
       severity: 'success'
     },
     {
       id: 2,
       type: 'alert_triggered',
-      message: 'Low satisfaction score detected (2/5)',
+      message: liveData.averageScore < 3 ? 'Low satisfaction scores detected' : 'Satisfaction levels stable',
       timestamp: '5 minutes ago',
-      severity: 'warning'
+      severity: liveData.averageScore < 3 ? 'warning' : 'info'
     },
     {
       id: 3,
       type: 'feedback_submitted',
-      message: 'Feedback session completed',
+      message: `${liveData.activeUsers} active users currently providing feedback`,
       timestamp: '7 minutes ago',
       severity: 'info'
     },
     {
       id: 4,
       type: 'improvement_suggestion',
-      message: 'AI suggested: Reduce wait times',
+      message: liveData.responseTime > 3 ? 'Consider optimizing response time' : 'Response times are optimal',
       timestamp: '12 minutes ago',
       severity: 'info'
     }
@@ -95,6 +73,21 @@ export const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({
       default: return 'text-blue-600 bg-blue-50 border-blue-200';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -120,7 +113,7 @@ export const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Users</p>
                 <p className="text-2xl font-bold text-green-600">{liveData.activeUsers}</p>
-                <p className="text-xs text-gray-500">Currently online</p>
+                <p className="text-xs text-gray-500">Last 10 minutes</p>
               </div>
               <Users className="w-8 h-8 text-green-600" />
             </div>
@@ -198,70 +191,68 @@ export const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({
 
         <Card>
           <CardHeader>
-            <CardTitle>Live Alerts & Notifications</CardTitle>
+            <CardTitle>Live System Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className={`p-4 rounded-lg border ${
+                liveData.averageScore < 3 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
+              }`}>
                 <div className="flex items-center space-x-2">
-                  <AlertTriangle className="w-4 h-4 text-red-600" />
-                  <span className="font-medium text-red-900">Critical Alert</span>
-                  <Badge variant="destructive">New</Badge>
+                  {liveData.averageScore < 3 ? (
+                    <AlertTriangle className="w-4 h-4 text-red-600" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  )}
+                  <span className={`font-medium ${
+                    liveData.averageScore < 3 ? 'text-red-900' : 'text-green-900'
+                  }`}>
+                    {liveData.averageScore < 3 ? 'Satisfaction Alert' : 'Satisfaction Good'}
+                  </span>
                 </div>
-                <p className="text-sm text-red-700 mt-1">
-                  Multiple low satisfaction scores detected in customer service department
+                <p className={`text-sm mt-1 ${
+                  liveData.averageScore < 3 ? 'text-red-700' : 'text-green-700'
+                }`}>
+                  {liveData.averageScore < 3 
+                    ? `Current average score: ${liveData.averageScore}/5 - needs attention`
+                    : `Current average score: ${liveData.averageScore}/5 - performing well`
+                  }
                 </p>
               </div>
 
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className={`p-4 rounded-lg border ${
+                liveData.responseTime > 3 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'
+              }`}>
                 <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-yellow-600" />
-                  <span className="font-medium text-yellow-900">Performance Warning</span>
+                  <Clock className={`w-4 h-4 ${
+                    liveData.responseTime > 3 ? 'text-yellow-600' : 'text-green-600'
+                  }`} />
+                  <span className={`font-medium ${
+                    liveData.responseTime > 3 ? 'text-yellow-900' : 'text-green-900'
+                  }`}>
+                    Response Time Status
+                  </span>
                 </div>
-                <p className="text-sm text-yellow-700 mt-1">
-                  Response time increased by 25% in the last hour
+                <p className={`text-sm mt-1 ${
+                  liveData.responseTime > 3 ? 'text-yellow-700' : 'text-green-700'
+                }`}>
+                  Average completion time: {liveData.responseTime} minutes
                 </p>
               </div>
 
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className="font-medium text-green-900">Positive Trend</span>
+                  <Activity className="w-4 h-4 text-blue-600" />
+                  <span className="font-medium text-blue-900">System Activity</span>
                 </div>
-                <p className="text-sm text-green-700 mt-1">
-                  Customer satisfaction improved 15% since this morning
+                <p className="text-sm text-blue-700 mt-1">
+                  {liveData.activeUsers} users active, {liveData.feedbackSubmissions} submissions in last 10 minutes
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Live Heatmap */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Department Performance Heatmap</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-green-100 border border-green-300">
-              <h4 className="font-medium text-green-900">Sales</h4>
-              <p className="text-2xl font-bold text-green-700">4.6/5</p>
-              <p className="text-sm text-green-600">Excellent performance</p>
-            </div>
-            <div className="p-4 rounded-lg bg-yellow-100 border border-yellow-300">
-              <h4 className="font-medium text-yellow-900">Customer Service</h4>
-              <p className="text-2xl font-bold text-yellow-700">3.8/5</p>
-              <p className="text-sm text-yellow-600">Needs attention</p>
-            </div>
-            <div className="p-4 rounded-lg bg-red-100 border border-red-300">
-              <h4 className="font-medium text-red-900">Technical Support</h4>
-              <p className="text-2xl font-bold text-red-700">3.2/5</p>
-              <p className="text-sm text-red-600">Critical issues</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

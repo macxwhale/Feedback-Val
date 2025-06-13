@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { useOperationalAnalytics } from '@/hooks/useOperationalAnalytics';
 import { 
   Users, 
   MessageSquare, 
@@ -26,86 +27,47 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
   department = 'all'
 }) => {
   const [activeFilter, setActiveFilter] = useState('all');
-
-  const departmentMetrics = {
-    'customer-service': {
-      name: 'Customer Service',
-      metrics: {
-        responseTime: 2.1,
-        resolutionRate: 87,
-        satisfaction: 4.3,
-        volume: 156
-      },
-      issues: [
-        { title: 'Long wait times', count: 23, trend: 'up' },
-        { title: 'Poor phone quality', count: 18, trend: 'stable' },
-        { title: 'Lack of product knowledge', count: 15, trend: 'down' }
-      ]
-    },
-    'sales': {
-      name: 'Sales',
-      metrics: {
-        responseTime: 1.8,
-        resolutionRate: 92,
-        satisfaction: 4.1,
-        volume: 89
-      },
-      issues: [
-        { title: 'Pricing concerns', count: 12, trend: 'up' },
-        { title: 'Product availability', count: 8, trend: 'stable' },
-        { title: 'Delivery delays', count: 6, trend: 'down' }
-      ]
-    },
-    'technical': {
-      name: 'Technical Support',
-      metrics: {
-        responseTime: 3.2,
-        resolutionRate: 78,
-        satisfaction: 3.9,
-        volume: 234
-      },
-      issues: [
-        { title: 'Complex technical issues', count: 45, trend: 'up' },
-        { title: 'Insufficient documentation', count: 32, trend: 'stable' },
-        { title: 'Escalation delays', count: 28, trend: 'up' }
-      ]
-    }
-  };
+  const { data: departmentMetrics, isLoading } = useOperationalAnalytics(organizationId);
 
   const actionItems = [
     {
       id: 1,
-      title: 'Implement callback system for customer service',
+      title: 'Analyze low satisfaction responses',
       priority: 'high',
-      department: 'customer-service',
-      assignee: 'Sarah Johnson',
-      dueDate: '2024-01-20',
-      status: 'in-progress',
-      impact: 'Reduce wait time by 40%'
+      department: 'all',
+      assignee: 'Analytics Team',
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+      status: 'pending',
+      impact: 'Identify improvement opportunities'
     },
     {
       id: 2,
-      title: 'Update product training materials',
+      title: 'Review response completion rates',
       priority: 'medium',
-      department: 'sales',
-      assignee: 'Mike Chen',
-      dueDate: '2024-01-25',
-      status: 'pending',
-      impact: 'Improve product knowledge scores by 25%'
-    },
-    {
-      id: 3,
-      title: 'Create technical troubleshooting guides',
-      priority: 'high',
-      department: 'technical',
-      assignee: 'Alex Rodriguez',
-      dueDate: '2024-01-18',
-      status: 'completed',
-      impact: 'Reduce resolution time by 30%'
+      department: 'all',
+      assignee: 'Operations Team',
+      dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+      status: 'in-progress',
+      impact: 'Optimize feedback collection process'
     }
   ];
 
-  const departments = Object.keys(departmentMetrics);
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const departments = departmentMetrics ? Object.keys(departmentMetrics) : [];
 
   return (
     <div className="space-y-6">
@@ -120,10 +82,10 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
               onChange={(e) => setActiveFilter(e.target.value)}
               className="border rounded-md px-3 py-1 text-sm"
             >
-              <option value="all">All Departments</option>
+              <option value="all">All Categories</option>
               {departments.map(dept => (
                 <option key={dept} value={dept}>
-                  {departmentMetrics[dept as keyof typeof departmentMetrics].name}
+                  {departmentMetrics![dept].name}
                 </option>
               ))}
             </select>
@@ -140,7 +102,7 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
         {departments
           .filter(dept => activeFilter === 'all' || activeFilter === dept)
           .map(dept => {
-            const data = departmentMetrics[dept as keyof typeof departmentMetrics];
+            const data = departmentMetrics![dept];
             return (
               <Card key={dept}>
                 <CardHeader>
@@ -167,7 +129,7 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
                   </div>
                   
                   <div>
-                    <p className="text-sm font-medium mb-2">Top Issues</p>
+                    <p className="text-sm font-medium mb-2">Key Issues</p>
                     <div className="space-y-2">
                       {data.issues.map((issue, index) => (
                         <div key={index} className="flex items-center justify-between text-xs">
@@ -199,7 +161,6 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
             <TabsList>
               <TabsTrigger value="active">Active Items</TabsTrigger>
               <TabsTrigger value="completed">Completed</TabsTrigger>
-              <TabsTrigger value="overdue">Overdue</TabsTrigger>
             </TabsList>
             
             <TabsContent value="active" className="space-y-4">
@@ -214,7 +175,7 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
                       <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                         <span>Assignee: {item.assignee}</span>
                         <span>Due: {item.dueDate}</span>
-                        <span>Dept: {departmentMetrics[item.department as keyof typeof departmentMetrics]?.name}</span>
+                        <span>Scope: {item.department === 'all' ? 'All Categories' : item.department}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -236,30 +197,10 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
               ))}
             </TabsContent>
             
-            <TabsContent value="completed" className="space-y-4">
-              {actionItems
-                .filter(item => item.status === 'completed')
-                .map(item => (
-                <div key={item.id} className="p-4 border rounded-lg bg-green-50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-green-900">{item.title}</h4>
-                      <p className="text-sm text-green-700 mt-1">{item.impact}</p>
-                      <div className="flex items-center space-x-4 mt-2 text-xs text-green-600">
-                        <span>Completed by: {item.assignee}</span>
-                        <span>Impact achieved</span>
-                      </div>
-                    </div>
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  </div>
-                </div>
-              ))}
-            </TabsContent>
-            
-            <TabsContent value="overdue">
+            <TabsContent value="completed">
               <div className="text-center py-8 text-gray-500">
-                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p>No overdue items - great job!</p>
+                <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p>No completed items yet - keep tracking your progress!</p>
               </div>
             </TabsContent>
           </Tabs>
@@ -278,18 +219,20 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <span className="text-sm">Feedback submissions today</span>
-                <Badge variant="default">24 new</Badge>
+                <span className="text-sm">Total responses tracked</span>
+                <Badge variant="default">
+                  {departments.reduce((sum, dept) => sum + (departmentMetrics![dept]?.metrics.volume || 0), 0)} total
+                </Badge>
               </div>
-              <div className="flex justify-between items-center p-3 bg-yellow-50 rounded">
-                <span className="text-sm">Average response time</span>
-                <Badge variant="outline">2.3 min</Badge>
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
+                <span className="text-sm">Categories monitored</span>
+                <Badge variant="outline">{departments.length} active</Badge>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                <span className="text-sm">Satisfaction trend</span>
+                <span className="text-sm">Data collection</span>
                 <Badge variant="secondary">
                   <TrendingUp className="w-3 h-3 mr-1" />
-                  +5%
+                  Real-time
                 </Badge>
               </div>
             </div>
@@ -298,30 +241,22 @@ export const OperationalAnalytics: React.FC<OperationalAnalyticsProps> = ({
 
         <Card>
           <CardHeader>
-            <CardTitle>Performance Targets</CardTitle>
+            <CardTitle>Performance Overview</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Customer Satisfaction</span>
-                <span>4.2/5.0 (84%)</span>
-              </div>
-              <Progress value={84} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Response Rate</span>
-                <span>87/90% (97%)</span>
-              </div>
-              <Progress value={97} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Issue Resolution</span>
-                <span>78/85% (92%)</span>
-              </div>
-              <Progress value={92} className="h-2" />
-            </div>
+            {departments.slice(0, 3).map(dept => {
+              const data = departmentMetrics![dept];
+              const satisfactionPercentage = (data.metrics.satisfaction / 5) * 100;
+              return (
+                <div key={dept}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{data.name}</span>
+                    <span>{data.metrics.satisfaction}/5 ({Math.round(satisfactionPercentage)}%)</span>
+                  </div>
+                  <Progress value={satisfactionPercentage} className="h-2" />
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useExecutiveAnalytics } from '@/hooks/useExecutiveAnalytics';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -23,63 +24,32 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   organizationId,
   stats
 }) => {
-  const kpis = [
-    {
-      title: 'Customer Satisfaction',
-      value: stats?.avg_session_score || 4.2,
-      target: 4.5,
-      trend: '+5%',
-      isPositive: true,
-      icon: Target,
-      suffix: '/5'
-    },
-    {
-      title: 'Response Rate',
-      value: Math.round(((stats?.completed_sessions || 85) / Math.max(stats?.total_sessions || 100, 1)) * 100),
-      target: 90,
-      trend: '+12%',
-      isPositive: true,
-      icon: Users,
-      suffix: '%'
-    },
-    {
-      title: 'Issue Resolution Time',
-      value: 2.3,
-      target: 2.0,
-      trend: '-8%',
-      isPositive: true,
-      icon: Clock,
-      suffix: ' days'
-    },
-    {
-      title: 'Cost per Feedback',
-      value: 0.85,
-      target: 1.0,
-      trend: '-15%',
-      isPositive: true,
-      icon: DollarSign,
-      prefix: '$'
-    }
-  ];
+  const { data: kpis, isLoading } = useExecutiveAnalytics(organizationId);
 
   const alerts = [
     {
-      type: 'critical',
-      title: 'Service Quality Alert',
-      message: 'Staff service ratings dropped 15% this week',
-      priority: 'high'
-    },
-    {
       type: 'warning',
-      title: 'Response Time Increasing',
-      message: 'Average feedback completion time up 25%',
+      title: 'Response Rate Monitoring',
+      message: stats?.completed_sessions && stats?.total_sessions 
+        ? `${Math.round((stats.completed_sessions / stats.total_sessions) * 100)}% completion rate`
+        : 'Monitor completion rates for insights',
       priority: 'medium'
     },
     {
       type: 'success',
-      title: 'Customer Retention Improving',
-      message: 'Positive feedback increased 20% month-over-month',
+      title: 'Engagement Trends',
+      message: stats?.active_members 
+        ? `${stats.active_members} active members this period`
+        : 'User engagement tracking active',
       priority: 'low'
+    },
+    {
+      type: stats?.avg_session_score && stats.avg_session_score < 3 ? 'critical' : 'success',
+      title: 'Satisfaction Monitoring',
+      message: stats?.avg_session_score
+        ? `Average satisfaction: ${stats.avg_session_score}/5`
+        : 'Satisfaction scores being tracked',
+      priority: stats?.avg_session_score && stats.avg_session_score < 3 ? 'high' : 'low'
     }
   ];
 
@@ -92,11 +62,23 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi, index) => (
+        {kpis?.map((kpi, index) => (
           <Card key={index} className="border-l-4 border-l-blue-500">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -119,7 +101,12 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                     <Progress value={(kpi.value / kpi.target) * 100} className="h-2" />
                   </div>
                 </div>
-                <kpi.icon className="w-8 h-8 text-blue-600" />
+                <div className="w-8 h-8 text-blue-600">
+                  {kpi.title.includes('Satisfaction') && <Target className="w-8 h-8" />}
+                  {kpi.title.includes('Response') && <Users className="w-8 h-8" />}
+                  {kpi.title.includes('Time') && <Clock className="w-8 h-8" />}
+                  {kpi.title.includes('Cost') && <DollarSign className="w-8 h-8" />}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -170,72 +157,74 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">This Week</span>
+                <span className="text-sm text-gray-600">Current Period</span>
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium">4.2/5</span>
+                  <span className="font-medium">{stats?.avg_session_score || 'N/A'}/5</span>
                   <Badge variant="default" className="text-xs">
                     <TrendingUp className="w-3 h-3 mr-1" />
-                    +0.3
+                    Tracked
                   </Badge>
                 </div>
               </div>
-              <Progress value={84} className="h-2" />
+              <Progress value={stats?.avg_session_score ? (stats.avg_session_score / 5) * 100 : 0} className="h-2" />
               
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">This Month</span>
+                <span className="text-sm text-gray-600">Completion Rate</span>
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium">4.1/5</span>
+                  <span className="font-medium">
+                    {stats?.total_sessions && stats?.completed_sessions
+                      ? `${Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%`
+                      : 'N/A'
+                    }
+                  </span>
                   <Badge variant="default" className="text-xs">
                     <TrendingUp className="w-3 h-3 mr-1" />
-                    +0.2
+                    Active
                   </Badge>
                 </div>
               </div>
-              <Progress value={82} className="h-2" />
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">This Quarter</span>
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium">3.9/5</span>
-                  <Badge variant="outline" className="text-xs">
-                    <TrendingDown className="w-3 h-3 mr-1" />
-                    -0.1
-                  </Badge>
-                </div>
-              </div>
-              <Progress value={78} className="h-2" />
+              <Progress value={
+                stats?.total_sessions && stats?.completed_sessions
+                  ? (stats.completed_sessions / stats.total_sessions) * 100
+                  : 0
+              } className="h-2" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Priority Actions</CardTitle>
+            <CardTitle>Data-Driven Recommendations</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-red-900">Improve Staff Training</span>
-                  <Badge variant="destructive">Critical</Badge>
+              {stats?.avg_session_score && stats.avg_session_score < 3 && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-red-900">Improve Satisfaction</span>
+                    <Badge variant="destructive">Critical</Badge>
+                  </div>
+                  <p className="text-xs text-red-700 mt-1">Score below 3.0 - immediate attention needed</p>
                 </div>
-                <p className="text-xs text-red-700 mt-1">ROI: 300% | Timeline: 2 weeks</p>
-              </div>
+              )}
               
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-yellow-900">Optimize Wait Times</span>
-                  <Badge variant="outline">High</Badge>
+              {stats?.total_sessions && stats.completed_sessions && 
+               (stats.completed_sessions / stats.total_sessions) < 0.8 && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-yellow-900">Optimize Completion</span>
+                    <Badge variant="outline">High</Badge>
+                  </div>
+                  <p className="text-xs text-yellow-700 mt-1">Completion rate below 80% - streamline process</p>
                 </div>
-                <p className="text-xs text-yellow-700 mt-1">ROI: 250% | Timeline: 1 week</p>
-              </div>
+              )}
               
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-blue-900">Launch Referral Program</span>
-                  <Badge variant="secondary">Medium</Badge>
+                  <span className="font-medium text-blue-900">Continue Monitoring</span>
+                  <Badge variant="secondary">Ongoing</Badge>
                 </div>
-                <p className="text-xs text-blue-700 mt-1">ROI: 180% | Timeline: 3 weeks</p>
+                <p className="text-xs text-blue-700 mt-1">Regular tracking active - {stats?.total_responses || 0} responses collected</p>
               </div>
             </div>
           </CardContent>
