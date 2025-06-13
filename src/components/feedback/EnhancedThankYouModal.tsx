@@ -11,6 +11,7 @@ import { CategoryScoreDisplay } from './CategoryScoreDisplay';
 import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
 import { SentimentTrends } from './SentimentTrends';
 import { AnalyticsInsights } from './AnalyticsInsights';
+import { AdvancedInsightsDashboard } from './AdvancedInsightsDashboard';
 import { AnalyticsData } from '@/services/analyticsService';
 import { SuccessAnimation } from './SuccessAnimation';
 import { ThankYouActions } from './ThankYouActions';
@@ -37,7 +38,7 @@ export const EnhancedThankYouModal: React.FC<EnhancedThankYouModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <div className="space-y-6">
           <SuccessAnimation show={true} />
           
@@ -46,16 +47,17 @@ export const EnhancedThankYouModal: React.FC<EnhancedThankYouModalProps> = ({
               Thank You for Your Feedback!
             </h2>
             <p className="text-gray-600">
-              Your responses help us understand and improve our services
+              Your responses help us understand and improve our services. Here are your insights:
             </p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="summary">Summary</TabsTrigger>
               <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="intelligence">AI Intelligence</TabsTrigger>
             </TabsList>
 
             <TabsContent value="summary" className="space-y-6">
@@ -81,6 +83,10 @@ export const EnhancedThankYouModal: React.FC<EnhancedThankYouModalProps> = ({
                   <p>Analytics data not available</p>
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="intelligence" className="space-y-6">
+              <AdvancedInsightsDashboard responses={responses} questions={questions} />
             </TabsContent>
           </Tabs>
 
