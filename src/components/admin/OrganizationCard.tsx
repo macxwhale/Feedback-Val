@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Edit, Settings, Eye } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Organization } from '@/services/organizationService';
+import { Building2, Calendar, Users, Settings, UserPlus } from 'lucide-react';
+import { UserManagement } from './UserManagement';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface OrganizationCardProps {
   org: Organization;
@@ -19,97 +20,101 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   onToggleActive,
   onUpdatePlan
 }) => {
-  const getPlanBadgeColor = (plan: string) => {
+  const [showUserManagement, setShowUserManagement] = useState(false);
+
+  const getPlanColor = (plan: string) => {
     switch (plan) {
-      case 'pro': return 'bg-green-100 text-green-800';
-      case 'enterprise': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'free': return 'bg-gray-100 text-gray-700';
+      case 'pro': return 'bg-blue-100 text-blue-700';
+      case 'enterprise': return 'bg-purple-100 text-purple-700';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`transition-all ${org.is_active ? 'border-green-200' : 'border-red-200 opacity-75'}`}>
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            {org.logo_url && (
-              <img src={org.logo_url} alt={org.name} className="w-12 h-12 rounded-lg object-cover" />
-            )}
-            <div>
-              <h3 className="font-semibold text-lg">{org.name}</h3>
-              <p className="text-sm text-gray-600">/{org.slug}</p>
-              {org.domain && (
-                <p className="text-sm text-blue-600">{org.domain}</p>
-              )}
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              {org.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <h3 className="text-lg font-semibold">{org.name}</h3>
+                <Badge variant={org.is_active ? 'default' : 'secondary'}>
+                  {org.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+                <Badge className={getPlanColor(org.plan_type || 'free')}>
+                  {(org.plan_type || 'free').toUpperCase()}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+                <div className="flex items-center space-x-2">
+                  <Building2 className="w-4 h-4" />
+                  <span>Slug: {org.slug}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Created: {new Date(org.created_at).toLocaleDateString()}</span>
+                </div>
+                {org.domain && (
+                  <div className="flex items-center space-x-2">
+                    <Building2 className="w-4 h-4" />
+                    <span>Domain: {org.domain}</span>
+                  </div>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>Max Responses: {org.max_responses || 100}</span>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <Badge className={getPlanBadgeColor(org.plan_type || 'free')}>
-              {(org.plan_type || 'free').toUpperCase()}
-            </Badge>
-            <Badge variant={org.is_active ? 'default' : 'secondary'}>
-              {org.is_active ? 'Active' : 'Inactive'}
-            </Badge>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div>
-            <Label className="text-xs text-gray-500">Max Responses</Label>
-            <p className="font-medium">{org.max_responses || 100}</p>
-          </div>
-          <div>
-            <Label className="text-xs text-gray-500">Created</Label>
-            <p className="font-medium">{new Date(org.created_at).toLocaleDateString()}</p>
-          </div>
-          <div>
-            <Label className="text-xs text-gray-500">Trial Ends</Label>
-            <p className="font-medium">
-              {org.trial_ends_at ? new Date(org.trial_ends_at).toLocaleDateString() : 'N/A'}
-            </p>
-          </div>
-          <div>
-            <Label className="text-xs text-gray-500">Billing Email</Label>
-            <p className="font-medium">{org.billing_email || 'Not set'}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Switch 
-                checked={org.is_active}
-                onCheckedChange={() => onToggleActive(org.id, org.is_active)}
-              />
-              <Label className="text-sm">Active</Label>
+          <div className="flex flex-col space-y-2">
+            <div className="flex space-x-2">
+              <Button
+                variant={org.is_active ? "destructive" : "default"}
+                size="sm"
+                onClick={() => onToggleActive(org.id, org.is_active)}
+              >
+                {org.is_active ? 'Deactivate' : 'Activate'}
+              </Button>
+              
+              <Dialog open={showUserManagement} onOpenChange={setShowUserManagement}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    Users
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>User Management - {org.name}</DialogTitle>
+                  </DialogHeader>
+                  <UserManagement 
+                    organizationId={org.id} 
+                    organizationName={org.name}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
-            
-            <select 
+
+            <Select
               value={org.plan_type || 'free'}
-              onChange={(e) => onUpdatePlan(org.id, e.target.value)}
-              className="text-sm border rounded px-2 py-1"
+              onValueChange={(value) => onUpdatePlan(org.id, value)}
             >
-              <option value="free">Free</option>
-              <option value="pro">Pro</option>
-              <option value="enterprise">Enterprise</option>
-            </select>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => window.open(`/${org.slug}`, '_blank')}
-            >
-              <Eye className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="w-4 h-4" />
-            </Button>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="pro">Pro</SelectItem>
+                <SelectItem value="enterprise">Enterprise</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardContent>
