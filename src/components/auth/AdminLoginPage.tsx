@@ -9,6 +9,7 @@ import { useAuth } from './AuthWrapper';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -29,15 +30,46 @@ export const AdminLoginPage: React.FC = () => {
     
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
-      toast({
-        title: "Welcome back, Admin!",
-        description: "You have been signed in successfully.",
-      });
-      navigate('/admin');
+      // Wait for authentication to complete and then check admin status
+      try {
+        // Get the current session to ensure user is authenticated
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Check if user is an admin using the security definer function
+          const { data: isAdmin, error: adminError } = await supabase
+            .rpc('get_current_user_admin_status');
+          
+          if (adminError) {
+            console.error('Error checking admin status:', adminError);
+            setError('Failed to verify admin privileges');
+            setLoading(false);
+            return;
+          }
+          
+          if (isAdmin) {
+            toast({
+              title: "Welcome back, Admin!",
+              description: "You have been signed in successfully.",
+            });
+            navigate('/admin');
+          } else {
+            setError('Access denied. This login is for system administrators only.');
+            // Sign out the user since they don't have admin privileges
+            await supabase.auth.signOut();
+          }
+        } else {
+          setError('Authentication failed. Please try again.');
+        }
+      } catch (err) {
+        console.error('Error during admin verification:', err);
+        setError('Failed to verify admin privileges');
+      }
+      
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
