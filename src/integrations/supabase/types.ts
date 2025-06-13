@@ -386,8 +386,94 @@ export type Database = {
         }
         Relationships: []
       }
+      question_options: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          is_active: boolean | null
+          option_text: string
+          option_value: string | null
+          question_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          option_text: string
+          option_value?: string | null
+          question_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          option_text?: string
+          option_value?: string | null
+          question_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_scale_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          max_label: string | null
+          max_value: number
+          min_label: string | null
+          min_value: number
+          question_id: string
+          step_size: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          max_label?: string | null
+          max_value?: number
+          min_label?: string | null
+          min_value?: number
+          question_id: string
+          step_size?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          max_label?: string | null
+          max_value?: number
+          min_label?: string | null
+          min_value?: number
+          question_id?: string
+          step_size?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_scale_config_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_types: {
         Row: {
+          config_schema: Json | null
           created_at: string
           description: string | null
           display_name: string
@@ -396,8 +482,10 @@ export type Database = {
           supports_options: boolean | null
           supports_scale: boolean | null
           updated_at: string
+          validation_rules: Json | null
         }
         Insert: {
+          config_schema?: Json | null
           created_at?: string
           description?: string | null
           display_name: string
@@ -406,8 +494,10 @@ export type Database = {
           supports_options?: boolean | null
           supports_scale?: boolean | null
           updated_at?: string
+          validation_rules?: Json | null
         }
         Update: {
+          config_schema?: Json | null
           created_at?: string
           description?: string | null
           display_name?: string
@@ -416,6 +506,7 @@ export type Database = {
           supports_options?: boolean | null
           supports_scale?: boolean | null
           updated_at?: string
+          validation_rules?: Json | null
         }
         Relationships: []
       }
@@ -423,50 +514,65 @@ export type Database = {
         Row: {
           category: Database["public"]["Enums"]["question_category"]
           category_id: string
+          conditional_logic: Json | null
           created_at: string
+          help_text: string | null
           id: string
           is_active: boolean
+          is_required: boolean | null
           options: Json | null
           order_index: number
           organization_id: string
+          placeholder_text: string | null
           question_text: string
           question_type: string
           required: boolean
           scale: Json | null
           type_id: string
           updated_at: string
+          validation_rules: Json | null
         }
         Insert: {
           category: Database["public"]["Enums"]["question_category"]
           category_id: string
+          conditional_logic?: Json | null
           created_at?: string
+          help_text?: string | null
           id?: string
           is_active?: boolean
+          is_required?: boolean | null
           options?: Json | null
           order_index: number
           organization_id: string
+          placeholder_text?: string | null
           question_text: string
           question_type: string
           required?: boolean
           scale?: Json | null
           type_id: string
           updated_at?: string
+          validation_rules?: Json | null
         }
         Update: {
           category?: Database["public"]["Enums"]["question_category"]
           category_id?: string
+          conditional_logic?: Json | null
           created_at?: string
+          help_text?: string | null
           id?: string
           is_active?: boolean
+          is_required?: boolean | null
           options?: Json | null
           order_index?: number
           organization_id?: string
+          placeholder_text?: string | null
           question_text?: string
           question_type?: string
           required?: boolean
           scale?: Json | null
           type_id?: string
           updated_at?: string
+          validation_rules?: Json | null
         }
         Relationships: [
           {
