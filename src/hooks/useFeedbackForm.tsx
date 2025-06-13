@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
 import { fetchQuestions } from '@/services/questionsService';
@@ -7,7 +8,7 @@ import { useAutoSave } from './useAutoSave';
 import { useFormValidation } from './useFormValidation';
 import { useWebhooks } from './useWebhooks';
 import { useToast } from '@/hooks/use-toast';
-import { useOrganizationContext } from '@/context/OrganizationContext';
+import { useOrganization } from '@/hooks/useOrganization';
 
 export const useFeedbackForm = () => {
   const [questions, setQuestions] = useState<QuestionConfig[]>([]);
@@ -16,7 +17,7 @@ export const useFeedbackForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   
-  const { organization } = useOrganizationContext();
+  const { organization, isLoading: orgLoading } = useOrganization();
   const { toast } = useToast();
   const { responses, handleResponse, generateFinalResponses, resetResponses, loadResponses } = useFormResponses();
   const { currentQuestionIndex, goToNext, goToPrevious, resetNavigation } = useFormNavigation(questions.length);
@@ -30,26 +31,39 @@ export const useFeedbackForm = () => {
 
   useEffect(() => {
     const loadQuestions = async () => {
-      if (!organization) return;
-
-      const data = await fetchQuestions(organization.id);
-      setQuestions(data);
+      console.log('useFeedbackForm - Loading questions, org loading:', orgLoading, 'organization:', organization);
       
-      // Load saved data if exists
-      const savedData = loadSavedData();
-      if (savedData && Object.keys(savedData.responses || {}).length > 0) {
-        toast({
-          title: "Previous session restored",
-          description: "We've restored your previous answers",
-        });
-        loadResponses(savedData.responses);
-        setCompletedQuestions(savedData.completedQuestions || []);
+      // Wait for organization to load
+      if (orgLoading) {
+        return;
       }
-      
-      setIsLoading(false);
+
+      try {
+        setIsLoading(true);
+        
+        const data = await fetchQuestions(organization?.id);
+        console.log('useFeedbackForm - Questions loaded:', data);
+        setQuestions(data);
+        
+        // Load saved data if exists
+        const savedData = loadSavedData();
+        if (savedData && Object.keys(savedData.responses || {}).length > 0) {
+          toast({
+            title: "Previous session restored",
+            description: "We've restored your previous answers",
+          });
+          loadResponses(savedData.responses);
+          setCompletedQuestions(savedData.completedQuestions || []);
+        }
+      } catch (error) {
+        console.error('useFeedbackForm - Error loading questions:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     loadQuestions();
-  }, [organization, loadSavedData, loadResponses, toast]);
+  }, [organization, orgLoading, loadSavedData, loadResponses, toast]);
 
   const isCurrentQuestionAnswered = () => {
     const currentQuestion = questions[currentQuestionIndex];

@@ -68,6 +68,8 @@ export interface CreateOrganizationData {
 
 export const getOrganizationBySlug = async (slug: string): Promise<Organization | null> => {
   try {
+    console.log('getOrganizationBySlug - Fetching slug:', slug);
+    
     const { data, error } = await supabase
       .from('organizations')
       .select('*')
@@ -76,19 +78,44 @@ export const getOrganizationBySlug = async (slug: string): Promise<Organization 
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching organization by slug:', error);
+      console.error('getOrganizationBySlug - Supabase error:', error);
       return null;
     }
 
+    console.log('getOrganizationBySlug - Result:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching organization:', error);
+    console.error('getOrganizationBySlug - Network error:', error);
+    
+    // Return fallback data for police-sacco if network fails
+    if (slug === 'police-sacco') {
+      console.log('getOrganizationBySlug - Returning fallback police-sacco data');
+      return {
+        id: 'fallback-police-sacco',
+        name: 'Kenya National Police DT SACCO',
+        slug: 'police-sacco',
+        primary_color: '#073763',
+        secondary_color: '#007ACE',
+        is_active: true,
+        feedback_header_title: 'Share Your Experience',
+        feedback_header_subtitle: 'Help us serve you better with your valuable feedback',
+        welcome_screen_title: 'Share Your Experience',
+        welcome_screen_description: 'Help us serve you better with your valuable feedback. Your input helps us improve our services and better serve our community.',
+        thank_you_title: 'Thank You for Your Feedback!',
+        thank_you_message: 'Your valuable feedback has been received and will help us improve our services.',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    }
+    
     return null;
   }
 };
 
 export const getOrganizationByDomain = async (domain: string): Promise<Organization | null> => {
   try {
+    console.log('getOrganizationByDomain - Fetching domain:', domain);
+    
     const { data, error } = await supabase
       .from('organizations')
       .select('*')
@@ -97,13 +124,14 @@ export const getOrganizationByDomain = async (domain: string): Promise<Organizat
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching organization by domain:', error);
+      console.error('getOrganizationByDomain - Supabase error:', error);
       return null;
     }
 
+    console.log('getOrganizationByDomain - Result:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching organization:', error);
+    console.error('getOrganizationByDomain - Network error:', error);
     return null;
   }
 };

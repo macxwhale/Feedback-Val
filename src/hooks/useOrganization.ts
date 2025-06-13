@@ -12,6 +12,8 @@ export const useOrganization = () => {
 
   useEffect(() => {
     const detectOrganization = async () => {
+      console.log('useOrganization - Starting detection, params:', params, 'pathname:', location.pathname);
+      
       try {
         setIsLoading(true);
         setError(null);
@@ -21,18 +23,32 @@ export const useOrganization = () => {
         const hostname = url.hostname;
         const pathname = url.pathname;
 
+        console.log('useOrganization - URL info:', { hostname, pathname });
+
         let org: Organization | null = null;
 
-        // Method 1: Check for custom domain
-        if (hostname !== 'localhost' && !hostname.includes('lovable.app')) {
-          org = await getOrganizationByDomain(hostname);
+        // Method 1: Check for custom domain (skip in development)
+        if (hostname !== 'localhost' && !hostname.includes('lovable.app') && !hostname.includes('lovableproject.com')) {
+          console.log('useOrganization - Checking domain:', hostname);
+          try {
+            org = await getOrganizationByDomain(hostname);
+            console.log('useOrganization - Domain result:', org);
+          } catch (domainError) {
+            console.log('useOrganization - Domain check failed:', domainError);
+          }
         }
 
         // Method 2: Check for subdomain (e.g., police-sacco.feedback.com)
         if (!org && hostname.includes('.')) {
           const subdomain = hostname.split('.')[0];
           if (subdomain !== 'www' && subdomain !== 'feedback') {
-            org = await getOrganizationBySlug(subdomain);
+            console.log('useOrganization - Checking subdomain:', subdomain);
+            try {
+              org = await getOrganizationBySlug(subdomain);
+              console.log('useOrganization - Subdomain result:', org);
+            } catch (subdomainError) {
+              console.log('useOrganization - Subdomain check failed:', subdomainError);
+            }
           }
         }
 
@@ -59,25 +75,41 @@ export const useOrganization = () => {
             }
           }
 
+          console.log('useOrganization - Detected orgSlug:', orgSlug);
+
           if (orgSlug) {
-            org = await getOrganizationBySlug(orgSlug);
+            try {
+              org = await getOrganizationBySlug(orgSlug);
+              console.log('useOrganization - Slug result:', org);
+            } catch (slugError) {
+              console.log('useOrganization - Slug check failed:', slugError);
+            }
           }
         }
 
-        // Method 4: Default to Police Sacco for root path (fallback for development)
-        if (!org && pathname === '/') {
-          org = await getOrganizationBySlug('police-sacco');
+        // Method 4: Default to Police Sacco for root path or if no organization found
+        if (!org && (pathname === '/' || pathname.includes('police-sacco'))) {
+          console.log('useOrganization - Defaulting to police-sacco');
+          try {
+            org = await getOrganizationBySlug('police-sacco');
+            console.log('useOrganization - Default police-sacco result:', org);
+          } catch (defaultError) {
+            console.log('useOrganization - Default police-sacco failed:', defaultError);
+          }
         }
 
-        if (!org && pathname !== '/auth' && pathname !== '/admin') {
+        if (!org && pathname !== '/auth' && pathname !== '/admin' && pathname !== '/') {
+          console.log('useOrganization - No organization found, setting error');
           setError('Organization not found');
         } else {
+          console.log('useOrganization - Setting organization:', org);
           setOrganization(org);
         }
       } catch (err) {
-        console.error('Error detecting organization:', err);
+        console.error('useOrganization - Error detecting organization:', err);
         setError('Failed to load organization');
       } finally {
+        console.log('useOrganization - Setting loading false');
         setIsLoading(false);
       }
     };

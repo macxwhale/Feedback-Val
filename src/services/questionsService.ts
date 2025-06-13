@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const fetchQuestions = async (organizationId?: string): Promise<QuestionConfig[]> => {
   try {
+    console.log('fetchQuestions - Fetching for organizationId:', organizationId);
+    
     let query = supabase
       .from('questions')
       .select('*')
@@ -11,18 +13,24 @@ export const fetchQuestions = async (organizationId?: string): Promise<QuestionC
       .order('order_index');
 
     // If organizationId is provided, filter by it
-    if (organizationId) {
+    if (organizationId && organizationId !== 'fallback-police-sacco') {
       query = query.eq('organization_id', organizationId);
     }
 
     const { data: questions, error } = await query;
 
     if (error) {
-      console.error('Error fetching questions:', error);
+      console.error('fetchQuestions - Supabase error:', error);
       // Fallback to local questions if database fails
       return getFallbackQuestions();
     }
 
+    if (!questions || questions.length === 0) {
+      console.log('fetchQuestions - No questions found, using fallback');
+      return getFallbackQuestions();
+    }
+
+    console.log('fetchQuestions - Found questions:', questions);
     return questions?.map(q => ({
       id: q.id,
       type: q.question_type as QuestionConfig['type'],
@@ -33,12 +41,13 @@ export const fetchQuestions = async (organizationId?: string): Promise<QuestionC
       scale: q.scale as QuestionConfig['scale'] | undefined
     })) || [];
   } catch (error) {
-    console.error('Error fetching questions:', error);
+    console.error('fetchQuestions - Network error:', error);
     return getFallbackQuestions();
   }
 };
 
 const getFallbackQuestions = (): QuestionConfig[] => {
+  console.log('getFallbackQuestions - Using fallback questions');
   return [
     {
       id: 'service-quality',

@@ -10,7 +10,7 @@ import { useFeedbackForm } from '@/hooks/useFeedbackForm';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
 import { useSaveContinue } from '@/hooks/useSaveContinue';
-import { useOrganizationContext } from '@/context/OrganizationContext';
+import { useOrganization } from '@/hooks/useOrganization';
 
 export interface QuestionConfig {
   id: string;
@@ -36,8 +36,10 @@ export interface FeedbackResponse {
 
 const FeedbackForm = () => {
   const [showWelcome, setShowWelcome] = useState(true);
-  const { organization, isLoading: orgLoading, error: orgError } = useOrganizationContext();
+  const { organization, isLoading: orgLoading, error: orgError } = useOrganization();
   
+  console.log('FeedbackForm - Organization state:', { organization, orgLoading, orgError });
+
   const {
     questions,
     currentQuestionIndex,
@@ -88,25 +90,34 @@ const FeedbackForm = () => {
     setShowWelcome(true);
   };
 
-  // Error boundary check
-  const errorBoundary = (
-    <FeedbackErrorBoundary 
-      orgLoading={orgLoading}
-      orgError={orgError}
-      organization={organization}
-    />
-  );
-  
-  if (errorBoundary) return errorBoundary;
+  // Check for error boundary conditions
+  if (orgLoading) {
+    console.log('FeedbackForm - Showing loading state');
+    return <EnhancedLoading />;
+  }
+
+  if (orgError || !organization) {
+    console.log('FeedbackForm - Showing error boundary');
+    return (
+      <FeedbackErrorBoundary 
+        orgLoading={orgLoading}
+        orgError={orgError}
+        organization={organization}
+      />
+    );
+  }
 
   if (isLoading) {
+    console.log('FeedbackForm - Questions loading');
     return <EnhancedLoading />;
   }
 
   if (showWelcome) {
+    console.log('FeedbackForm - Showing welcome screen');
     return <WelcomeScreen onStart={handleStart} />;
   }
 
+  console.log('FeedbackForm - Rendering main content');
   return (
     <FeedbackContainer>
       <FeedbackContent
