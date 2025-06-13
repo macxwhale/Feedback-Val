@@ -18,7 +18,7 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
