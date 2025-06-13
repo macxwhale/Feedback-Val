@@ -10,6 +10,7 @@ import { useAuth } from './AuthWrapper';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -30,16 +31,60 @@ export const LoginPage: React.FC = () => {
     
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
-      // Redirect based on user role will be handled by protected routes
-      navigate('/');
+      
+      // Wait a moment for auth state to update, then check roles and redirect accordingly
+      setTimeout(async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user) {
+            // Check if user is a system admin
+            const { data: isAdmin } = await supabase
+              .rpc('get_current_user_admin_status');
+            
+            if (isAdmin) {
+              navigate('/admin');
+              setLoading(false);
+              return;
+            }
+            
+            // Check if user is an organization admin
+            const { data: orgData } = await supabase
+              .from('organization_users')
+              .select('organization_id, role, organizations(slug)')
+              .eq('user_id', session.user.id)
+              .single();
+            
+            if (orgData?.organization_id) {
+              // Redirect to organization admin dashboard
+              const orgSlug = (orgData.organizations as any)?.slug;
+              if (orgSlug) {
+                navigate(`/admin/${orgSlug}`);
+              } else {
+                // Fallback to home if no slug found
+                navigate('/');
+              }
+            } else {
+              // Regular user, redirect to home
+              navigate('/');
+            }
+          } else {
+            navigate('/');
+          }
+        } catch (err) {
+          console.error('Error checking user roles for redirect:', err);
+          // Fallback to home on error
+          navigate('/');
+        }
+        setLoading(false);
+      }, 500);
     }
-    
-    setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {

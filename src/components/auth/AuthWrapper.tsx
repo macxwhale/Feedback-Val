@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +8,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isOrgAdmin: boolean;
   currentOrganization: string | null;
+  currentOrganizationSlug: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<any>;
   signUp: (email: string, password: string) => Promise<any>;
@@ -35,6 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOrgAdmin, setIsOrgAdmin] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState<string | null>(null);
+  const [currentOrganizationSlug, setCurrentOrganizationSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const checkUserRoles = async (userId: string) => {
@@ -53,21 +54,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAdmin(!!adminStatus);
       }
       
-      // Check organization memberships
+      // Check organization memberships with organization details
       const { data: orgData, error: orgError } = await supabase
         .from('organization_users')
-        .select('organization_id, role')
-        .eq('user_id', userId);
+        .select(`
+          organization_id, 
+          role,
+          organizations(slug)
+        `)
+        .eq('user_id', userId)
+        .single();
       
       if (orgError) {
         console.error('Error checking org memberships:', orgError);
         setIsOrgAdmin(false);
         setCurrentOrganization(null);
+        setCurrentOrganizationSlug(null);
       } else {
         console.log('Org memberships:', orgData);
-        const hasOrgRole = (orgData?.length || 0) > 0;
+        const hasOrgRole = !!orgData?.organization_id;
         setIsOrgAdmin(hasOrgRole);
-        setCurrentOrganization(orgData?.[0]?.organization_id || null);
+        setCurrentOrganization(orgData?.organization_id || null);
+        setCurrentOrganizationSlug((orgData?.organizations as any)?.slug || null);
       }
     } catch (error) {
       console.error('Error checking user roles:', error);
@@ -75,6 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAdmin(false);
       setIsOrgAdmin(false);
       setCurrentOrganization(null);
+      setCurrentOrganizationSlug(null);
     }
   };
 
@@ -100,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsAdmin(false);
           setIsOrgAdmin(false);
           setCurrentOrganization(null);
+          setCurrentOrganizationSlug(null);
         }
         
         setLoading(false);
@@ -172,6 +182,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAdmin(false);
       setIsOrgAdmin(false);
       setCurrentOrganization(null);
+      setCurrentOrganizationSlug(null);
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -185,6 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAdmin,
         isOrgAdmin,
         currentOrganization,
+        currentOrganizationSlug,
         loading,
         signIn,
         signUp,
