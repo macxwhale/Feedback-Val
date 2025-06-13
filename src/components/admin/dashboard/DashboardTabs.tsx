@@ -5,7 +5,10 @@ import {
   Users, 
   MessageSquare, 
   BarChart3, 
-  Settings
+  Settings,
+  Brain,
+  Activity,
+  Database
 } from 'lucide-react';
 import { EnhancedUserManagement } from '../EnhancedUserManagement';
 import { OrganizationSpecificStats } from '../OrganizationSpecificStats';
@@ -38,7 +41,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   handleQuickActions
 }) => {
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'overview', label: 'Analytics', icon: BarChart3 },
     { id: 'members', label: 'Members', icon: Users },
     { id: 'feedback', label: 'Feedback', icon: MessageSquare },
     { id: 'questions', label: 'Questions', icon: MessageSquare },

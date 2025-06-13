@@ -1,5 +1,14 @@
 
 import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ExecutiveDashboard } from './ExecutiveDashboard';
+import { OperationalAnalytics } from './OperationalAnalytics';
+import { RealTimeAnalytics } from './RealTimeAnalytics';
+import { CRMIntegration } from '../integration/CRMIntegration';
+import { ConversationalAnalytics } from '../ai/ConversationalAnalytics';
 import { SessionTrendsChart } from './charts/SessionTrendsChart';
 import { UserEngagementChart } from './charts/UserEngagementChart';
 import { AnalyticsInsights } from './AnalyticsInsights';
@@ -7,16 +16,17 @@ import { QuickActions } from './QuickActions';
 import { NotificationCenter } from './NotificationCenter';
 import { RecentActivityCard } from '../RecentActivityCard';
 import { StatsCards } from './StatsCards';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { 
   Users, 
   MessageSquare, 
   TrendingUp, 
   Target,
   Clock,
-  CheckCircle 
+  CheckCircle,
+  Brain,
+  Database,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
 interface AdvancedDashboardViewProps {
@@ -137,53 +147,107 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
       {/* Header Controls */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Dashboard Overview</h2>
-          <p className="text-gray-600">Real-time insights for {organizationName}</p>
+          <h2 className="text-2xl font-bold">Advanced Analytics Dashboard</h2>
+          <p className="text-gray-600">Comprehensive insights for {organizationName}</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="live-activity">Live Updates</Label>
-          <Switch
-            id="live-activity"
-            checked={isLiveActivity}
-            onCheckedChange={setIsLiveActivity}
-          />
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <StatsCards cards={cards} isLoading={statsLoading} />
-
-      {/* Completion Rate Badge */}
-      {!statsLoading && stats && stats.total_sessions > 0 && (
-        <div className="flex justify-center">
-          <Badge variant="outline" className="text-sm">
-            Overall completion rate: {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%
+        <div className="flex items-center space-x-4">
+          <Badge variant="outline" className="flex items-center space-x-1">
+            <Brain className="w-4 h-4" />
+            <span>AI-Powered</span>
           </Badge>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="live-activity">Live Updates</Label>
+            <Switch
+              id="live-activity"
+              checked={isLiveActivity}
+              onCheckedChange={setIsLiveActivity}
+            />
+          </div>
         </div>
-      )}
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SessionTrendsChart isLoading={statsLoading} />
-        <UserEngagementChart isLoading={statsLoading} />
       </div>
 
-      {/* Analytics and Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <AnalyticsInsights stats={stats} isLoading={statsLoading} />
-        </div>
-        <QuickActions {...handleQuickActions} />
-      </div>
+      {/* Advanced Analytics Tabs */}
+      <Tabs defaultValue="executive" className="w-full">
+        <TabsList className="grid grid-cols-6 w-full max-w-4xl">
+          <TabsTrigger value="executive" className="flex items-center space-x-2">
+            <Target className="w-4 h-4" />
+            <span className="hidden sm:inline">Executive</span>
+          </TabsTrigger>
+          <TabsTrigger value="operational" className="flex items-center space-x-2">
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Operational</span>
+          </TabsTrigger>
+          <TabsTrigger value="realtime" className="flex items-center space-x-2">
+            <Activity className="w-4 h-4" />
+            <span className="hidden sm:inline">Real-time</span>
+          </TabsTrigger>
+          <TabsTrigger value="crm" className="flex items-center space-x-2">
+            <Database className="w-4 h-4" />
+            <span className="hidden sm:inline">CRM</span>
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="flex items-center space-x-2">
+            <Brain className="w-4 h-4" />
+            <span className="hidden sm:inline">AI Assistant</span>
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center space-x-2">
+            <MessageSquare className="w-4 h-4" />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Activity and Notifications */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentActivityCard 
-          recentSessions={stats?.recent_activity} 
-          statsLoading={statsLoading} 
-        />
-        <NotificationCenter />
-      </div>
+        <TabsContent value="executive" className="space-y-6">
+          <ExecutiveDashboard organizationId={organizationId} stats={stats} />
+        </TabsContent>
+
+        <TabsContent value="operational" className="space-y-6">
+          <OperationalAnalytics organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="realtime" className="space-y-6">
+          <RealTimeAnalytics organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="crm" className="space-y-6">
+          <CRMIntegration organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="ai" className="space-y-6">
+          <ConversationalAnalytics organizationId={organizationId} />
+        </TabsContent>
+
+        <TabsContent value="overview" className="space-y-6">
+          {/* Original Overview Content */}
+          <StatsCards cards={cards} isLoading={statsLoading} />
+
+          {!statsLoading && stats && stats.total_sessions > 0 && (
+            <div className="flex justify-center">
+              <Badge variant="outline" className="text-sm">
+                Overall completion rate: {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%
+              </Badge>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SessionTrendsChart isLoading={statsLoading} />
+            <UserEngagementChart isLoading={statsLoading} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <AnalyticsInsights stats={stats} isLoading={statsLoading} />
+            </div>
+            <QuickActions {...handleQuickActions} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <RecentActivityCard 
+              recentSessions={stats?.recent_activity} 
+              statsLoading={statsLoading} 
+            />
+            <NotificationCenter />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
