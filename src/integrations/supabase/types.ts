@@ -138,9 +138,12 @@ export type Database = {
           asset_url: string
           created_at: string
           display_order: number | null
+          file_size: number | null
           id: string
           is_active: boolean | null
+          mime_type: string | null
           organization_id: string
+          storage_path: string | null
           updated_at: string
         }
         Insert: {
@@ -149,9 +152,12 @@ export type Database = {
           asset_url: string
           created_at?: string
           display_order?: number | null
+          file_size?: number | null
           id?: string
           is_active?: boolean | null
+          mime_type?: string | null
           organization_id: string
+          storage_path?: string | null
           updated_at?: string
         }
         Update: {
@@ -160,9 +166,12 @@ export type Database = {
           asset_url?: string
           created_at?: string
           display_order?: number | null
+          file_size?: number | null
           id?: string
           is_active?: boolean | null
+          mime_type?: string | null
           organization_id?: string
+          storage_path?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -281,6 +290,7 @@ export type Database = {
           flow_configuration: Json | null
           id: string
           is_active: boolean
+          logo_storage_path: string | null
           logo_url: string | null
           max_responses: number | null
           name: string
@@ -307,6 +317,7 @@ export type Database = {
           flow_configuration?: Json | null
           id?: string
           is_active?: boolean
+          logo_storage_path?: string | null
           logo_url?: string | null
           max_responses?: number | null
           name: string
@@ -333,6 +344,7 @@ export type Database = {
           flow_configuration?: Json | null
           id?: string
           is_active?: boolean
+          logo_storage_path?: string | null
           logo_url?: string | null
           max_responses?: number | null
           name?: string

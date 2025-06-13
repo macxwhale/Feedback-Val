@@ -82,6 +82,21 @@ export const getOrganizationBySlug = async (slug: string): Promise<Organization 
       return null;
     }
 
+    // If organization found, ensure logo URL is properly set
+    if (data && data.logo_storage_path && !data.logo_url) {
+      const { data: { publicUrl } } = supabase.storage
+        .from('organization-logos')
+        .getPublicUrl(data.logo_storage_path);
+      
+      // Update the organization with the public URL
+      await supabase
+        .from('organizations')
+        .update({ logo_url: publicUrl })
+        .eq('id', data.id);
+      
+      data.logo_url = publicUrl;
+    }
+
     console.log('getOrganizationBySlug - Result:', data);
     return data;
   } catch (error) {
@@ -97,6 +112,7 @@ export const getOrganizationBySlug = async (slug: string): Promise<Organization 
         primary_color: '#073763',
         secondary_color: '#007ACE',
         is_active: true,
+        logo_url: '/lovable-uploads/367347fe-02da-4338-b8ba-91138293d303.png',
         feedback_header_title: 'Share Your Experience',
         feedback_header_subtitle: 'Help us serve you better with your valuable feedback',
         welcome_screen_title: 'Share Your Experience',
