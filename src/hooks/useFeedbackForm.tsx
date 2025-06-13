@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
 import { fetchQuestions } from '@/services/questionsService';
 import { useFormNavigation } from './useFormNavigation';
@@ -23,6 +23,10 @@ export const useFeedbackForm = () => {
   const { currentQuestionIndex, goToNext, goToPrevious, resetNavigation } = useFormNavigation(questions.length);
   const { validateQuestion, getValidationResult } = useFormValidation();
   
+  // Use ref to prevent duplicate loading
+  const questionsLoaded = useRef<boolean>(false);
+  const lastOrgId = useRef<string | null>(null);
+  
   // Auto-save functionality
   const { loadSavedData, clearSavedData } = useAutoSave(
     { responses, currentQuestionIndex, completedQuestions },
@@ -38,12 +42,23 @@ export const useFeedbackForm = () => {
         return;
       }
 
+      // Prevent duplicate loading for the same organization
+      const currentOrgId = organization?.id || 'fallback';
+      if (questionsLoaded.current && lastOrgId.current === currentOrgId) {
+        console.log('useFeedbackForm - Questions already loaded for this organization');
+        return;
+      }
+
       try {
         setIsLoading(true);
         
         const data = await fetchQuestions(organization?.id);
         console.log('useFeedbackForm - Questions loaded:', data);
         setQuestions(data);
+        
+        // Mark as loaded for this organization
+        questionsLoaded.current = true;
+        lastOrgId.current = currentOrgId;
         
         // Load saved data if exists
         const savedData = loadSavedData();
@@ -63,7 +78,7 @@ export const useFeedbackForm = () => {
     };
 
     loadQuestions();
-  }, [organization, orgLoading, loadSavedData, loadResponses, toast]);
+  }, [organization?.id, orgLoading]); // Only depend on organization ID and loading state
 
   const isCurrentQuestionAnswered = () => {
     const currentQuestion = questions[currentQuestionIndex];
@@ -114,6 +129,10 @@ export const useFeedbackForm = () => {
     setFinalResponses([]);
     setCompletedQuestions([]);
     clearSavedData();
+    
+    // Reset loading state
+    questionsLoaded.current = false;
+    lastOrgId.current = null;
   };
 
   return {

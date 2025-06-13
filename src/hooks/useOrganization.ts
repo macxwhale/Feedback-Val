@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Organization, getOrganizationBySlug, getOrganizationByDomain } from '@/services/organizationService';
 
@@ -9,10 +9,25 @@ export const useOrganization = () => {
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
   const location = useLocation();
+  
+  // Use ref to prevent infinite loops
+  const lastProcessedPath = useRef<string>('');
+  const isProcessing = useRef<boolean>(false);
 
   useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Prevent processing the same path multiple times or concurrent processing
+    if (currentPath === lastProcessedPath.current || isProcessing.current) {
+      return;
+    }
+
     const detectOrganization = async () => {
-      console.log('useOrganization - Starting detection, params:', params, 'pathname:', location.pathname);
+      console.log('useOrganization - Starting detection for path:', currentPath);
+      
+      // Mark as processing
+      isProcessing.current = true;
+      lastProcessedPath.current = currentPath;
       
       try {
         setIsLoading(true);
@@ -21,9 +36,8 @@ export const useOrganization = () => {
         // Get current URL
         const url = new URL(window.location.href);
         const hostname = url.hostname;
-        const pathname = url.pathname;
 
-        console.log('useOrganization - URL info:', { hostname, pathname });
+        console.log('useOrganization - URL info:', { hostname, pathname: currentPath });
 
         let org: Organization | null = null;
 
@@ -52,26 +66,30 @@ export const useOrganization = () => {
           }
         }
 
-        // Method 3: Check for direct organization routing (e.g., /police-sacco)
+        // Method 3: Check for direct organization routing (e.g., /org/police-sacco)
         if (!org) {
-          // Extract org slug from various route patterns
           let orgSlug: string | undefined;
 
-          // Direct organization route: /:orgSlug
-          if (params.orgSlug && !pathname.startsWith('/admin') && !pathname.startsWith('/auth')) {
-            orgSlug = params.orgSlug;
-          }
-          
           // Legacy org route: /org/:slug
-          if (params.slug && pathname.startsWith('/org/')) {
+          if (params.slug && currentPath.startsWith('/org/')) {
             orgSlug = params.slug;
           }
-
+          // Direct organization route: /:orgSlug (but not admin/auth routes)
+          else if (params.orgSlug && !currentPath.startsWith('/admin') && !currentPath.startsWith('/auth')) {
+            orgSlug = params.orgSlug;
+          }
           // Root path check for organization names
-          if (!orgSlug && pathname !== '/auth' && pathname !== '/admin' && pathname !== '/') {
-            const pathSegments = pathname.split('/').filter(Boolean);
-            if (pathSegments.length === 1 && pathSegments[0] !== 'admin' && pathSegments[0] !== 'auth') {
-              orgSlug = pathSegments[0];
+          else if (currentPath !== '/auth' && currentPath !== '/admin' && currentPath !== '/') {
+            const pathSegments = currentPath.split('/').filter(Boolean);
+            if (pathSegments.length >= 1 && pathSegments[0] !== 'admin' && pathSegments[0] !== 'auth') {
+              // For /org/police-sacco, take the second segment
+              if (pathSegments[0] === 'org' && pathSegments[1]) {
+                orgSlug = pathSegments[1];
+              }
+              // For direct /police-sacco routes
+              else if (pathSegments[0] !== 'org') {
+                orgSlug = pathSegments[0];
+              }
             }
           }
 
@@ -88,7 +106,7 @@ export const useOrganization = () => {
         }
 
         // Method 4: Default to Police Sacco for root path or if no organization found
-        if (!org && (pathname === '/' || pathname.includes('police-sacco'))) {
+        if (!org && (currentPath === '/' || currentPath.includes('police-sacco'))) {
           console.log('useOrganization - Defaulting to police-sacco');
           try {
             org = await getOrganizationBySlug('police-sacco');
@@ -98,7 +116,7 @@ export const useOrganization = () => {
           }
         }
 
-        if (!org && pathname !== '/auth' && pathname !== '/admin' && pathname !== '/') {
+        if (!org && currentPath !== '/auth' && currentPath !== '/admin' && currentPath !== '/') {
           console.log('useOrganization - No organization found, setting error');
           setError('Organization not found');
         } else {
@@ -111,11 +129,12 @@ export const useOrganization = () => {
       } finally {
         console.log('useOrganization - Setting loading false');
         setIsLoading(false);
+        isProcessing.current = false;
       }
     };
 
     detectOrganization();
-  }, [params, location.pathname]);
+  }, [params.slug, params.orgSlug, location.pathname]); // Only depend on the specific params we need
 
   return { organization, isLoading, error };
 };

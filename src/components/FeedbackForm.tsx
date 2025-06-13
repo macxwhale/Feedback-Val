@@ -71,10 +71,10 @@ const FeedbackForm = () => {
   );
 
   useEffect(() => {
-    if (!showWelcome) {
+    if (!showWelcome && questions.length > 0) {
       trackQuestionStart();
     }
-  }, [currentQuestionIndex, trackQuestionStart, showWelcome]);
+  }, [currentQuestionIndex, trackQuestionStart, showWelcome, questions.length]);
 
   const handleQuestionResponse = (questionId: string, value: any) => {
     handleResponse(questionId, value);
@@ -115,6 +115,17 @@ const FeedbackForm = () => {
   if (showWelcome) {
     console.log('FeedbackForm - Showing welcome screen');
     return <WelcomeScreen onStart={handleStart} />;
+  }
+
+  if (questions.length === 0) {
+    console.log('FeedbackForm - No questions available');
+    return (
+      <FeedbackErrorBoundary 
+        orgLoading={false}
+        orgError="No questions configured for this organization"
+        organization={organization}
+      />
+    );
   }
 
   console.log('FeedbackForm - Rendering main content');
