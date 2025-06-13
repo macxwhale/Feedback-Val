@@ -17,7 +17,7 @@ import {
   Building
 } from 'lucide-react';
 import { UserManagement } from './UserManagement';
-import { OrganizationStats } from './OrganizationStats';
+import { OrganizationSpecificStats } from './OrganizationSpecificStats';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
 
@@ -240,7 +240,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="feedback">
-            <OrganizationStats organizationId={organization.id} />
+            <OrganizationSpecificStats organizationId={organization.id} />
           </TabsContent>
 
           <TabsContent value="settings">
