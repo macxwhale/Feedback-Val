@@ -27,7 +27,7 @@ export const useOrganizationStats = (organizationId: string) => {
       if (error) throw error;
       
       // Type assertion since we know the structure from our RPC function
-      return data as OrganizationStats;
+      return data as unknown as OrganizationStats;
     },
     enabled: !!organizationId,
     staleTime: 30000, // 30 seconds
