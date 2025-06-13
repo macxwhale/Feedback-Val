@@ -42,7 +42,7 @@ export const QuestionsManagement: React.FC<QuestionsManagementProps> = ({ organi
   });
 
   const deleteMutation = useMutation({
-    mutationFn: questionsAdminService.deleteQuestion,
+    mutationFn: (id: string) => questionsAdminService.deleteQuestion(id, organizationId),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['questions', organizationId] }); toast({ title: 'Question deleted' }); }
   });
 
