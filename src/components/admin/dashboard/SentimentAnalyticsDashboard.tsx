@@ -183,7 +183,7 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
             </div>
             <div className="mt-2">
               <div className="text-2xl font-bold text-blue-600">
-                {(analyticsData.summary.avg_score || 0).toFixed(1)}/5
+                {(analyticsData.summary.overall_avg_score || 0).toFixed(1)}/5
               </div>
               <div className="text-sm text-gray-500">
                 Overall satisfaction

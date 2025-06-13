@@ -66,7 +66,7 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
     .sort((a, b) => b.completion_rate - a.completion_rate);
 
   // Calculate performance metrics
-  const avgScore = analyticsData.summary.avg_score || 0;
+  const avgScore = analyticsData.summary.overall_avg_score || 0;
   const avgCompletion = analyticsData.questions.reduce((sum, q) => sum + q.completion_rate, 0) / analyticsData.questions.length;
   
   const performanceInsights = {
