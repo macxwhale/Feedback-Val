@@ -2,31 +2,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { questionsService } from '@/services/questionsService';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { QuestionTypeForm } from './QuestionTypeForm';
-import { Trash2, Edit, Plus } from 'lucide-react';
+import { QuestionForm } from './QuestionForm';
+import { QuestionsList } from './QuestionsList';
 import { useToast } from '@/hooks/use-toast';
-
-interface QuestionFormData {
-  question_text: string;
-  question_type: string;
-  category: string;
-  order_index: number;
-  help_text?: string;
-  placeholder_text?: string;
-  is_required?: boolean;
-  options?: { text: string; value?: string }[];
-  scaleConfig?: {
-    minValue: number;
-    maxValue: number;
-    minLabel?: string;
-    maxLabel?: string;
-    stepSize?: number;
-  };
-}
+import { QuestionFormData } from '@/types/questionTypes';
 
 export const QuestionsManagement: React.FC = () => {
   const { toast } = useToast();
@@ -158,27 +138,6 @@ export const QuestionsManagement: React.FC = () => {
     });
   };
 
-  // Determine question type capabilities
-  const getQuestionTypeCapabilities = (questionType: string) => {
-    // Define which question types support options and scale
-    const typeCapabilities = {
-      'single-choice': { supportsOptions: true, supportsScale: false },
-      'multi-choice': { supportsOptions: true, supportsScale: false },
-      'star': { supportsOptions: false, supportsScale: true },
-      'likert': { supportsOptions: false, supportsScale: true },
-      'nps': { supportsOptions: false, supportsScale: true },
-      'slider': { supportsOptions: false, supportsScale: true },
-      'emoji': { supportsOptions: true, supportsScale: false },
-      'ranking': { supportsOptions: true, supportsScale: false },
-      'matrix': { supportsOptions: true, supportsScale: true },
-      'text': { supportsOptions: false, supportsScale: false }
-    };
-
-    return typeCapabilities[questionType as keyof typeof typeCapabilities] || { supportsOptions: false, supportsScale: false };
-  };
-
-  const capabilities = getQuestionTypeCapabilities(formData.question_type);
-
   if (isLoading) {
     return (
       <Card>
@@ -198,105 +157,23 @@ export const QuestionsManagement: React.FC = () => {
         <CardTitle>Questions Management</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
-            placeholder="Question text"
-            value={formData.question_text}
-            onChange={(e) => setFormData(prev => ({ ...prev, question_text: e.target.value }))}
-          />
-          <Select 
-            value={formData.question_type} 
-            onValueChange={(value) => setFormData(prev => ({ 
-              ...prev, 
-              question_type: value,
-              // Reset options and scale when type changes
-              options: [],
-              scaleConfig: { minValue: 1, maxValue: 5 }
-            }))}
-          >
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {questionTypes.map(type => 
-                <SelectItem key={type.id} value={type.name}>{type.display_name}</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-          <Select 
-            value={formData.category} 
-            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-          >
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {categories.map(cat => 
-                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <QuestionTypeForm
-          questionType={formData.question_type}
-          supportsOptions={capabilities.supportsOptions}
-          supportsScale={capabilities.supportsScale}
-          options={formData.options}
-          scaleConfig={formData.scaleConfig}
-          helpText={formData.help_text}
-          placeholderText={formData.placeholder_text}
-          onOptionsChange={(options) => setFormData(prev => ({ ...prev, options }))}
-          onScaleChange={(scaleConfig) => setFormData(prev => ({ ...prev, scaleConfig }))}
-          onHelpTextChange={(help_text) => setFormData(prev => ({ ...prev, help_text }))}
-          onPlaceholderChange={(placeholder_text) => setFormData(prev => ({ ...prev, placeholder_text }))}
+        <QuestionForm
+          formData={formData}
+          setFormData={setFormData}
+          questionTypes={questionTypes}
+          categories={categories}
+          editingId={editingId}
+          onSubmit={handleSubmit}
+          onCancel={resetForm}
+          isSubmitting={createMutation.isPending || updateMutation.isPending}
         />
 
-        <div className="flex gap-2">
-          <Button
-            onClick={handleSubmit}
-            disabled={!formData.question_text.trim() || createMutation.isPending || updateMutation.isPending}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            {editingId ? 'Update' : 'Add'} Question
-          </Button>
-          {editingId && (
-            <Button variant="outline" onClick={resetForm}>
-              Cancel
-            </Button>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          {questions.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No questions found. Create your first question above.</p>
-          ) : (
-            questions.map(q => (
-              <div key={q.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex-1">
-                  <span className="font-medium">{q.question_text}</span>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Type: {q.question_type} | Category: {q.category} | Order: {q.order_index}
-                    {q.help_text && <span> | Help: {q.help_text}</span>}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(q)}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => deleteMutation.mutate(q.id)}
-                    disabled={deleteMutation.isPending}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <QuestionsList
+          questions={questions}
+          onEdit={handleEdit}
+          onDelete={(id) => deleteMutation.mutate(id)}
+          isDeleting={deleteMutation.isPending}
+        />
       </CardContent>
     </Card>
   );
