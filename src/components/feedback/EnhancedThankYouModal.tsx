@@ -39,7 +39,7 @@ export const EnhancedThankYouModal: React.FC<EnhancedThankYouModalProps> = ({
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="space-y-6">
-          <SuccessAnimation />
+          <SuccessAnimation show={true} />
           
           <div className="text-center">
             <h2 className="text-3xl font-bold text-[#073763] mb-2">
@@ -84,7 +84,7 @@ export const EnhancedThankYouModal: React.FC<EnhancedThankYouModalProps> = ({
             </TabsContent>
           </Tabs>
 
-          <ThankYouActions onReset={onReset} />
+          <ThankYouActions onClose={onReset} />
         </div>
       </DialogContent>
     </Dialog>

@@ -33,7 +33,7 @@ export const FeedbackModals: React.FC<FeedbackModalsProps> = ({
   return (
     <>
       <PrivacyNotice
-        isOpen={showPrivacyNotice}
+        isVisible={showPrivacyNotice}
         onAccept={onAcceptPrivacy}
       />
       
