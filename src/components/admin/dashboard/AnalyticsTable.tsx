@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { QuestionDrillDown } from './QuestionDrillDown';
 import { ChevronRight, BarChart3, List, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
-import type { QuestionAnalytics, CategoryAnalytics } from '@/hooks/useAnalyticsTableData';
+import type { QuestionAnalytics, CategoryAnalytics } from '@/types/analytics';
 
 interface AnalyticsTableProps {
   questions: QuestionAnalytics[];

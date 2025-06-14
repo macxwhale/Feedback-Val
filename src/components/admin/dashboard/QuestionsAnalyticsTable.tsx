@@ -17,7 +17,7 @@ import {
   Eye,
   BarChart3
 } from 'lucide-react';
-import { QuestionAnalytics } from '@/hooks/useAnalyticsTableData';
+import type { QuestionAnalytics } from '@/types/analytics';
 
 interface QuestionsAnalyticsTableProps {
   questions: QuestionAnalytics[];

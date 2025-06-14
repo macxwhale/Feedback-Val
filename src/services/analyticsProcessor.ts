@@ -1,4 +1,3 @@
-
 import { processResponsesByType } from '@/services/responseDataProcessor';
 import {
   QuestionAnalytics,
@@ -15,7 +14,7 @@ type Question = {
 type FeedbackResponse = {
     id: string;
     question_id: string;
-    response_value: string | null;
+    response_value: any;
     question_category: string | null;
     session_id: string;
     created_at: string;

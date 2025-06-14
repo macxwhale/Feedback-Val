@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +13,7 @@ import {
   aggregateSentimentStats, 
   calculateOverallSentiment 
 } from './sentiment/sentimentUtils';
+import type { QuestionAnalytics } from '@/types/analytics';
 
 interface SentimentAnalyticsDashboardProps {
   organizationId: string;
@@ -51,7 +51,7 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
   }
 
   // Analyze sentiment by question trend instead of score
-  const questionSentiments = analyticsData.questions.map(question => {
+  const questionSentiments = analyticsData.questions.map((question: QuestionAnalytics) => {
     const sentiment = question.trend === 'positive' ? 'positive' : 
                     question.trend === 'negative' ? 'negative' : 'neutral';
     return {

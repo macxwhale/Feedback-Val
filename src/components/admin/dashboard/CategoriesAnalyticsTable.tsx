@@ -17,7 +17,7 @@ import {
   Users,
   BarChart3
 } from 'lucide-react';
-import { CategoryAnalytics } from '@/hooks/useAnalyticsTableData';
+import type { CategoryAnalytics } from '@/types/analytics';
 
 interface CategoriesAnalyticsTableProps {
   categories: CategoryAnalytics[];

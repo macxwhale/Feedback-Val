@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +10,7 @@ import { LowPerformersTab } from './performance/LowPerformersTab';
 import { CompletionAnalysisTab } from './performance/CompletionAnalysisTab';
 import { CategoryPerformanceTab } from './performance/CategoryPerformanceTab';
 import { analyzeQuestionPerformance, calculatePerformanceInsights } from './performance/performanceUtils';
+import type { QuestionAnalytics } from '@/types/analytics';
 
 interface PerformanceAnalyticsDashboardProps {
   organizationId: string;

@@ -10,7 +10,7 @@ import {
   Filter,
   BarChart3
 } from 'lucide-react';
-import { QuestionAnalytics, CategoryAnalytics } from '@/hooks/useAnalyticsTableData';
+import type { QuestionAnalytics, CategoryAnalytics } from '@/types/analytics';
 
 interface ResponsesAnalyticsTableProps {
   questions: QuestionAnalytics[];
