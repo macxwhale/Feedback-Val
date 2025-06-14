@@ -11,10 +11,11 @@ import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 import { AdvancedDashboardTab } from './tabs/AdvancedDashboardTab';
 import { CustomerInsightsTab } from './tabs/CustomerInsightsTab';
-import { SentimentTab } from './tabs/SentimentTab';
-import { PerformanceTab } from './tabs/PerformanceTab';
 import { FeedbackTab } from './tabs/FeedbackTab';
+import { IntegrationsTab } from './tabs/IntegrationsTab';
+import { PerformanceTab } from './tabs/PerformanceTab';
 import { QuestionsTab } from './tabs/QuestionsTab';
+import { SentimentTab } from './tabs/SentimentTab';
 import { SettingsTab } from './tabs/SettingsTab';
 const MembersTab = React.lazy(() => import('@/components/org-admin/dashboard/MembersTab'));
 
@@ -26,7 +27,8 @@ export type DashboardModuleKey =
   | 'members'
   | 'feedback'
   | 'questions'
-  | 'settings';
+  | 'settings'
+  | 'integrations';
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -90,6 +92,9 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
         </TabsContent>
         <TabsContent value="settings">
           <SettingsTab organization={organization} />
+        </TabsContent>
+        <TabsContent value="integrations">
+          <IntegrationsTab />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Sidebar,
@@ -19,7 +20,8 @@ import {
   MessageSquare,
   Settings,
   TrendingUp,
-  Brain
+  Brain,
+  Webhook
 } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
@@ -52,6 +54,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       label: "Team & Settings",
       items: [
         { id: 'members', label: 'Members', icon: Users, badge: stats?.active_members || 0 },
+        { id: 'integrations', label: 'Integrations', icon: Webhook },
         { id: 'settings', label: 'Settings', icon: Settings }
       ]
     },
