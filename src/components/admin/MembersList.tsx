@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ interface Member {
   role: string;
   status: string;
   created_at: string;
-  accepted_at: string | null;
+  accepted_at: string;
   invited_by?: { email: string };
 }
 
