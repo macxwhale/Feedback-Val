@@ -46,7 +46,7 @@ export function useAuthFlow() {
             const orgSlug = (orgData.organizations as any)?.slug;
             navigate(orgSlug ? `/admin/${orgSlug}` : "/");
           } else {
-            navigate("/");
+            navigate("/create-organization");
           }
         } else {
           navigate("/");
