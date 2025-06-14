@@ -67,7 +67,7 @@ export const ModernHero: React.FC = () => {
             drive real business results.
           </p>
 
-          {/* Updated CTA buttons */}
+          {/* Updated CTA button */}
           <div className="flex flex-col gap-6 justify-center items-center pt-8 max-w-md mx-auto">
             <Button 
               size="lg" 
@@ -75,18 +75,9 @@ export const ModernHero: React.FC = () => {
               className="w-full"
             >
               <span className="flex items-center justify-center">
-                Start Free
+                Book a Demo
                 <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
-            </Button>
-            
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate('/auth')}
-            >
-              Free Trial
             </Button>
           </div>
 
