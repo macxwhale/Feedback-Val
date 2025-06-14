@@ -1,8 +1,13 @@
 
 import React from 'react';
 import { Activity, Mail, MapPin, Phone } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export const Footer: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-warm-gray-900 dark:bg-dark-warm-50 text-white dark:text-dark-warm-900 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,10 +57,10 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
           
-          {/* Company links */}
+          {/* Company links + Quick Actions */}
           <div>
             <h3 className="text-xl font-space font-bold mb-8">Company</h3>
-            <ul className="space-y-4">
+            <ul className="space-y-4 mb-8">
               {['About', 'Blog', 'Careers', 'Partners', 'Contact', 'Support'].map((item) => (
                 <li key={item}>
                   <a href="#" className="text-warm-gray-300 dark:text-dark-warm-600 hover:text-sunset-400 transition-colors duration-300 font-medium">
@@ -64,6 +69,22 @@ export const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
+            
+            {/* Quick Actions */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-space font-semibold text-warm-gray-200 dark:text-dark-warm-700">Quick Actions</h4>
+              <div className="flex items-center space-x-3">
+                <ThemeToggle />
+                <span className="text-warm-gray-400 dark:text-dark-warm-500 text-sm">Toggle theme</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/auth')}
+                className="text-warm-gray-300 dark:text-dark-warm-600 hover:text-sunset-400 font-medium p-0 h-auto justify-start"
+              >
+                Sign in
+              </Button>
+            </div>
           </div>
         </div>
         

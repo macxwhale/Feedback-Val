@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Activity } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
 
 export const ModernHeader: React.FC = () => {
   const navigate = useNavigate();
@@ -36,21 +35,14 @@ export const ModernHeader: React.FC = () => {
             </nav>
           </div>
 
-          {/* Right side buttons */}
+          {/* CTA Button */}
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/auth')}
-              className="text-warm-gray-600 dark:text-dark-warm-600 hover:text-warm-gray-900 dark:hover:text-dark-warm-900 font-medium"
-            >
-              Sign in
-            </Button>
             <Button 
               onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white font-semibold shadow-lg shadow-sunset-500/25"
+              size="lg"
+              className="bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white font-semibold shadow-lg shadow-sunset-500/25 px-8 py-3"
             >
-              Get Started Free
+              Get Started
             </Button>
           </div>
         </div>
