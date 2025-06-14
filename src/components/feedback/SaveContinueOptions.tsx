@@ -26,7 +26,7 @@ export const SaveContinueOptions: React.FC<SaveContinueOptionsProps> = ({
   };
 
   return (
-    <div className="flex gap-2 justify-center mb-4">
+    <div className="flex gap-2 justify-center">
       <Button
         variant="outline"
         size="sm"

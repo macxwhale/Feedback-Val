@@ -20,7 +20,7 @@ export const AnimatedQuestionCard: React.FC<AnimatedQuestionCardProps> = ({
 }) => {
   return (
     <Card className={`
-      mb-8 shadow-lg border-0 
+      mb-6 shadow-lg border-0 
       animate-fade-in
       transition-all duration-300 ease-out
       hover:shadow-xl hover:scale-[1.02]

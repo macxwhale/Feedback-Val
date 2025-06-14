@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TrendingUp, Star, Target } from 'lucide-react';
 
@@ -29,7 +28,7 @@ export const MotivationalProgress: React.FC<MotivationalProgressProps> = ({
   };
 
   return (
-    <div className="mb-6 bg-gradient-to-r from-blue-50 to-orange-50 rounded-xl p-4 border border-blue-200/50">
+    <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-xl p-4 border border-blue-200/50">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           {getProgressIcon()}

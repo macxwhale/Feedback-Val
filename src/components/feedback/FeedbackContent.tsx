@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { EnhancedProgressBar } from './EnhancedProgressBar';
 import { EnhancedQuestionRenderer } from './EnhancedQuestionRenderer';
@@ -68,16 +69,6 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
           averageResponseTime={averageResponseTime}
         />
 
-        {!isMobile && (
-          <>
-            <SaveContinueOptions
-              onSave={onSaveProgress}
-              onPause={onPauseAndExit}
-              hasUnsavedChanges={hasUnsavedChanges}
-            />
-          </>
-        )}
-
         <EnhancedQuestionRenderer
           question={currentQuestion}
           value={responses[currentQuestion?.id]}
@@ -91,6 +82,16 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
             responses={responses}
             onSuggestionClick={(value) => onQuestionResponse(currentQuestion.id, value)}
           />
+        )}
+
+        {!isMobile && (
+          <div className="my-6">
+            <SaveContinueOptions
+              onSave={onSaveProgress}
+              onPause={onPauseAndExit}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />
+          </div>
         )}
 
         <NavigationButtons

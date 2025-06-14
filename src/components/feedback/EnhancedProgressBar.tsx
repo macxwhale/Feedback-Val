@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BreadcrumbNavigation } from './BreadcrumbNavigation';
 import { MotivationalProgress } from './MotivationalProgress';
@@ -52,12 +51,6 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
         totalQuestions={totalQuestions}
         completedQuestions={completedQuestions}
       />
-
-      <MotivationalProgress
-        currentIndex={currentQuestionIndex}
-        totalQuestions={totalQuestions}
-        completedQuestions={completedQuestions}
-      />
       
       <CompactProgressBar
         currentIndex={currentQuestionIndex}
@@ -65,6 +58,12 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
         completedQuestions={completedQuestions}
         estimatedTimeRemaining={estimatedTimeRemaining}
         averageResponseTime={averageResponseTime}
+      />
+
+      <MotivationalProgress
+        currentIndex={currentQuestionIndex}
+        totalQuestions={totalQuestions}
+        completedQuestions={completedQuestions}
       />
     </div>
   );
