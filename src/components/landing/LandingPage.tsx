@@ -1,37 +1,13 @@
-
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { FaqSection } from './FaqSection';
+import { HeroSection } from "./HeroSection";
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f6fbfc] via-[#f5f8fa] to-[#f7f8fa] text-gray-800 flex flex-col">
-      {/* HERO */}
-      <section className="relative pt-32 pb-10 flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight text-gray-800">
-          Stop Guessing. Start Hearing: <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-orange-400 bg-clip-text text-transparent">Elevate Every Candidate & Customer Experience</span>
-        </h1>
-        <p className="text-xl sm:text-2xl max-w-2xl mx-auto text-blue-800 mb-6 font-semibold">
-          Unlock powerful, real feedback — audio, video, or text. Buy once, use forever.
-        </p>
-        <p className="text-lg max-w-xl mx-auto mb-4 text-gray-600">
-          Pulsify empowers business owners and hiring managers to truly understand and improve candidate and customer journeys. Don’t just collect forms—collect real voices, faces, and stories.
-        </p>
-        <div className="my-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => navigate('/auth')}
-            className="bg-gradient-to-r from-blue-600 via-purple-500 to-orange-400 text-white text-lg px-10 py-4 rounded-full shadow-lg hover:scale-105 transition font-semibold w-full sm:w-auto"
-          >
-            Unlock Lifetime Access Now
-          </button>
-        </div>
-        <span className="block text-xs text-gray-500 mt-2">
-          Limited-time offer: One-time payment. No subscriptions. <span className="text-orange-500">Offer ends soon!</span>
-        </span>
-      </section>
-
+    <div className="min-h-screen bg-[#FCFAF7] text-slate-dark flex flex-col">
+      <HeroSection />
       {/* HERO DEMO / PREVIEW */}
       <section className="relative flex flex-col items-center lg:flex-row gap-12 lg:gap-28 justify-center py-8 max-w-5xl w-full mx-auto">
         <div className="max-w-md flex-1 text-left">
