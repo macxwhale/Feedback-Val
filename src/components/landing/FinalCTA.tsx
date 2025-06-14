@@ -14,7 +14,7 @@ export const FinalCTA: React.FC = () => {
           Ready to transform your customer feedback?
         </h2>
         <p className="text-xl text-blue-100 mb-8">
-          Join thousands of businesses using FeedbackPro to make better decisions
+          Join thousands of businesses using Pulselify to make better decisions
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 

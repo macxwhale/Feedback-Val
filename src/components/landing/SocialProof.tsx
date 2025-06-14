@@ -6,7 +6,7 @@ import { Star } from 'lucide-react';
 export const SocialProof: React.FC = () => {
   const testimonials = [
     {
-      quote: "FeedbackPro helped us increase customer satisfaction by 40% in just 3 months. The insights are game-changing.",
+      quote: "Pulselify helped us increase customer satisfaction by 40% in just 3 months. The insights are game-changing.",
       author: "Sarah Chen",
       role: "Head of Customer Success",
       company: "TechStart Inc"

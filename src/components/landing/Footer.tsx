@@ -11,10 +11,10 @@ export const Footer: React.FC = () => {
             <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Heart className="h-3 w-3 text-white" />
             </div>
-            <span className="text-xl font-bold">FeedbackPro</span>
+            <span className="text-xl font-bold">Pulselify</span>
           </div>
           <div className="text-gray-400 text-sm">
-            © 2024 FeedbackPro. All rights reserved.
+            © 2024 Pulselify. All rights reserved.
           </div>
         </div>
       </div>
