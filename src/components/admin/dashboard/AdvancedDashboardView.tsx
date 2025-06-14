@@ -6,7 +6,7 @@ import { AnalyticsInsights } from './AnalyticsInsights';
 import { RealTimeAnalytics } from './RealTimeAnalytics';
 import { RefactoredExecutiveDashboard } from './RefactoredExecutiveDashboard';
 import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
-import { useOrganizationStats } from '@/hooks/useOrganizationStats';
+import { useEnhancedOrganizationStats } from '@/hooks/useEnhancedOrganizationStats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, TrendingUp, Clock, Target } from 'lucide-react';
 
@@ -33,7 +33,7 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
   handleQuickActions
 }) => {
   const { data: analyticsData, isLoading } = useAnalyticsTableData(organizationId);
-  const { data: organizationStats } = useOrganizationStats(organizationId);
+  const { data: enhancedStats } = useEnhancedOrganizationStats(organizationId);
 
   if (isLoading) {
     return (
@@ -83,7 +83,7 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
                   summary={analyticsData.summary}
                 />
                 <AnalyticsInsights 
-                  stats={organizationStats}
+                  stats={enhancedStats}
                   isLoading={isLoading}
                 />
               </>
