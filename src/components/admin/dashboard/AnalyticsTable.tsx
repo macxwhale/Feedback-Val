@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,13 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
   showDrillDown = false
 }) => {
   const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
+
+  console.log('AnalyticsTable - Rendering with data:', {
+    questionsCount: questions?.length,
+    categoriesCount: categories?.length,
+    summary,
+    showDrillDown
+  });
 
   const getAnalysisIcon = (trend: string) => {
     switch (trend) {
@@ -74,6 +82,27 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
     }
   };
 
+  // Show fallback content if no data
+  if (!questions && !categories) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <BarChart3 className="w-5 h-5" />
+            <span>Analytics Dashboard</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-500">No analytics data available yet</p>
+            <p className="text-sm text-gray-400 mt-2">Data will appear here once feedback is collected</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -87,28 +116,28 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
           <TabsList>
             <TabsTrigger value="questions" className="flex items-center space-x-2">
               <List className="w-4 h-4" />
-              <span>Questions</span>
+              <span>Questions ({questions?.length || 0})</span>
             </TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="categories">Categories ({categories?.length || 0})</TabsTrigger>
           </TabsList>
           <TabsContent value="questions">
             <div className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Question</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Responses</TableHead>
-                    <TableHead>Completion Rate</TableHead>
-                    <TableHead>Trend</TableHead>
-                    <TableHead>Key Insights</TableHead>
-                    {showDrillDown && <TableHead>Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {questions.map((question) => {
-                    return (
+              {questions && questions.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Question</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Responses</TableHead>
+                      <TableHead>Completion Rate</TableHead>
+                      <TableHead>Trend</TableHead>
+                      <TableHead>Key Insights</TableHead>
+                      {showDrillDown && <TableHead>Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {questions.map((question) => (
                       <React.Fragment key={question.id}>
                         <TableRow>
                           <TableCell className="font-medium max-w-xs truncate">
@@ -128,9 +157,9 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                           </TableCell>
                           <TableCell className="max-w-xs">
                             <div className="text-sm">
-                              {question.insights.slice(0, 2).map((insight, idx) => (
+                              {question.insights?.slice(0, 2).map((insight, idx) => (
                                 <div key={idx} className="truncate">{insight}</div>
-                              ))}
+                              )) || <span className="text-gray-400">No insights</span>}
                             </div>
                           </TableCell>
                           {showDrillDown && (
@@ -157,12 +186,11 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                                   questionId={question.id}
                                   questionText={question.question_text}
                                   questionType={question.question_type}
-                                  responses={[]} // Will be fetched inside component
-                                  avgScore={0} // Remove scoring dependency
+                                  responses={[]}
+                                  avgScore={0}
                                   completionRate={question.completion_rate}
                                 />
                                 
-                                {/* Enhanced Analysis Details */}
                                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <Card>
                                     <CardHeader className="pb-2">
@@ -170,12 +198,12 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                                     </CardHeader>
                                     <CardContent>
                                       <ul className="text-sm space-y-1">
-                                        {question.insights.map((insight, idx) => (
+                                        {question.insights?.map((insight, idx) => (
                                           <li key={idx} className="flex items-start space-x-2">
                                             <span className="text-blue-500 mt-1">•</span>
                                             <span>{insight}</span>
                                           </li>
-                                        ))}
+                                        )) || <li className="text-gray-400">No insights available</li>}
                                       </ul>
                                     </CardContent>
                                   </Card>
@@ -186,12 +214,16 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                                     </CardHeader>
                                     <CardContent>
                                       <div className="text-sm space-y-1">
-                                        {Object.entries(question.response_distribution).slice(0, 3).map(([value, count], idx) => (
-                                          <div key={idx} className="flex justify-between">
-                                            <span className="truncate">{value}</span>
-                                            <span className="font-medium">{count}</span>
-                                          </div>
-                                        ))}
+                                        {question.response_distribution && Object.entries(question.response_distribution).length > 0 ? (
+                                          Object.entries(question.response_distribution).slice(0, 3).map(([value, count], idx) => (
+                                            <div key={idx} className="flex justify-between">
+                                              <span className="truncate">{value}</span>
+                                              <span className="font-medium">{count}</span>
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <div className="text-gray-400">No responses yet</div>
+                                        )}
                                       </div>
                                     </CardContent>
                                   </Card>
@@ -201,33 +233,47 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                           </TableRow>
                         )}
                       </React.Fragment>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <List className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-500">No questions found</p>
+                  <p className="text-sm text-gray-400 mt-2">Questions will appear here once they are created</p>
+                </div>
+              )}
             </div>
           </TabsContent>
           <TabsContent value="categories">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Questions</TableHead>
-                  <TableHead>Total Responses</TableHead>
-                  <TableHead>Completion Rate</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories.map((category, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{category.category}</TableCell>
-                    <TableCell>{category.total_questions}</TableCell>
-                    <TableCell>{category.total_responses}</TableCell>
-                    <TableCell>{category.completion_rate}%</TableCell>
+            {categories && categories.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Questions</TableHead>
+                    <TableHead>Total Responses</TableHead>
+                    <TableHead>Completion Rate</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {categories.map((category, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{category.category}</TableCell>
+                      <TableCell>{category.total_questions}</TableCell>
+                      <TableCell>{category.total_responses}</TableCell>
+                      <TableCell>{category.completion_rate}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-500">No categories found</p>
+                <p className="text-sm text-gray-400 mt-2">Categories will appear here once questions are categorized</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

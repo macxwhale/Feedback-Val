@@ -2,12 +2,14 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   TrendingUp, 
   TrendingDown, 
   CheckCircle,
   Users,
-  MessageSquare
+  MessageSquare,
+  AlertCircle
 } from 'lucide-react';
 
 interface AnalyticsInsightsProps {
@@ -17,7 +19,7 @@ interface AnalyticsInsightsProps {
     total_sessions: number;
     completed_sessions: number;
     active_members: number;
-    avg_session_score?: number; // Use the actual property name from EnhancedOrganizationStats
+    avg_session_score?: number;
     growth_metrics: {
       sessions_this_month: number;
       sessions_last_month: number;
@@ -31,6 +33,8 @@ export const AnalyticsInsights: React.FC<AnalyticsInsightsProps> = ({
   stats,
   isLoading = false
 }) => {
+  console.log('AnalyticsInsights - Rendering with stats:', stats);
+
   if (isLoading) {
     return (
       <Card>
@@ -48,18 +52,39 @@ export const AnalyticsInsights: React.FC<AnalyticsInsightsProps> = ({
     );
   }
 
+  // Show fallback content if no stats
+  if (!stats) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Analytics Insights</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Analytics insights will appear here once data is available.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const insights = [
     {
       title: 'Response Rate',
-      value: stats ? `${Math.round((stats.completed_sessions / Math.max(stats.total_sessions, 1)) * 100)}%` : '85%',
-      trend: stats?.growth_metrics?.growth_rate || 12,
-      isPositive: (stats?.growth_metrics?.growth_rate || 12) > 0,
+      value: stats.total_sessions > 0 
+        ? `${Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%` 
+        : '0%',
+      trend: stats.growth_metrics?.growth_rate || 0,
+      isPositive: (stats.growth_metrics?.growth_rate || 0) >= 0,
       icon: MessageSquare,
       description: 'Session completion rate this month'
     },
     {
       title: 'User Engagement',
-      value: stats?.active_members || 24,
+      value: stats.active_members || 0,
       trend: 8,
       isPositive: true,
       icon: Users,
@@ -67,7 +92,9 @@ export const AnalyticsInsights: React.FC<AnalyticsInsightsProps> = ({
     },
     {
       title: 'Response Quality',
-      value: stats ? `${Math.round((stats.total_responses / Math.max(stats.total_questions, 1)) * 100)}%` : '85%',
+      value: stats.total_questions > 0 
+        ? `${Math.round((stats.total_responses / stats.total_questions) * 100)}%`
+        : '0%',
       trend: 5,
       isPositive: true,
       icon: CheckCircle,
