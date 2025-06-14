@@ -68,15 +68,14 @@ export const ModernHero: React.FC = () => {
           </p>
 
           {/* Updated CTA button */}
-          <div className="flex flex-col gap-6 justify-center items-center pt-8 max-w-md mx-auto">
+          <div className="flex justify-center pt-8">
             <Button 
-              size="lg" 
               onClick={() => navigate('/auth')}
-              className="w-full"
+              className="bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white font-semibold shadow-lg shadow-sunset-500/25 px-8 py-3 rounded-full text-lg h-auto transition-all duration-300 hover:scale-105"
             >
-              <span className="flex items-center justify-center">
-                Book a Demo
-                <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+              <span className="flex items-center justify-center space-x-2">
+                <span>Start Free Trial</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
           </div>
