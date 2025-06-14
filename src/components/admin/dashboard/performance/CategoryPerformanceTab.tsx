@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getPerformanceColor } from './performanceUtils';
+import { getResponseTimeColor } from './performanceUtils';
 
 interface CategoryPerformanceTabProps {
   categoryPerformance: Array<{
@@ -11,6 +11,7 @@ interface CategoryPerformanceTabProps {
     total_questions: number;
     total_responses: number;
     completion_rate: number;
+    avg_response_time_ms?: number;
   }>;
 }
 
@@ -34,8 +35,8 @@ export const CategoryPerformanceTab: React.FC<CategoryPerformanceTabProps> = ({ 
                 </p>
               </div>
               <div className="text-right">
-                <div className={`text-xl font-bold ${getPerformanceColor(category.avg_score)}`}>
-                  {category.avg_score}/5
+                <div className={`text-xl font-bold ${getResponseTimeColor(category.avg_response_time_ms || 0)}`}>
+                  {((category.avg_response_time_ms || 0) / 1000).toFixed(1)}s
                 </div>
                 <div className="text-sm text-gray-500">
                   {category.completion_rate}% completion

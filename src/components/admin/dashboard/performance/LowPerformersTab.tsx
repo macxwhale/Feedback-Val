@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Hourglass } from 'lucide-react';
 
 interface LowPerformersTabProps {
   lowPerformers: Array<{
@@ -10,6 +10,7 @@ interface LowPerformersTabProps {
     avg_score: number;
     total_responses: number;
     completion_rate: number;
+    avg_response_time_ms?: number;
   }>;
 }
 
@@ -17,7 +18,7 @@ export const LowPerformersTab: React.FC<LowPerformersTabProps> = ({ lowPerformer
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-red-600">Questions Needing Attention</CardTitle>
+        <CardTitle className="text-red-600">Slowest Answered Questions</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -27,7 +28,7 @@ export const LowPerformersTab: React.FC<LowPerformersTabProps> = ({ lowPerformer
                 <div className="flex items-center space-x-2 mb-2">
                   <AlertTriangle className="w-4 h-4 text-red-600" />
                   <Badge className="bg-red-100 text-red-800">
-                    Priority
+                    Needs Attention
                   </Badge>
                 </div>
                 <h4 className="font-medium text-sm">{question.question_text}</h4>
@@ -36,12 +37,12 @@ export const LowPerformersTab: React.FC<LowPerformersTabProps> = ({ lowPerformer
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold text-red-600">{question.avg_score}/5</div>
-                <TrendingDown className="w-4 h-4 text-red-500 ml-auto mt-1" />
+                <div className="text-lg font-bold text-red-600">{((question.avg_response_time_ms || 0) / 1000).toFixed(1)}s</div>
+                <Hourglass className="w-4 h-4 text-red-500 ml-auto mt-1" />
               </div>
             </div>
           )) : (
-            <p className="text-gray-500 text-center py-8">All questions performing well! 🎉</p>
+            <p className="text-gray-500 text-center py-8">No questions with slow response times found! 🎉</p>
           )}
         </div>
       </CardContent>

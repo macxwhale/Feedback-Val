@@ -1,23 +1,22 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Award, AlertTriangle, Target, CheckCircle } from 'lucide-react';
-import { getPerformanceColor, getCompletionColor } from './performanceUtils';
+import { Timer, Hourglass, Target, CheckCircle } from 'lucide-react';
+import { getResponseTimeColor, getCompletionColor } from './performanceUtils';
 
 interface PerformanceOverviewCardsProps {
   performanceInsights: {
-    highPerformingQuestions: number;
-    lowPerformingQuestions: number;
+    fastRespondingQuestions: number;
+    slowRespondingQuestions: number;
     avgCompletionRate: number;
     totalResponses: number;
+    avgResponseTime: number;
   };
-  avgScore: number;
   totalQuestions: number;
 }
 
 export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> = ({
   performanceInsights,
-  avgScore,
   totalQuestions
 }) => {
   return (
@@ -25,14 +24,14 @@ export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> =
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
-            <Award className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-gray-600">Top Performers</span>
+            <Timer className="w-5 h-5 text-green-600" />
+            <span className="text-sm font-medium text-gray-600">Fast Responses</span>
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold text-green-600">
-              {performanceInsights.highPerformingQuestions}
+              {performanceInsights.fastRespondingQuestions}
             </div>
-            <div className="text-sm text-gray-500">questions scoring 4+</div>
+            <div className="text-sm text-gray-500">questions under 5s</div>
           </div>
         </CardContent>
       </Card>
@@ -40,14 +39,14 @@ export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> =
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            <span className="text-sm font-medium text-gray-600">Need Improvement</span>
+            <Hourglass className="w-5 h-5 text-red-600" />
+            <span className="text-sm font-medium text-gray-600">Slow Responses</span>
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold text-red-600">
-              {performanceInsights.lowPerformingQuestions}
+              {performanceInsights.slowRespondingQuestions}
             </div>
-            <div className="text-sm text-gray-500">questions scoring below 3</div>
+            <div className="text-sm text-gray-500">questions over 15s</div>
           </div>
         </CardContent>
       </Card>
@@ -56,13 +55,13 @@ export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> =
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
             <Target className="w-5 h-5 text-blue-600" />
-            <span className="text-sm font-medium text-gray-600">Avg Score</span>
+            <span className="text-sm font-medium text-gray-600">Avg Response Time</span>
           </div>
           <div className="mt-2">
-            <div className={`text-2xl font-bold ${getPerformanceColor(avgScore)}`}>
-              {avgScore.toFixed(1)}/5
+            <div className={`text-2xl font-bold ${getResponseTimeColor(performanceInsights.avgResponseTime)}`}>
+              {(performanceInsights.avgResponseTime / 1000).toFixed(1)}s
             </div>
-            <div className="text-sm text-gray-500">overall rating</div>
+            <div className="text-sm text-gray-500">overall average</div>
           </div>
         </CardContent>
       </Card>

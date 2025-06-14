@@ -1,4 +1,3 @@
-
 export interface TrendDataPoint {
   date: string;
   total_sessions: number;
@@ -15,6 +14,7 @@ export interface QuestionAnalytics {
   total_responses: number;
   completion_rate: number;
   avg_score: number;
+  avg_response_time_ms?: number;
   response_distribution: Record<string, number>;
   insights: string[];
   trend: 'positive' | 'neutral' | 'negative' | 'mixed';
@@ -27,6 +27,7 @@ export interface CategoryAnalytics {
   completion_rate: number;
   questions: QuestionAnalytics[];
   avg_score: number;
+  avg_response_time_ms?: number;
 }
 
 export interface AnalyticsTableData {

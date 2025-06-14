@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Award, TrendingUp } from 'lucide-react';
+import { Award, Timer } from 'lucide-react';
 
 interface TopPerformersTabProps {
   topPerformers: Array<{
@@ -10,6 +10,7 @@ interface TopPerformersTabProps {
     avg_score: number;
     total_responses: number;
     completion_rate: number;
+    avg_response_time_ms?: number;
   }>;
 }
 
@@ -17,7 +18,7 @@ export const TopPerformersTab: React.FC<TopPerformersTabProps> = ({ topPerformer
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-green-600">Top Performing Questions</CardTitle>
+        <CardTitle className="text-green-600">Fastest Answered Questions</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -36,12 +37,12 @@ export const TopPerformersTab: React.FC<TopPerformersTabProps> = ({ topPerformer
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold text-green-600">{question.avg_score}/5</div>
-                <TrendingUp className="w-4 h-4 text-green-500 ml-auto mt-1" />
+                <div className="text-lg font-bold text-green-600">{((question.avg_response_time_ms || 0) / 1000).toFixed(1)}s</div>
+                <Timer className="w-4 h-4 text-green-500 ml-auto mt-1" />
               </div>
             </div>
           )) : (
-            <p className="text-gray-500 text-center py-8">No high performing questions yet</p>
+            <p className="text-gray-500 text-center py-8">No response time data yet.</p>
           )}
         </div>
       </CardContent>

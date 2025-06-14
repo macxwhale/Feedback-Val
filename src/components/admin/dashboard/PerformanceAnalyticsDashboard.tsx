@@ -10,7 +10,7 @@ import { LowPerformersTab } from './performance/LowPerformersTab';
 import { CompletionAnalysisTab } from './performance/CompletionAnalysisTab';
 import { CategoryPerformanceTab } from './performance/CategoryPerformanceTab';
 import { analyzeQuestionPerformance, calculatePerformanceInsights } from './performance/performanceUtils';
-import type { QuestionAnalytics } from '@/types/analytics';
+import type { QuestionAnalytics, CategoryAnalytics } from '@/types/analytics';
 
 interface PerformanceAnalyticsDashboardProps {
   organizationId: string;
@@ -53,14 +53,9 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
   // Calculate performance metrics using utility function
   const performanceInsights = calculatePerformanceInsights(analyticsData.questions, analyticsData.summary);
 
-  const scoredQuestions = analyticsData.questions.filter(q => q.avg_score > 0);
-  const overallAvgScore = scoredQuestions.length > 0
-    ? scoredQuestions.reduce((sum, q) => sum + q.avg_score, 0) / scoredQuestions.length
-    : 0;
-
-  // Category performance analysis based on completion rates and response counts
-  const categoryPerformance = analyticsData.categories
-    .sort((a, b) => b.avg_score - a.avg_score);
+  // Category performance analysis based on response times
+  const categoryPerformance = [...analyticsData.categories]
+    .sort((a, b) => (a.avg_response_time_ms || 0) - (b.avg_response_time_ms || 0));
 
   return (
     <div className="space-y-6">
@@ -74,7 +69,6 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
       {/* Performance Overview */}
       <PerformanceOverviewCards 
         performanceInsights={performanceInsights}
-        avgScore={overallAvgScore}
         totalQuestions={analyticsData.summary.total_questions}
       />
 
@@ -105,7 +99,8 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
             avg_score: c.avg_score,
             total_questions: c.total_questions,
             total_responses: c.total_responses,
-            completion_rate: c.completion_rate
+            completion_rate: c.completion_rate,
+            avg_response_time_ms: c.avg_response_time_ms
           }))} />
         </TabsContent>
       </Tabs>
