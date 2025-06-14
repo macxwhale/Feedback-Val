@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { EnhancedProgressBar } from './EnhancedProgressBar';
 import { EnhancedQuestionRenderer } from './EnhancedQuestionRenderer';
 import { NavigationButtons } from './NavigationButtons';
 import { KeyboardNavigation } from './KeyboardNavigation';
-import { ProgressInsights } from './ProgressInsights';
 import { SmartSuggestions } from './SmartSuggestions';
 import { DataUsageInfo } from './DataUsageInfo';
 import { SaveContinueOptions } from './SaveContinueOptions';
@@ -66,6 +64,8 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
           currentQuestionIndex={currentQuestionIndex}
           totalQuestions={questions.length}
           completedQuestions={completedQuestions}
+          estimatedTimeRemaining={estimatedTimeRemaining}
+          averageResponseTime={averageResponseTime}
         />
 
         {!isMobile && (
@@ -74,14 +74,6 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
               onSave={onSaveProgress}
               onPause={onPauseAndExit}
               hasUnsavedChanges={hasUnsavedChanges}
-            />
-
-            <ProgressInsights
-              currentIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-              completedQuestions={completedQuestions}
-              estimatedTimeRemaining={estimatedTimeRemaining}
-              averageResponseTime={averageResponseTime}
             />
           </>
         )}
