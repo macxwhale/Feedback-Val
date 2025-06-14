@@ -23,6 +23,7 @@ export interface Organization {
   thank_you_message?: string;
   custom_css?: any;
   flow_configuration?: any;
+  features_config?: any; // <-- ADDED
   created_at: string;
   updated_at: string;
 }
@@ -64,7 +65,7 @@ export interface CreateOrganizationData {
   max_responses?: number;
   created_by_user_id?: string;
   settings?: any;
-  features_config?: any;
+  features_config?: any; // <-- ADDED
 }
 
 export const getOrganizationBySlug = async (slug: string): Promise<Organization | null> => {
