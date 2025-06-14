@@ -66,7 +66,7 @@ export const Features: React.FC = () => {
   ];
 
   return (
-    <section className="relative py-32 bg-gradient-to-br from-white via-warm-gray-50 to-sunset-50/20 dark:from-dark-warm-50 dark:via-dark-warm-100 dark:to-dark-warm-50 overflow-hidden">
+    <section className="relative py-32 bg-gradient-to-br from-white via-warm-gray-50 to-sunset-50/20 dark:bg-transparent overflow-hidden">
       <FluidBackground />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

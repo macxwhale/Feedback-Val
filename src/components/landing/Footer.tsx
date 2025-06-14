@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-warm-gray-900 dark:bg-dark-warm-50 text-white dark:text-dark-warm-900 py-20">
+    <footer className="bg-warm-gray-900 dark:bg-dark-warm-100 text-warm-gray-300 dark:text-dark-warm-600 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           
@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
                 <Activity className="w-10 h-10 text-sunset-500" />
                 <div className="absolute inset-0 w-10 h-10 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
               </div>
-              <span className="text-3xl font-space font-bold">Pulsify</span>
+              <span className="text-3xl font-space font-bold text-white dark:text-dark-warm-900">Pulsify</span>
             </div>
             
             <p className="text-xl text-warm-gray-300 dark:text-dark-warm-600 leading-relaxed mb-8 max-w-md font-medium">
@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
           
           {/* Product links */}
           <div>
-            <h3 className="text-xl font-space font-bold mb-8">Product</h3>
+            <h3 className="text-xl font-space font-bold mb-8 text-white dark:text-dark-warm-900">Product</h3>
             <ul className="space-y-4">
               {['Features', 'Pricing', 'Analytics', 'Integrations', 'API', 'Security'].map((item) => (
                 <li key={item}>
@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
           
           {/* Company links + Quick Actions */}
           <div>
-            <h3 className="text-xl font-space font-bold mb-8">Company</h3>
+            <h3 className="text-xl font-space font-bold mb-8 text-white dark:text-dark-warm-900">Company</h3>
             <ul className="space-y-4 mb-8">
               {['About', 'Blog', 'Careers', 'Partners', 'Contact', 'Support'].map((item) => (
                 <li key={item}>

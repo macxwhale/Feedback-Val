@@ -8,14 +8,16 @@ import { Features } from './Features';
 import { Pricing } from './Pricing';
 import { FinalCTA } from './FinalCTA';
 import { Footer } from './Footer';
+import { SocialProof } from './SocialProof';
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-warm-50 transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-background transition-colors duration-300">
       <ModernHeader />
       <ModernHero />
-      <HowItWorks />
+      <SocialProof />
       <DashboardPreview />
+      <HowItWorks />
       <Features />
       <Pricing />
       <FinalCTA />
