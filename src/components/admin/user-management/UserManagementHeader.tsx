@@ -3,6 +3,7 @@ import React from 'react';
 
 interface UserManagementHeaderProps {
   organizationName: string;
+  onInviteUser: () => void;
 }
 
 export const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({

@@ -10,11 +10,13 @@ import {
 interface QuickActionsProps {
   onCreateQuestion: () => void;
   onViewSettings: () => void;
+  onInviteUser: () => void;
+  onExportData: () => void;
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({
   onCreateQuestion,
-  onViewSettings
+  onViewSettings,
 }) => {
   const actions = [
     {
