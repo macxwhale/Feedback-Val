@@ -1,31 +1,15 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { ExecutiveDashboard } from './ExecutiveDashboard';
-import { OperationalAnalytics } from './OperationalAnalytics';
-import { RealTimeAnalytics } from './RealTimeAnalytics';
-import { SessionTrendsChart } from './charts/SessionTrendsChart';
-import { UserEngagementChart } from './charts/UserEngagementChart';
-import { AnalyticsInsights } from './AnalyticsInsights';
-import { QuickActions } from './QuickActions';
-import { NotificationCenter } from './NotificationCenter';
-import { RecentActivityCard } from '../RecentActivityCard';
-import { StatsCards } from './StatsCards';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DashboardOverview } from './DashboardOverview';
+import { AnalyticsSummaryCards } from './AnalyticsSummaryCards';
 import { AnalyticsTable } from './AnalyticsTable';
-import { 
-  Users, 
-  MessageSquare, 
-  TrendingUp, 
-  Target,
-  Clock,
-  CheckCircle,
-  Activity,
-  BarChart3,
-  FileText
-} from 'lucide-react';
+import { AnalyticsInsights } from './AnalyticsInsights';
+import { RealTimeAnalytics } from './RealTimeAnalytics';
+import { RefactoredExecutiveDashboard } from './RefactoredExecutiveDashboard';
+import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BarChart3, TrendingUp, Clock, Target } from 'lucide-react';
 
 interface AdvancedDashboardViewProps {
   organizationId: string;
@@ -46,191 +30,89 @@ interface AdvancedDashboardViewProps {
 export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
   organizationId,
   organizationName,
-  activeTab,
-  onTabChange,
   stats,
-  isLiveActivity,
-  setIsLiveActivity,
   handleQuickActions
 }) => {
-  const statsLoading = !stats;
+  const { data: analyticsData, isLoading } = useAnalyticsTableData(organizationId);
 
-  // Create stats cards configuration
-  const cards = [
-    {
-      title: 'Active Members',
-      value: stats?.active_members || 0,
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      trend: stats?.growth_metrics?.growth_rate ? {
-        value: Math.abs(stats.growth_metrics.growth_rate),
-        label: 'vs last month',
-        isPositive: stats.growth_metrics.growth_rate > 0
-      } : {
-        value: 12,
-        label: 'vs last month',
-        isPositive: true
-      }
-    },
-    {
-      title: 'Total Questions',
-      value: stats?.total_questions || 0,
-      icon: MessageSquare,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      trend: {
-        value: 8,
-        label: 'new this month',
-        isPositive: true
-      }
-    },
-    {
-      title: 'Total Sessions',
-      value: stats?.total_sessions || 0,
-      icon: Clock,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      trend: {
-        value: 23,
-        label: 'vs last month',
-        isPositive: true
-      }
-    },
-    {
-      title: 'Completed Sessions',
-      value: stats?.completed_sessions || 0,
-      icon: CheckCircle,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
-      trend: stats && stats.total_sessions > 0 ? {
-        value: Math.round((stats.completed_sessions / stats.total_sessions) * 100),
-        label: 'completion rate',
-        isPositive: true
-      } : {
-        value: 85,
-        label: 'completion rate',
-        isPositive: true
-      }
-    },
-    {
-      title: 'Total Responses',
-      value: stats?.total_responses || 0,
-      icon: TrendingUp,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      trend: {
-        value: 34,
-        label: 'vs last month',
-        isPositive: true
-      }
-    },
-    {
-      title: 'Avg. Score',
-      value: stats?.avg_session_score || 0,
-      icon: Target,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      suffix: '/5',
-      trend: {
-        value: 5,
-        label: 'improvement',
-        isPositive: true
-      }
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header Controls */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-          <p className="text-gray-600">Comprehensive insights for {organizationName}</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Label htmlFor="live-activity">Live Updates</Label>
-            <Switch
-              id="live-activity"
-              checked={isLiveActivity}
-              onCheckedChange={setIsLiveActivity}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Core Analytics Overview */}
+      <DashboardOverview organizationId={organizationId} />
+
+      {/* Analytics Summary Cards */}
+      {analyticsData?.summary && (
+        <AnalyticsSummaryCards summary={analyticsData.summary} />
+      )}
 
       {/* Analytics Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
-            <Target className="w-4 h-4" />
-            <span className="hidden sm:inline">Overview</span>
+            <BarChart3 className="w-4 h-4" />
+            <span>Overview</span>
           </TabsTrigger>
           <TabsTrigger value="executive" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Executive</span>
-          </TabsTrigger>
-          <TabsTrigger value="operational" className="flex items-center space-x-2">
-            <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Operational</span>
+            <Target className="w-4 h-4" />
+            <span>Executive</span>
           </TabsTrigger>
           <TabsTrigger value="realtime" className="flex items-center space-x-2">
-            <Activity className="w-4 h-4" />
-            <span className="hidden sm:inline">Real-time</span>
+            <Clock className="w-4 h-4" />
+            <span>Real-Time</span>
           </TabsTrigger>
           <TabsTrigger value="detailed" className="flex items-center space-x-2">
-            <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Detailed</span>
+            <TrendingUp className="w-4 h-4" />
+            <span>Detailed</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <StatsCards cards={cards} isLoading={statsLoading} />
-
-          {!statsLoading && stats && stats.total_sessions > 0 && (
-            <div className="flex justify-center">
-              <Badge variant="outline" className="text-sm">
-                Overall completion rate: {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%
-              </Badge>
-            </div>
-          )}
-
+        <TabsContent value="overview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SessionTrendsChart isLoading={statsLoading} />
-            <UserEngagementChart isLoading={statsLoading} />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <AnalyticsInsights stats={stats} isLoading={statsLoading} />
-            </div>
-            <QuickActions {...handleQuickActions} />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <RecentActivityCard 
-              recentSessions={stats?.recent_activity} 
-              statsLoading={statsLoading} 
-            />
-            <NotificationCenter />
+            {analyticsData && (
+              <>
+                <AnalyticsTable
+                  questions={analyticsData.questions}
+                  categories={analyticsData.categories}
+                  summary={analyticsData.summary}
+                />
+                <AnalyticsInsights 
+                  data={analyticsData}
+                  organizationId={organizationId}
+                />
+              </>
+            )}
           </div>
         </TabsContent>
 
-        <TabsContent value="executive" className="space-y-6">
-          <ExecutiveDashboard organizationId={organizationId} stats={stats} />
+        <TabsContent value="executive">
+          <RefactoredExecutiveDashboard organizationId={organizationId} />
         </TabsContent>
 
-        <TabsContent value="operational" className="space-y-6">
-          <OperationalAnalytics organizationId={organizationId} />
-        </TabsContent>
-
-        <TabsContent value="realtime" className="space-y-6">
+        <TabsContent value="realtime">
           <RealTimeAnalytics organizationId={organizationId} />
         </TabsContent>
 
-        <TabsContent value="detailed" className="space-y-6">
-          <AnalyticsTable organizationId={organizationId} />
+        <TabsContent value="detailed">
+          {analyticsData && (
+            <AnalyticsTable
+              questions={analyticsData.questions}
+              categories={analyticsData.categories}
+              summary={analyticsData.summary}
+              showDrillDown={true}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

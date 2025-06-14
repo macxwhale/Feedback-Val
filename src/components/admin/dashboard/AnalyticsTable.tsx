@@ -1,160 +1,184 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  BarChart3, 
-  FileText, 
-  Users, 
-  TrendingUp,
-  Download,
-  Filter
-} from 'lucide-react';
-import { QuestionsAnalyticsTable } from './QuestionsAnalyticsTable';
-import { CategoriesAnalyticsTable } from './CategoriesAnalyticsTable';
-import { ResponsesAnalyticsTable } from './ResponsesAnalyticsTable';
-import { AnalyticsSummaryCards } from './AnalyticsSummaryCards';
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { QuestionDrillDown } from './QuestionDrillDown';
+import { ChevronRight, BarChart3, List } from 'lucide-react';
+import type { QuestionAnalytics, CategoryAnalytics } from '@/hooks/useAnalyticsTableData';
 
 interface AnalyticsTableProps {
-  organizationId: string;
+  questions: QuestionAnalytics[];
+  categories: CategoryAnalytics[];
+  summary: {
+    total_questions: number;
+    total_responses: number;
+    overall_avg_score: number;
+    overall_completion_rate: number;
+  };
+  showDrillDown?: boolean;
 }
 
 export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
-  organizationId
+  questions,
+  categories,
+  summary,
+  showDrillDown = false
 }) => {
-  const [activeTab, setActiveTab] = useState('summary');
-  const { data: analyticsData, isLoading } = useAnalyticsTableData(organizationId);
+  const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const getScoreColor = (score: number): string => {
+    if (score >= 4) return 'text-green-600';
+    if (score >= 3) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
-  if (!analyticsData) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500">
-            <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p>No analytics data available</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const getCompletionColor = (rate: number): string => {
+    if (rate >= 90) return 'text-green-600';
+    if (rate >= 70) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  // Mock drill-down data generator
+  const generateMockResponses = (questionId: string, totalResponses: number) => {
+    return Array.from({ length: Math.min(totalResponses, 10) }, (_, index) => ({
+      id: `response-${questionId}-${index}`,
+      responseValue: `Response ${index + 1}`,
+      score: Math.floor(Math.random() * 5) + 1,
+      isSatisfactory: Math.random() > 0.3,
+      selectedOption: ['Product A', 'Product B', 'Product C', 'Other'][Math.floor(Math.random() * 4)],
+      createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+    }));
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Analytics Reports</h2>
-          <p className="text-gray-600">Detailed insights into questions, categories, and responses</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <BarChart3 className="w-5 h-5" />
+          <span>Analytics Dashboard</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="questions" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="questions" className="flex items-center space-x-2">
+              <List className="w-4 h-4" />
+              <span>Questions</span>
+            </TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+          </TabsList>
 
-      {/* Summary Cards */}
-      <AnalyticsSummaryCards summary={analyticsData.summary} />
+          <TabsContent value="questions">
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Question</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Responses</TableHead>
+                    <TableHead>Avg Score</TableHead>
+                    <TableHead>Completion Rate</TableHead>
+                    {showDrillDown && <TableHead>Actions</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {questions.map((question) => (
+                    <React.Fragment key={question.id}>
+                      <TableRow>
+                        <TableCell className="font-medium max-w-xs truncate">
+                          {question.question_text}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{question.question_type}</Badge>
+                        </TableCell>
+                        <TableCell>{question.category}</TableCell>
+                        <TableCell>{question.total_responses}</TableCell>
+                        <TableCell className={getScoreColor(question.avg_score)}>
+                          {question.avg_score}/5
+                        </TableCell>
+                        <TableCell className={getCompletionColor(question.completion_rate)}>
+                          {question.completion_rate}%
+                        </TableCell>
+                        {showDrillDown && (
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedQuestion(
+                                selectedQuestion === question.id ? null : question.id
+                              )}
+                            >
+                              <ChevronRight className={`w-4 h-4 transition-transform ${
+                                selectedQuestion === question.id ? 'rotate-90' : ''
+                              }`} />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                      {showDrillDown && selectedQuestion === question.id && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="p-0">
+                            <div className="p-4 bg-gray-50">
+                              <QuestionDrillDown
+                                questionId={question.id}
+                                questionText={question.question_text}
+                                questionType={question.question_type}
+                                responses={generateMockResponses(question.id, question.total_responses)}
+                                avgScore={question.avg_score}
+                                completionRate={question.completion_rate}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
 
-      {/* Analytics Tables */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="w-5 h-5" />
-            <span>Detailed Analytics</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-              <TabsTrigger value="summary" className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4" />
-                <span>Summary</span>
-              </TabsTrigger>
-              <TabsTrigger value="questions" className="flex items-center space-x-2">
-                <FileText className="w-4 h-4" />
-                <span>Questions</span>
-              </TabsTrigger>
-              <TabsTrigger value="categories" className="flex items-center space-x-2">
-                <Users className="w-4 h-4" />
-                <span>Categories</span>
-              </TabsTrigger>
-              <TabsTrigger value="responses" className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>Responses</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="summary" className="mt-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Overview</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {analyticsData.summary.total_questions}
-                    </div>
-                    <div className="text-sm text-gray-600">Total Questions</div>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {analyticsData.summary.total_responses}
-                    </div>
-                    <div className="text-sm text-gray-600">Total Responses</div>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {analyticsData.summary.overall_avg_score}/5
-                    </div>
-                    <div className="text-sm text-gray-600">Average Score</div>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">
-                      {analyticsData.summary.overall_completion_rate}%
-                    </div>
-                    <div className="text-sm text-gray-600">Completion Rate</div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="questions" className="mt-6">
-              <QuestionsAnalyticsTable questions={analyticsData.questions} />
-            </TabsContent>
-
-            <TabsContent value="categories" className="mt-6">
-              <CategoriesAnalyticsTable categories={analyticsData.categories} />
-            </TabsContent>
-
-            <TabsContent value="responses" className="mt-6">
-              <ResponsesAnalyticsTable 
-                questions={analyticsData.questions}
-                categories={analyticsData.categories}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+          <TabsContent value="categories">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Questions</TableHead>
+                  <TableHead>Total Responses</TableHead>
+                  <TableHead>Avg Score</TableHead>
+                  <TableHead>Completion Rate</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categories.map((category, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{category.category}</TableCell>
+                    <TableCell>{category.total_questions}</TableCell>
+                    <TableCell>{category.total_responses}</TableCell>
+                    <TableCell className={getScoreColor(category.avg_score)}>
+                      {category.avg_score}/5
+                    </TableCell>
+                    <TableCell className={getCompletionColor(category.completion_rate)}>
+                      {category.completion_rate}%
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };

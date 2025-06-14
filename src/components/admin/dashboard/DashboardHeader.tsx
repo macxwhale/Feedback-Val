@@ -3,6 +3,7 @@ import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { DashboardBreadcrumb } from './DashboardBreadcrumb';
 import { DashboardSearch } from './DashboardSearch';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface DashboardHeaderProps {
   organizationName: string;
@@ -27,10 +28,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             currentPage={currentPage}
           />
         </div>
-        <DashboardSearch 
-          organizationId={organizationId}
-          onNavigate={onNavigate}
-        />
+        <div className="flex items-center space-x-4">
+          <NotificationDropdown />
+          <DashboardSearch 
+            organizationId={organizationId}
+            onNavigate={onNavigate}
+          />
+        </div>
       </div>
     </div>
   );
