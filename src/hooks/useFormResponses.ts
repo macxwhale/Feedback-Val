@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { FeedbackResponse } from '@/components/FeedbackForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
+import { ResponseTimeData } from '@/services/responseTimeService';
 
 export const useFormResponses = () => {
   const [responses, setResponses] = useState<Record<string, any>>({});
@@ -28,7 +28,7 @@ export const useFormResponses = () => {
     }));
   };
 
-  const submitResponses = async (questions: any[]) => {
+  const submitResponses = async (questions: any[], timingData?: ResponseTimeData) => {
     if (!organization?.id) {
       throw new Error('Organization not found');
     }
@@ -36,12 +36,12 @@ export const useFormResponses = () => {
     setIsSubmitting(true);
     try {
       console.log('Submitting feedback via Edge Function...');
-      // Call the Edge Function instead of direct database operations
       const { data, error } = await supabase.functions.invoke('submit-feedback', {
         body: {
           responses,
           organizationId: organization.id,
-          questions
+          questions,
+          timingData
         }
       });
 

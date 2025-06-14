@@ -11,10 +11,10 @@ interface FeedbackSubmission {
   responses: Record<string, any>;
   organizationId: string;
   questions: any[];
+  timingData?: any;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -30,11 +30,10 @@ serve(async (req) => {
       }
     )
 
-    const { responses, organizationId, questions }: FeedbackSubmission = await req.json()
+    const { responses, organizationId, questions, timingData }: FeedbackSubmission = await req.json()
 
     console.log('Processing feedback submission for org:', organizationId)
 
-    // Validate the organization exists
     const { data: org, error: orgError } = await supabaseClient
       .from('organizations')
       .select('id, name')
@@ -45,13 +44,13 @@ serve(async (req) => {
       throw new Error('Organization not found')
     }
 
-    // Create a feedback session
     const { data: session, error: sessionError } = await supabaseClient
       .from('feedback_sessions')
       .insert({
         organization_id: organizationId,
         status: 'completed',
-        completed_at: new Date().toISOString()
+        completed_at: new Date().toISOString(),
+        started_at: timingData ? new Date(timingData.startTime).toISOString() : new Date().toISOString(),
       })
       .select()
       .single()
@@ -63,22 +62,25 @@ serve(async (req) => {
 
     console.log('Created session:', session.id)
 
-    // Generate scores and prepare response data
     const responseData = Object.entries(responses).map(([questionId, value]) => {
       const question = questions.find(q => q.id === questionId)
-      const score = Math.floor(Math.random() * 5) + 1 // Random score for demo
+      const score = Math.floor(Math.random() * 5) + 1
       
+      const questionTiming = timingData?.questionTimes?.find((qt: any) => qt.questionId === questionId);
+
       return {
         question_id: questionId,
         session_id: session.id,
         organization_id: organizationId,
         response_value: value,
         question_category: question?.category || 'Comments',
-        score: score
+        score: score,
+        response_time_ms: questionTiming?.responseTime || null,
+        question_started_at: questionTiming ? new Date(questionTiming.startTime).toISOString() : null,
+        question_completed_at: questionTiming ? new Date(questionTiming.endTime).toISOString() : null,
       }
     })
 
-    // Insert all responses
     const { error: responsesError } = await supabaseClient
       .from('feedback_responses')
       .insert(responseData)
@@ -88,13 +90,34 @@ serve(async (req) => {
       throw responsesError
     }
 
-    // Calculate total score
-    const totalScore = responseData.reduce((sum, r) => sum + r.score, 0)
+    const totalScore = responseData.reduce((sum, r) => sum + (r.score || 0), 0)
     
-    // Update session with total score
+    const sessionUpdatePayload: {
+      total_score: number;
+      total_response_time_ms?: number;
+      avg_question_time_ms?: number;
+      timing_metadata?: any;
+    } = {
+      total_score: totalScore
+    };
+
+    if (timingData) {
+      sessionUpdatePayload.total_response_time_ms = timingData.totalResponseTime;
+      const validResponseTimes = timingData.questionTimes
+        .map((q: any) => q.responseTime)
+        .filter((rt: number) => rt > 0);
+      
+      if (validResponseTimes.length > 0) {
+        sessionUpdatePayload.avg_question_time_ms = Math.round(
+          validResponseTimes.reduce((a: number, b: number) => a + b, 0) / validResponseTimes.length
+        );
+      }
+      sessionUpdatePayload.timing_metadata = timingData;
+    }
+
     const { error: updateError } = await supabaseClient
       .from('feedback_sessions')
-      .update({ total_score: totalScore })
+      .update(sessionUpdatePayload)
       .eq('id', session.id)
 
     if (updateError) {

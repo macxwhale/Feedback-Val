@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
 import { fetchQuestions } from '@/services/questionsService';
@@ -8,6 +9,8 @@ import { useFormValidation } from './useFormValidation';
 import { useWebhooks } from './useWebhooks';
 import { useToast } from '@/hooks/use-toast';
 import { useOrganization } from '@/hooks/useOrganization';
+import { v4 as uuidv4 } from 'uuid';
+import { responseTimeService } from '@/services/responseTimeService';
 
 export const useFeedbackForm = () => {
   const [questions, setQuestions] = useState<QuestionConfig[]>([]);
@@ -30,11 +33,10 @@ export const useFeedbackForm = () => {
   const { currentQuestionIndex, goToNext, goToPrevious, resetNavigation } = useFormNavigation(questions.length);
   const { validateQuestion, getValidationResult } = useFormValidation();
   
-  // Use ref to prevent duplicate loading
   const questionsLoaded = useRef<boolean>(false);
   const lastOrgId = useRef<string | null>(null);
+  const sessionId = useRef<string>(uuidv4());
   
-  // Auto-save functionality
   const { loadSavedData, clearSavedData } = useAutoSave(
     { responses, currentQuestionIndex, completedQuestions },
     organization ? `feedback-${organization.slug}` : 'feedback-default'
@@ -44,12 +46,10 @@ export const useFeedbackForm = () => {
     const loadQuestions = async () => {
       console.log('useFeedbackForm - Loading questions, org loading:', orgLoading, 'organization:', organization);
       
-      // Wait for organization to load
       if (orgLoading) {
         return;
       }
 
-      // Prevent duplicate loading for the same organization
       const currentOrgId = organization?.id || 'fallback';
       if (questionsLoaded.current && lastOrgId.current === currentOrgId) {
         console.log('useFeedbackForm - Questions already loaded for this organization');
@@ -63,11 +63,11 @@ export const useFeedbackForm = () => {
         console.log('useFeedbackForm - Questions loaded:', data);
         setQuestions(data);
         
-        // Mark as loaded for this organization
         questionsLoaded.current = true;
         lastOrgId.current = currentOrgId;
         
-        // Load saved data if exists
+        responseTimeService.startSession(sessionId.current);
+
         const savedData = loadSavedData();
         if (savedData && Object.keys(savedData.responses || {}).length > 0) {
           toast({
@@ -85,7 +85,14 @@ export const useFeedbackForm = () => {
     };
 
     loadQuestions();
-  }, [organization?.id, organization?.slug, orgLoading]); // Only depend on organization ID and loading state
+  }, [organization?.id, organization?.slug, orgLoading]);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      const currentQuestionId = questions[currentQuestionIndex].id;
+      responseTimeService.startQuestion(sessionId.current, currentQuestionId);
+    }
+  }, [currentQuestionIndex, questions]);
 
   const isCurrentQuestionAnswered = () => {
     const currentQuestion = questions[currentQuestionIndex];
@@ -110,15 +117,19 @@ export const useFeedbackForm = () => {
   const submitFeedback = async () => {
     try {
       console.log('Submitting feedback to database...');
-      await submitResponses(questions);
+      
+      responseTimeService.endSession(sessionId.current);
+      const timingData = responseTimeService.getSessionTime(sessionId.current);
+
+      await submitResponses(questions, timingData);
       
       const responsesWithScores = generateFinalResponses();
       setFinalResponses(responsesWithScores);
       setIsComplete(true);
-      clearSavedData(); // Clear saved data after successful submission
+      clearSavedData();
+      responseTimeService.clearSession(sessionId.current);
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      // Error handling is done in useFormResponses hook
     }
   };
 
@@ -131,6 +142,11 @@ export const useFeedbackForm = () => {
   };
 
   const resetForm = () => {
+    if (sessionId.current) {
+      responseTimeService.clearSession(sessionId.current);
+    }
+    sessionId.current = uuidv4();
+    
     resetNavigation();
     resetResponses();
     setIsComplete(false);
@@ -138,7 +154,6 @@ export const useFeedbackForm = () => {
     setCompletedQuestions([]);
     clearSavedData();
     
-    // Reset loading state
     questionsLoaded.current = false;
     lastOrgId.current = null;
   };

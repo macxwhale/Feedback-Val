@@ -135,10 +135,13 @@ export type Database = {
           id: string
           organization_id: string
           question_category: Database["public"]["Enums"]["question_category"]
+          question_completed_at: string | null
           question_id: string
           question_snapshot: Json | null
+          question_started_at: string | null
           question_text_snapshot: string | null
           question_type_snapshot: string | null
+          response_time_ms: number | null
           response_value: Json
           score: number | null
           session_id: string
@@ -148,10 +151,13 @@ export type Database = {
           id?: string
           organization_id: string
           question_category: Database["public"]["Enums"]["question_category"]
+          question_completed_at?: string | null
           question_id: string
           question_snapshot?: Json | null
+          question_started_at?: string | null
           question_text_snapshot?: string | null
           question_type_snapshot?: string | null
+          response_time_ms?: number | null
           response_value: Json
           score?: number | null
           session_id: string
@@ -161,10 +167,13 @@ export type Database = {
           id?: string
           organization_id?: string
           question_category?: Database["public"]["Enums"]["question_category"]
+          question_completed_at?: string | null
           question_id?: string
           question_snapshot?: Json | null
+          question_started_at?: string | null
           question_text_snapshot?: string | null
           question_type_snapshot?: string | null
+          response_time_ms?: number | null
           response_value?: Json
           score?: number | null
           session_id?: string
@@ -188,6 +197,7 @@ export type Database = {
       }
       feedback_sessions: {
         Row: {
+          avg_question_time_ms: number | null
           category_scores: Json | null
           completed_at: string | null
           created_at: string
@@ -195,10 +205,13 @@ export type Database = {
           organization_id: string
           started_at: string
           status: string
+          timing_metadata: Json | null
+          total_response_time_ms: number | null
           total_score: number | null
           user_id: string | null
         }
         Insert: {
+          avg_question_time_ms?: number | null
           category_scores?: Json | null
           completed_at?: string | null
           created_at?: string
@@ -206,10 +219,13 @@ export type Database = {
           organization_id: string
           started_at?: string
           status?: string
+          timing_metadata?: Json | null
+          total_response_time_ms?: number | null
           total_score?: number | null
           user_id?: string | null
         }
         Update: {
+          avg_question_time_ms?: number | null
           category_scores?: Json | null
           completed_at?: string | null
           created_at?: string
@@ -217,6 +233,8 @@ export type Database = {
           organization_id?: string
           started_at?: string
           status?: string
+          timing_metadata?: Json | null
+          total_response_time_ms?: number | null
           total_score?: number | null
           user_id?: string | null
         }
