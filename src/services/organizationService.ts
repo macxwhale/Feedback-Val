@@ -275,12 +275,13 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
 
 export const updateOrganization = async (id: string, updates: Partial<Organization>): Promise<Organization | null> => {
   try {
-    // Fix: Only allow correct plan_type values and type them properly!
-    let safeUpdates: Partial<Omit<Organization, 'plan_type'>> & { plan_type?: 'starter' | 'pro' | 'enterprise' } = { ...updates };
+    // Fix: Explicitly type and filter plan_type BEFORE assign
+    const { plan_type: unsafePlanType, ...rest } = updates;
+    let safeUpdates: Partial<Omit<Organization, 'plan_type'>> & { plan_type?: 'starter' | 'pro' | 'enterprise' } = { ...rest };
 
-    if (updates.plan_type !== undefined) {
-      if (updates.plan_type === 'starter' || updates.plan_type === 'pro' || updates.plan_type === 'enterprise') {
-        safeUpdates.plan_type = updates.plan_type;
+    if (unsafePlanType !== undefined) {
+      if (unsafePlanType === 'starter' || unsafePlanType === 'pro' || unsafePlanType === 'enterprise') {
+        safeUpdates.plan_type = unsafePlanType;
       } else {
         safeUpdates.plan_type = 'starter';
       }
