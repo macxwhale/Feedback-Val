@@ -47,6 +47,12 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
     );
   }
 
+  // Enhance the summary data with avg_session_score from enhancedStats
+  const enhancedSummary = analyticsData?.summary ? {
+    ...analyticsData.summary,
+    overall_avg_score: enhancedStats?.avg_session_score || 0
+  } : undefined;
+
   return (
     <div className="space-y-6">
       {/* Core Analytics Overview (contains the proper stat cards) */}
@@ -75,12 +81,12 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {analyticsData && (
+            {analyticsData && enhancedSummary && (
               <>
                 <AnalyticsTable
                   questions={analyticsData.questions}
                   categories={analyticsData.categories}
-                  summary={analyticsData.summary}
+                  summary={enhancedSummary}
                 />
                 <AnalyticsInsights 
                   stats={enhancedStats}
@@ -100,11 +106,11 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
         </TabsContent>
 
         <TabsContent value="detailed">
-          {analyticsData && (
+          {analyticsData && enhancedSummary && (
             <AnalyticsTable
               questions={analyticsData.questions}
               categories={analyticsData.categories}
-              summary={analyticsData.summary}
+              summary={enhancedSummary}
               showDrillDown={true}
             />
           )}
