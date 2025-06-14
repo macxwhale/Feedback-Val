@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Users, MessageSquare, Settings, TrendingUp } from 'lucide-react';
+import { BarChart3, Users, MessageSquare, Settings, TrendingUp, Brain } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
 
 interface DashboardSidebarProps {
@@ -20,36 +19,36 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   stats,
   isLoading = false
 }) => {
-  const menuItems = [
-    { 
-      id: 'overview', 
-      label: 'Overview', 
-      icon: BarChart3,
-      badge: stats?.growth_metrics?.growth_rate && stats.growth_metrics.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined
+  // Grouped menu items for sidebar
+  const groupedMenuItems = [
+    {
+      label: "Core Analytics",
+      items: [
+        { id: 'overview', label: 'Analytics', icon: BarChart3, badge: (stats?.growth_metrics?.growth_rate && stats.growth_metrics.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined) }
+      ]
     },
-    { 
-      id: 'members', 
-      label: 'Members', 
-      icon: Users,
-      badge: stats?.active_members || 0
+    {
+      label: "Customer Intelligence",
+      items: [
+        { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp },
+        { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain },
+        { id: 'performance', label: 'Performance', icon: BarChart3 }
+      ]
     },
-    { 
-      id: 'feedback', 
-      label: 'Feedback', 
-      icon: MessageSquare,
-      badge: stats?.total_responses || 0
+    {
+      label: "Content Management",
+      items: [
+        { id: 'feedback', label: 'Feedback', icon: MessageSquare, badge: stats?.total_responses || 0 },
+        { id: 'questions', label: 'Questions', icon: MessageSquare, badge: stats?.total_questions || 0 }
+      ]
     },
-    { 
-      id: 'questions', 
-      label: 'Questions', 
-      icon: MessageSquare,
-      badge: stats?.total_questions || 0
-    },
-    { 
-      id: 'settings', 
-      label: 'Settings', 
-      icon: Settings
-    },
+    {
+      label: "Team & Settings",
+      items: [
+        { id: 'members', label: 'Members', icon: Users, badge: stats?.active_members || 0 },
+        { id: 'settings', label: 'Settings', icon: Settings }
+      ]
+    }
   ];
 
   return (
@@ -61,36 +60,38 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       </SidebarHeader>
       
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onTabChange(item.id)}
-                    isActive={activeTab === item.id}
-                    className="flex items-center justify-between w-full"
-                  >
-                    <div className="flex items-center">
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.label}</span>
-                    </div>
-                    {isLoading ? (
-                      <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
-                    ) : (
-                      item.badge && (
-                        <Badge variant="secondary" className="ml-2">
-                          {item.badge}
-                        </Badge>
-                      )
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groupedMenuItems.map(section => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onTabChange(item.id)}
+                      isActive={activeTab === item.id}
+                      className="flex items-center justify-between w-full"
+                    >
+                      <div className="flex items-center">
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.label}</span>
+                      </div>
+                      {isLoading ? (
+                        <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
+                      ) : (
+                        item.badge && (
+                          <Badge variant="secondary" className="ml-2">
+                            {item.badge}
+                          </Badge>
+                        )
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
         {/* Quick Stats */}
         {stats && !isLoading && (
