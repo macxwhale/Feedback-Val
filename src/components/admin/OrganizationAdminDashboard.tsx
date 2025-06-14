@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -91,7 +92,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
     <DashboardProvider>
       <DashboardErrorBoundary>
         <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-gray-50">
+          <div className="min-h-screen flex w-full bg-warm-gray-50">
             <DashboardSidebar
               organizationName={organization.name}
               activeTab={activeTab}

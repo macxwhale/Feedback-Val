@@ -22,8 +22,8 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ activeTab, onTabChange }) 
           onClick={() => onTabChange(id)}
           className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             activeTab === id
-              ? 'bg-blue-100 text-blue-700'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-sunset-100 text-sunset-700'
+              : 'text-gray-500 hover:text-sunset-600'
           }`}
         >
           <Icon className="w-4 h-4 mr-2" />

@@ -18,8 +18,8 @@ export const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organiza
         <div className="py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Building className="h-8 w-8 text-blue-600" />
+              <div className="bg-sunset-100 p-3 rounded-lg">
+                <Building className="h-8 w-8 text-sunset-600" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{organization.name}</h1>

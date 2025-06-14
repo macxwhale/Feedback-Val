@@ -19,7 +19,7 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-blue-600" />
+            <Users className="h-5 w-5 text-sunset-600" />
             <div>
               <div className="text-2xl font-bold">{activeMembersCount}</div>
               <p className="text-sm text-gray-600">Total Members</p>
@@ -30,7 +30,7 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center space-x-2">
-            <Shield className="h-5 w-5 text-green-600" />
+            <Shield className="h-5 w-5 text-coral-500" />
             <div>
               <div className="text-2xl font-bold">{adminsCount}</div>
               <p className="text-sm text-gray-600">Admins</p>
@@ -41,7 +41,7 @@ export const MemberStats: React.FC<MemberStatsProps> = ({
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center space-x-2">
-            <Mail className="h-5 w-5 text-orange-600" />
+            <Mail className="h-5 w-5 text-golden-500" />
             <div>
               <div className="text-2xl font-bold">{pendingInvitationsCount}</div>
               <p className="text-sm text-gray-600">Pending Invitations</p>
