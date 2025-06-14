@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import {
   AlertCircle,
   BarChart3
 } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 interface CustomerInsightsDashboardProps {
   organizationId: string;
@@ -21,6 +23,18 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
   organizationId
 }) => {
   const { data: analyticsData, isLoading } = useAnalyticsTableData(organizationId);
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="p-2 bg-background border rounded-lg shadow-sm">
+          <p className="text-sm text-muted-foreground max-w-[200px] break-words">{label}</p>
+          <p className="font-bold text-foreground">{`${payload[0].value}% completion`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (isLoading) {
     return (
@@ -231,16 +245,30 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
               <CardTitle>Session Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div>
                   <h4 className="font-medium mb-3">Completion Rate by Question</h4>
-                  <div className="space-y-2">
-                    {analyticsData.questions.slice(0, 5).map((question, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span className="text-sm truncate flex-1 mr-2">{question.question_text}</span>
-                        <span className="text-sm font-medium">{question.completion_rate}%</span>
-                      </div>
-                    ))}
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        layout="vertical"
+                        data={analyticsData.questions.slice(0, 5).map(q => ({ name: q.question_text, 'Completion Rate': q.completion_rate }))}
+                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                        <XAxis type="number" domain={[0, 100]} unit="%" />
+                        <YAxis 
+                          dataKey="name" 
+                          type="category" 
+                          width={60}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
+                        />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                        <Bar dataKey="Completion Rate" fill="hsl(var(--primary))" barSize={20} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
                 <div>
