@@ -71,11 +71,11 @@ export const ModernHero: React.FC = () => {
           <div className="flex justify-center pt-8">
             <Button 
               onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white font-semibold shadow-lg shadow-sunset-500/25 px-8 py-3 rounded-full text-lg h-auto transition-all duration-300 hover:scale-105"
+              className="bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white font-semibold shadow-lg shadow-sunset-500/25 px-10 py-4 rounded-full text-xl h-auto transition-all duration-300 hover:scale-105"
             >
-              <span className="flex items-center justify-center space-x-2">
+              <span className="flex items-center justify-center space-x-3">
                 <span>Start Free Trial</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
           </div>
