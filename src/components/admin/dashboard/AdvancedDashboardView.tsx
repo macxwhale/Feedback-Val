@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardOverview } from './DashboardOverview';
-import { AnalyticsSummaryCards } from './AnalyticsSummaryCards';
 import { AnalyticsTable } from './AnalyticsTable';
 import { AnalyticsInsights } from './AnalyticsInsights';
 import { RealTimeAnalytics } from './RealTimeAnalytics';
@@ -49,13 +47,8 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Core Analytics Overview */}
+      {/* Core Analytics Overview (contains the proper stat cards) */}
       <DashboardOverview organizationId={organizationId} />
-
-      {/* Analytics Summary Cards */}
-      {analyticsData?.summary && (
-        <AnalyticsSummaryCards summary={analyticsData.summary} />
-      )}
 
       {/* Analytics Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
