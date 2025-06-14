@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Header } from './Header';
-import { Hero } from './Hero';
+import { ModernHeader } from './ModernHeader';
+import { ModernHero } from './ModernHero';
 import { HowItWorks } from './HowItWorks';
 import { DashboardPreview } from './DashboardPreview';
 import { Features } from './Features';
@@ -13,8 +13,8 @@ import { Footer } from './Footer';
 export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
-      <Hero />
+      <ModernHeader />
+      <ModernHero />
       <HowItWorks />
       <DashboardPreview />
       <Features />

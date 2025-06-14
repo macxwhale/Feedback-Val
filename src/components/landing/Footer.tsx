@@ -4,16 +4,17 @@ import { Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-warm-gray-900 text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Heart className="h-3 w-3 text-white" />
+          <div className="flex items-center space-x-3 mb-6 md:mb-0">
+            <div className="relative">
+              <Heart className="w-8 h-8 text-sunset-500" />
+              <div className="absolute inset-0 w-8 h-8 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
             </div>
-            <span className="text-xl font-bold">Pulselify</span>
+            <span className="text-2xl font-space font-bold">Pulselify</span>
           </div>
-          <div className="text-gray-400 text-sm">
+          <div className="text-warm-gray-400">
             © 2024 Pulselify. All rights reserved.
           </div>
         </div>

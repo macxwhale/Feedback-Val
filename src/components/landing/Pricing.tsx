@@ -59,51 +59,51 @@ export const Pricing: React.FC = () => {
   ];
 
   return (
-    <section className="py-20">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl font-space font-bold text-warm-gray-900 mb-6">
             Simple, transparent pricing
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-xl text-warm-gray-600 leading-relaxed">
             Choose the plan that's right for your business. Upgrade or downgrade at any time.
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
-            <Card key={index} className={`border-0 shadow-lg shadow-gray-900/5 relative ${
+            <Card key={index} className={`border-0 shadow-lg shadow-warm-gray-900/5 relative ${
               plan.popular 
-                ? 'ring-2 ring-blue-600 shadow-xl shadow-blue-600/10 scale-105' 
-                : 'hover:shadow-xl hover:shadow-gray-900/10'
-            } transition-all duration-200`}>
+                ? 'ring-2 ring-sunset-500 shadow-xl shadow-sunset-500/10 scale-105' 
+                : 'hover:shadow-xl hover:shadow-warm-gray-900/10'
+            } transition-all duration-300 bg-white`}>
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-gradient-to-r from-sunset-500 to-coral-500 text-white px-6 py-2 text-sm font-semibold">Most Popular</Badge>
                 </div>
               )}
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                  {plan.period && <span className="text-gray-600">{plan.period}</span>}
+              <CardHeader className="text-center pb-6 pt-8">
+                <CardTitle className="text-2xl font-space font-semibold text-warm-gray-900">{plan.name}</CardTitle>
+                <div className="mt-6">
+                  <span className="text-5xl font-space font-bold text-warm-gray-900">{plan.price}</span>
+                  {plan.period && <span className="text-warm-gray-600 text-lg">{plan.period}</span>}
                 </div>
-                <CardDescription className="mt-2">{plan.description}</CardDescription>
+                <CardDescription className="mt-4 text-warm-gray-600">{plan.description}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <ul className="space-y-3">
+              <CardContent className="space-y-8">
+                <ul className="space-y-4">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                      <span className="text-warm-gray-600">{feature}</span>
                     </li>
                   ))}
                 </ul>
                 <Button 
-                  className={`w-full ${
+                  className={`w-full font-semibold ${
                     plan.popular 
-                      ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25' 
-                      : 'bg-gray-900 hover:bg-gray-800'
+                      ? 'bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white shadow-lg shadow-sunset-500/25' 
+                      : 'bg-warm-gray-900 hover:bg-warm-gray-800 text-white'
                   }`}
                   onClick={() => navigate('/auth')}
                 >
@@ -114,8 +114,8 @@ export const Pricing: React.FC = () => {
           ))}
         </div>
         
-        <div className="text-center mt-12">
-          <p className="text-sm text-gray-500">
+        <div className="text-center mt-16">
+          <p className="text-sm text-warm-gray-500">
             All plans include a 14-day free trial. No setup fees. Cancel anytime.
           </p>
         </div>

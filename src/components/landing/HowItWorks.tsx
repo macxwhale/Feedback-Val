@@ -25,30 +25,30 @@ export const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section className="py-20">
+    <section className="py-24 bg-gradient-to-br from-warm-gray-50 to-sunset-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl font-space font-bold text-warm-gray-900 mb-6">
             How it works
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-warm-gray-600 max-w-3xl mx-auto leading-relaxed">
             Three simple steps to transform your customer feedback into actionable insights
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-12">
           {steps.map((step, index) => (
             <div key={index} className="text-center group">
-              <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white mx-auto shadow-lg shadow-blue-600/25 group-hover:scale-110 transition-transform duration-200">
+              <div className="relative mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-sunset-500 to-coral-500 rounded-3xl flex items-center justify-center text-white mx-auto shadow-xl shadow-sunset-500/25 group-hover:scale-110 transition-transform duration-300">
                   {step.icon}
                 </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-blue-600 flex items-center justify-center text-sm font-bold text-blue-600">
+                <div className="absolute -top-2 -right-2 w-10 h-10 bg-white rounded-full border-2 border-sunset-500 flex items-center justify-center text-sm font-bold text-sunset-600 shadow-lg">
                   {step.step}
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">{step.title}</h3>
-              <p className="text-gray-600">{step.description}</p>
+              <h3 className="text-2xl font-space font-semibold text-warm-gray-900 mb-4">{step.title}</h3>
+              <p className="text-warm-gray-600 text-lg leading-relaxed">{step.description}</p>
             </div>
           ))}
         </div>
