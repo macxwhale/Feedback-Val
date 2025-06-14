@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
@@ -23,10 +22,10 @@ import { AdvancedDashboardTab } from './tabs/AdvancedDashboardTab';
 import { CustomerInsightsTab } from './tabs/CustomerInsightsTab';
 import { SentimentTab } from './tabs/SentimentTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
-import { MembersTab } from './tabs/MembersTab';
 import { FeedbackTab } from './tabs/FeedbackTab';
 import { QuestionsTab } from './tabs/QuestionsTab';
 import { SettingsTab } from './tabs/SettingsTab';
+const MembersTab = React.lazy(() => import('@/components/org-admin/dashboard/MembersTab'));
 
 export type DashboardModuleKey = 
   | 'overview'
@@ -138,7 +137,9 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           <PerformanceTab organizationId={organization.id} />
         </TabsContent>
         <TabsContent value="members">
-          <MembersTab organization={organization} />
+          <Suspense fallback={<div>Loading members…</div>}>
+            <MembersTab organization={organization} />
+          </Suspense>
         </TabsContent>
         <TabsContent value="feedback">
           <FeedbackTab organizationId={organization.id} />
