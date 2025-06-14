@@ -4,6 +4,10 @@ import { EnhancedProgressBar } from './EnhancedProgressBar';
 import { EnhancedQuestionRenderer } from './EnhancedQuestionRenderer';
 import { NavigationButtons } from './NavigationButtons';
 import { KeyboardNavigation } from './KeyboardNavigation';
+import { ProgressInsights } from './ProgressInsights';
+import { SmartSuggestions } from './SmartSuggestions';
+import { DataUsageInfo } from './DataUsageInfo';
+import { SaveContinueOptions } from './SaveContinueOptions';
 import { ResponsiveContainer } from './ResponsiveContainer';
 import { FeedbackHeader } from './FeedbackHeader';
 import { OrganizationHeader } from './OrganizationHeader';
@@ -17,9 +21,14 @@ interface FeedbackContentProps {
   completedQuestions: number[];
   hasConsented: boolean;
   canGoNext: boolean;
+  estimatedTimeRemaining: number;
+  averageResponseTime: number;
+  hasUnsavedChanges: boolean;
   onQuestionResponse: (questionId: string, value: any) => void;
   onNext: () => void;
   onPrevious: () => void;
+  onSaveProgress: () => void;
+  onPauseAndExit: () => void;
   getValidationResult: (questionId: string) => any;
 }
 
@@ -30,9 +39,14 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
   completedQuestions,
   hasConsented,
   canGoNext,
+  estimatedTimeRemaining,
+  averageResponseTime,
+  hasUnsavedChanges,
   onQuestionResponse,
   onNext,
   onPrevious,
+  onSaveProgress,
+  onPauseAndExit,
   getValidationResult
 }) => {
   const { isMobile } = useMobileDetection();
@@ -54,12 +68,38 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
           completedQuestions={completedQuestions}
         />
 
+        {!isMobile && (
+          <>
+            <SaveContinueOptions
+              onSave={onSaveProgress}
+              onPause={onPauseAndExit}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />
+
+            <ProgressInsights
+              currentIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+              completedQuestions={completedQuestions}
+              estimatedTimeRemaining={estimatedTimeRemaining}
+              averageResponseTime={averageResponseTime}
+            />
+          </>
+        )}
+
         <EnhancedQuestionRenderer
           question={currentQuestion}
           value={responses[currentQuestion?.id]}
           onChange={(value) => onQuestionResponse(currentQuestion.id, value)}
           validation={getValidationResult(currentQuestion?.id)}
         />
+
+        {!isMobile && (
+          <SmartSuggestions
+            currentQuestion={currentQuestion}
+            responses={responses}
+            onSuggestionClick={(value) => onQuestionResponse(currentQuestion.id, value)}
+          />
+        )}
 
         <NavigationButtons
           currentQuestionIndex={currentQuestionIndex}
@@ -68,6 +108,8 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
           onPrevious={onPrevious}
           onNext={onNext}
         />
+
+        {!isMobile && <DataUsageInfo />}
       </div>
 
       {!isMobile && (
