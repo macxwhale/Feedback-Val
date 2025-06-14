@@ -18,6 +18,7 @@ import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import { UpgradePrompt } from './UpgradePrompt';
+import { DashboardTabsDevPanel } from './DashboardTabsDevPanel';
 
 // Define strict type for dashboard module keys
 type DashboardModuleKey =
@@ -58,10 +59,37 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<null | string>(null);
 
   // ========= Diagnostics for Debugging =========
-  // Visible debug block for org plan/features_config
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Typed tab configuration - module keys strictly matched
+  // --- Context comparison debugging ---
+  // Compare context org with prop org, and log in dev for troubleshooting
+  let orgContext;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    orgContext = require('@/context/OrganizationContext').useOrganization().organization;
+  } catch {
+    orgContext = undefined;
+  }
+  if (typeof window !== "undefined" && isDev) {
+    // Compare the organization's id, plan_type, features_config
+    const pOrg = organization || {};
+    const cOrg = orgContext || {};
+    const idsMatch = pOrg.id && cOrg.id && pOrg.id === cOrg.id;
+    const plansMatch = pOrg.plan_type === cOrg.plan_type;
+    const featuresMatch = JSON.stringify(pOrg.features_config) === JSON.stringify(cOrg.features_config);
+    console.groupCollapsed(
+      "%c[DashboardTabs] ORG CONTEXT VS PROP",
+      "background: #222; color: #ccf"
+    );
+    console.log("org from props:", { id: pOrg.id, plan_type: pOrg.plan_type, features_config: pOrg.features_config });
+    console.log("org from context:", { id: cOrg.id, plan_type: cOrg.plan_type, features_config: cOrg.features_config });
+    if (!idsMatch) console.warn("Organization ID mismatch between prop and context!");
+    if (!plansMatch) console.warn("Organization plan_type mismatch between prop and context!");
+    if (!featuresMatch) console.warn("Organization features_config mismatch between prop and context!");
+    console.groupEnd();
+  }
+
+  // Strict module-typed tab config (no as any allowed anywhere)
   const tabs: {
     id: string;
     label: string;
@@ -78,12 +106,10 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     { id: 'settings', label: 'Settings', icon: Settings, module: "settings" },
   ];
 
-  // --- log for debugging, explicit type use ---
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && isDev) {
     console.groupCollapsed("%c[DashboardTabs] DEBUG TAB ACCESS", "background: #222;color: #eec321");
     console.log("activeTab:", activeTab);
     tabs.forEach(tab => {
-      // show type checking
       console.log(
         `[Tab: ${tab.label}] | module: "${tab.module}" | plan: "${plan}" | hasModuleAccess:`,
         hasModuleAccess(tab.module)
@@ -92,13 +118,13 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     console.groupEnd();
   }
 
-  // Explicit typing for moduleKey argument
+  // --- no as any casting below! ---
   const tabAccess = tabs.map(tab => ({
     ...tab,
     accessible: hasModuleAccess(tab.module)
   }));
 
-  // If user tries to activate a locked tab, show the upgrade modal instead
+  // Locked tab gating
   const handleTabChange = (tabId: string) => {
     const tab = tabAccess.find(t => t.id === tabId);
     if (tab && !tab.accessible) {
@@ -110,44 +136,13 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
 
   return (
     <div>
-      {/* DEV: Show detailed module access for each tab */}
-      {isDev && (
-        <div className="mb-3 text-xs px-2 py-2 bg-yellow-50 border border-yellow-200 rounded flex flex-col gap-2">
-          <div>
-            <span className="font-bold">DEBUG:</span> plan_type: <span className="font-mono">{organization?.plan_type ?? "N/A"}</span>
-            {' | '}
-            features_config: <span className="font-mono break-all">{organization?.features_config ? JSON.stringify(organization.features_config) : "N/A"}</span>
-          </div>
-          <div className="mt-2">
-            <table className="table-auto w-full border text-[11px]">
-              <thead>
-                <tr>
-                  <th className="border px-2 py-1">Tab</th>
-                  <th className="border px-2 py-1">Module Key</th>
-                  <th className="border px-2 py-1">Accessible?</th>
-                  <th className="border px-2 py-1">hasModuleAccess Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tabs.map(tab => (
-                  <tr key={tab.id}>
-                    <td className="border px-2 py-1">{tab.label} ({tab.id})</td>
-                    <td className="border px-2 py-1">{tab.module}</td>
-                    <td className={`border px-2 py-1 font-bold ${hasModuleAccess(tab.module as any) ? 'text-green-700' : 'text-red-700'}`}>
-                      {hasModuleAccess(tab.module as any) ? 'YES' : 'NO'}
-                    </td>
-                    <td className="border px-2 py-1">
-                      <code>
-                        {String(hasModuleAccess(tab.module as any))}
-                      </code>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* DEV: Separated debug panel */}
+      <DashboardTabsDevPanel
+        isDev={isDev}
+        organization={organization}
+        tabs={tabs}
+        hasModuleAccess={hasModuleAccess}
+      />
       {/* Upgrade Prompt Modal */}
       {showUpgradePrompt && (
         <UpgradePrompt lockedFeature={showUpgradePrompt} onClose={() => setShowUpgradePrompt(null)} />
@@ -161,9 +156,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
               className={`flex items-center space-x-2 ${!accessible ? 'opacity-60 cursor-pointer relative' : ''}`}
               disabled={!accessible}
               onClick={() => {
-                if (!accessible) {
-                  setShowUpgradePrompt(label);
-                }
+                if (!accessible) setShowUpgradePrompt(label);
               }}
             >
               <Icon className="w-4 h-4" />
