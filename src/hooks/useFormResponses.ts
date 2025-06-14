@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { FeedbackResponse } from '@/components/FeedbackForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/context/OrganizationContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { ResponseTimeData } from '@/services/responseTimeService';
 
 export const useFormResponses = () => {

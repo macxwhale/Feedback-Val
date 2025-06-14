@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useAutoSave = (
   data: any,

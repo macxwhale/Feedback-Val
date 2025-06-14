@@ -7,7 +7,7 @@ import { useFormResponses } from './useFormResponses';
 import { useAutoSave } from './useAutoSave';
 import { useFormValidation } from './useFormValidation';
 import { useWebhooks } from './useWebhooks';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useOrganization } from '@/hooks/useOrganization';
 import { v4 as uuidv4 } from 'uuid';
 import { responseTimeService } from '@/services/responseTimeService';
