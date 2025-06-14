@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,16 +10,77 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [orgName, setOrgName] = useState('');
+  const [orgLoading, setOrgLoading] = useState(false);
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Helper: create organization after signup
+  const createOrganizationForUser = async (email: string) => {
+    setOrgLoading(true);
+    try {
+      // Wait for Supabase auth to return the user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !user.id) throw new Error("No user found");
+
+      // Use slugified name if possible, fallback to UUID
+      const slug = orgName
+        ? orgName.toLowerCase().replace(/[^\w]+/g, "-").replace(/(^-|-$)/g, "")
+        : "org-" + uuidv4();
+
+      // Set default name if not provided
+      const safeName = orgName || (email.split("@")[0] + "'s Organization");
+
+      const res = await supabase
+        .from('organizations')
+        .insert({
+          name: safeName,
+          slug,
+          plan_type: 'starter', // Explicitly assign free plan
+          is_active: true,
+          created_by_user_id: user.id,
+          billing_email: email,
+        })
+        .select()
+        .single();
+
+      if (res.error) throw res.error;
+
+      toast({
+        title: "Organization Created",
+        description: `Welcome to ${safeName}!`,
+      });
+
+      // Optional: automatically assign org admin role
+      await supabase
+        .from('organization_users')
+        .insert({
+          user_id: user.id,
+          organization_id: res.data.id,
+          email,
+          role: 'admin'
+        });
+
+      // Redirect to org admin dashboard (optional)
+      navigate(`/admin/${slug}`);
+    } catch (err: any) {
+      toast({
+        title: "Error creating organization",
+        description: err.message || "An error occurred. Please retry.",
+        variant: "destructive"
+      });
+      setOrgLoading(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,15 +156,20 @@ export const LoginPage: React.FC = () => {
     
     if (error) {
       setError(error.message);
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account. After verification, you'll be prompted to create your organization.",
-      });
-      // After successful signup, user will be redirected to org creation
-      navigate('/create-organization');
+      setLoading(false);
+      return;
     }
-    
+
+    toast({
+      title: "Account created!",
+      description: "Please check your email to verify your account. After verification, you'll be prompted to create your organization.",
+    });
+
+    // Wait for auth to be available then create organization
+    setTimeout(() => {
+      createOrganizationForUser(email);
+    }, 800);
+
     setLoading(false);
   };
 
@@ -197,13 +262,23 @@ export const LoginPage: React.FC = () => {
                       placeholder="Create a password"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="org-name">Organization Name</Label>
+                    <Input
+                      id="org-name"
+                      type="text"
+                      value={orgName}
+                      onChange={(e) => setOrgName(e.target.value)}
+                      placeholder="e.g. My Company"
+                    />
+                  </div>
                   {error && (
                     <Alert>
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating account...' : 'Sign Up'}
+                  <Button type="submit" className="w-full" disabled={loading || orgLoading}>
+                    {(loading || orgLoading) ? 'Creating account...' : 'Sign Up'}
                   </Button>
                 </form>
               </TabsContent>
