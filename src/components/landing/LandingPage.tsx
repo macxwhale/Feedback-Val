@@ -12,7 +12,7 @@ import { Footer } from './Footer';
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-dark-warm-50 transition-colors duration-300">
       <ModernHeader />
       <ModernHero />
       <HowItWorks />

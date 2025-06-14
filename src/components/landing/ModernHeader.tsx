@@ -3,12 +3,13 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 export const ModernHeader: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 w-full bg-white/90 backdrop-blur-lg border-b border-warm-gray-100 z-50">
+    <header className="fixed top-0 w-full bg-white/90 dark:bg-dark-warm-50/90 backdrop-blur-lg border-b border-warm-gray-100 dark:border-dark-warm-200 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -17,15 +18,16 @@ export const ModernHeader: React.FC = () => {
               <Heart className="w-8 h-8 text-sunset-500" />
               <div className="absolute inset-0 w-8 h-8 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
             </div>
-            <span className="text-2xl font-space font-bold text-warm-gray-900">Pulselify</span>
+            <span className="text-2xl font-space font-bold text-warm-gray-900 dark:text-dark-warm-900">Pulselify</span>
           </div>
 
           {/* Navigation */}
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <Button 
               variant="ghost" 
               onClick={() => navigate('/auth')}
-              className="text-warm-gray-600 hover:text-warm-gray-900 font-medium"
+              className="text-warm-gray-600 dark:text-dark-warm-600 hover:text-warm-gray-900 dark:hover:text-dark-warm-900 font-medium"
             >
               Sign in
             </Button>
@@ -38,7 +40,7 @@ export const ModernHeader: React.FC = () => {
             <Button 
               variant="ghost" 
               onClick={() => navigate('/admin/login')}
-              className="text-xs text-warm-gray-400 hover:text-warm-gray-600"
+              className="text-xs text-warm-gray-400 dark:text-dark-warm-400 hover:text-warm-gray-600 dark:hover:text-dark-warm-600"
             >
               Admin
             </Button>
