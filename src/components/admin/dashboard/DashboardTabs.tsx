@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
@@ -17,21 +17,6 @@ import { AdvancedDashboardView } from './AdvancedDashboardView';
 import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
 import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
-import { useFeatureGate } from '@/hooks/useFeatureGate';
-import { UpgradePrompt } from './UpgradePrompt';
-import { DashboardTabsDevPanel } from './DashboardTabsDevPanel';
-import { useOrganization as useOrganizationContext } from '@/context/OrganizationContext'; // Added import
-
-// Define and EXPORT the DashboardModuleKey type
-export type DashboardModuleKey =
-  | "analytics"
-  | "questions"
-  | "settings"
-  | "customerInsights"
-  | "sentiment"
-  | "performance"
-  | "members"
-  | "feedback";
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -57,124 +42,33 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   setIsLiveActivity,
   handleQuickActions
 }) => {
-  const { hasModuleAccess, plan } = useFeatureGate();
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState<null | string>(null);
-
-  // ========= Diagnostics for Debugging =========
-  const isDev = process.env.NODE_ENV !== 'production';
-
-  // Correct context org acquisition (using hook)
-  let orgContext;
-  try {
-    orgContext = useOrganizationContext().organization;
-  } catch {
-    orgContext = undefined;
-  }
-  if (typeof window !== "undefined" && isDev) {
-    const pOrg = organization || {};
-    const cOrg = orgContext || {};
-    const idsMatch = pOrg.id && cOrg.id && pOrg.id === cOrg.id;
-    const plansMatch = pOrg.plan_type === cOrg.plan_type;
-    const featuresMatch = JSON.stringify(pOrg.features_config) === JSON.stringify(cOrg.features_config);
-    console.groupCollapsed(
-      "%c[DashboardTabs] ORG CONTEXT VS PROP",
-      "background: #222; color: #ccf"
-    );
-    console.log("org from props:", { id: pOrg.id, plan_type: pOrg.plan_type, features_config: pOrg.features_config });
-    console.log("org from context:", { id: cOrg.id, plan_type: cOrg.plan_type, features_config: cOrg.features_config });
-    if (!idsMatch) console.warn("Organization ID mismatch between prop and context!");
-    if (!plansMatch) console.warn("Organization plan_type mismatch between prop and context!");
-    if (!featuresMatch) console.warn("Organization features_config mismatch between prop and context!");
-    const tabsToCheck = [
-      'analytics', 'customerInsights', 'sentiment', 'performance', 'members', 'feedback', 'questions', 'settings'
-    ];
-    tabsToCheck.forEach(key => {
-      console.log(`[MODULE DEBUG] Tab: ${key} | plan: ${cOrg.plan_type} | hasModuleAccess(${key}):`, hasModuleAccess(key as DashboardModuleKey));
-    });
-    console.groupEnd();
-  }
-
-  // Strict module-typed tab config (no as any allowed anywhere)
-  const tabs: {
-    id: string;
-    label: string;
-    icon: React.ElementType;
-    module: DashboardModuleKey;
-  }[] = [
-    { id: 'overview', label: 'Analytics', icon: BarChart3, module: "analytics" },
-    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: "customerInsights" },
-    { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain, module: "sentiment" },
-    { id: 'performance', label: 'Performance', icon: BarChart3, module: "performance" },
-    { id: 'members', label: 'Members', icon: Users, module: "members" },
-    { id: 'feedback', label: 'Feedback', icon: MessageSquare, module: "feedback" },
-    { id: 'questions', label: 'Questions', icon: MessageSquare, module: "questions" },
-    { id: 'settings', label: 'Settings', icon: Settings, module: "settings" },
+  const tabs = [
+    { id: 'overview', label: 'Analytics', icon: BarChart3 },
+    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp },
+    { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain },
+    { id: 'performance', label: 'Performance', icon: BarChart3 },
+    { id: 'members', label: 'Members', icon: Users },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
+    { id: 'questions', label: 'Questions', icon: MessageSquare },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
-
-  if (typeof window !== "undefined" && isDev) {
-    console.groupCollapsed("%c[DashboardTabs] DEBUG TAB ACCESS", "background: #222;color: #eec321");
-    console.log("activeTab:", activeTab);
-    tabs.forEach(tab => {
-      console.log(
-        `[Tab: ${tab.label}] | module: "${tab.module}" | plan: "${plan}" | hasModuleAccess:`,
-        hasModuleAccess(tab.module)
-      );
-    });
-    console.groupEnd();
-  }
-
-  // --- no as any casting below! ---
-  const tabAccess = tabs.map(tab => ({
-    ...tab,
-    accessible: hasModuleAccess(tab.module)
-  }));
-
-  // Locked tab gating
-  const handleTabChange = (tabId: string) => {
-    const tab = tabAccess.find(t => t.id === tabId);
-    if (tab && !tab.accessible) {
-      setShowUpgradePrompt(tab.label);
-      return;
-    }
-    setActiveTab(tabId);
-  };
 
   return (
     <div>
-      {/* DEV: Separated debug panel */}
-      <DashboardTabsDevPanel
-        isDev={isDev}
-        organization={organization}
-        tabs={tabs}
-        hasModuleAccess={hasModuleAccess}
-      />
-      {/* Upgrade Prompt Modal */}
-      {showUpgradePrompt && (
-        <UpgradePrompt lockedFeature={showUpgradePrompt} onClose={() => setShowUpgradePrompt(null)} />
-      )}
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full">
-          {tabAccess.map(({ id, label, icon: Icon, accessible }) => (
+          {tabs.map(({ id, label, icon: Icon }) => (
             <TabsTrigger 
               key={id} 
               value={id} 
-              className={`flex items-center space-x-2 ${!accessible ? 'opacity-60 cursor-pointer relative' : ''}`}
-              disabled={!accessible}
-              onClick={() => {
-                if (!accessible) setShowUpgradePrompt(label);
-              }}
+              className="flex items-center space-x-2"
             >
               <Icon className="w-4 h-4" />
               <span className="hidden sm:inline">{label}</span>
-              {!accessible && (
-                <span className="ml-2 bg-yellow-200 text-yellow-800 rounded px-2 py-0.5 text-xs absolute -top-1 -right-1 pointer-events-none">
-                  Upgrade
-                </span>
-              )}
             </TabsTrigger>
           ))}
         </TabsList>
-        {/* TabsContent is unchanged, still renders all content but inaccessible tabs are prevented */}
+
         <TabsContent value="overview" className="space-y-6">
           <AdvancedDashboardView
             organizationId={organization.id}
@@ -187,27 +81,34 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
             handleQuickActions={handleQuickActions}
           />
         </TabsContent>
+
         <TabsContent value="customer-insights">
           <CustomerInsightsDashboard organizationId={organization.id} />
         </TabsContent>
+
         <TabsContent value="sentiment">
           <SentimentAnalyticsDashboard organizationId={organization.id} />
         </TabsContent>
+
         <TabsContent value="performance">
           <PerformanceAnalyticsDashboard organizationId={organization.id} />
         </TabsContent>
+
         <TabsContent value="members">
           <EnhancedUserManagement 
             organizationId={organization.id}
             organizationName={organization.name}
           />
         </TabsContent>
+
         <TabsContent value="feedback">
           <OrganizationSpecificStats organizationId={organization.id} />
         </TabsContent>
+
         <TabsContent value="questions">
           <QuestionsManagement />
         </TabsContent>
+
         <TabsContent value="settings">
           <OrganizationSettingsTab organization={organization} />
         </TabsContent>
@@ -215,4 +116,3 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     </div>
   );
 };
-

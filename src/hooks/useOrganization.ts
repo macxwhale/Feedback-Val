@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import type { Organization } from '@/services/organizationService.types';
-import { getOrganizationBySlug, getOrganizationByDomain } from '@/services/organizationService';
+import { getOrganizationBySlug, getOrganizationByDomain } from '@/services/organizationQueries';
 
 export const useOrganization = () => {
   const [organization, setOrganization] = useState<Organization | null>(null);

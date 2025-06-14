@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building, UserPlus } from 'lucide-react';
 
@@ -28,12 +27,6 @@ export const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organiza
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Badge variant="outline" style={{ 
-                backgroundColor: organization.primary_color + '20',
-                color: organization.primary_color 
-              }}>
-                {organization.plan_type || 'Free'}
-              </Badge>
               <Button size="sm">
                 <UserPlus className="w-4 h-4 mr-2" />
                 Invite Member
