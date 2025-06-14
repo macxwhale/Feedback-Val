@@ -25,7 +25,7 @@ export const OrganizationHeader: React.FC = () => {
           onError={(e) => {
             // Fallback to default logo if custom logo fails to load
             (e.target as HTMLImageElement).src = '/lovable-uploads/367347fe-02da-4338-b8ba-91138293d303.png';
-            (e.target as HTMLImageElement).alt = 'Default Logo';
+            (e.target as HTMLImageElement).alt = 'Pulsify Logo';
           }}
         />
       )}

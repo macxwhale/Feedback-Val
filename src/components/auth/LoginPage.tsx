@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from './AuthWrapper';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const LoginPage: React.FC = () => {
@@ -99,8 +99,10 @@ export const LoginPage: React.FC = () => {
     } else {
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account.",
+        description: "Please check your email to verify your account. After verification, you'll be prompted to create your organization.",
       });
+      // After successful signup, user will be redirected to org creation
+      navigate('/create-organization');
     }
     
     setLoading(false);
@@ -120,10 +122,10 @@ export const LoginPage: React.FC = () => {
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <div className="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center text-blue-600 mb-4">
-              <Users className="h-8 w-8" />
+              <Activity className="h-8 w-8" />
             </div>
             <CardTitle className="text-2xl font-bold">
-              Welcome to FeedbackPro
+              Welcome to Pulsify
             </CardTitle>
             <p className="text-gray-600">
               Sign in to your organization account

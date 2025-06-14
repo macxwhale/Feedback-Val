@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { LoginPage } from "@/components/auth/LoginPage";
 import { AdminLoginPage } from "@/components/auth/AdminLoginPage";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { CreateOrganizationPage } from "@/components/org/CreateOrganizationPage";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -42,6 +43,16 @@ const App = () => (
               
               {/* Organization user authentication */}
               <Route path="/auth" element={<LoginPage />} />
+              
+              {/* Organization creation */}
+              <Route 
+                path="/create-organization" 
+                element={
+                  <ProtectedRoute>
+                    <CreateOrganizationPage />
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* Organization admin routes */}
               <Route 
