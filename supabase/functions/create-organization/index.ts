@@ -10,7 +10,6 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-
 // Supabase client for edge functions
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -51,8 +50,13 @@ serve(async (req) => {
       .single();
 
     if (orgError) {
-      return new Response(JSON.stringify({ error: orgError.message }), {
-        status: 500, headers: corsHeaders
+      // Helpful logging for RLS/permission errors
+      const message = orgError.message.includes("row-level security")
+        ? "[RLS] Permission denied: Make sure you are authenticated and RLS policies are set correctly."
+        : orgError.message;
+      return new Response(JSON.stringify({ error: message, sql: "insert organizations" }), {
+        status: 500,
+        headers: corsHeaders
       });
     }
     // Assign org admin role
@@ -66,8 +70,13 @@ serve(async (req) => {
       });
 
     if (orgUserError) {
-      return new Response(JSON.stringify({ error: orgUserError.message }), {
-        status: 500, headers: corsHeaders
+      // Helpful logging for RLS/permission errors
+      const message = orgUserError.message.includes("row-level security")
+        ? "[RLS] Permission denied: Make sure you are authenticated and RLS policies are set correctly."
+        : orgUserError.message;
+      return new Response(JSON.stringify({ error: message, sql: "insert organization_users" }), {
+        status: 500,
+        headers: corsHeaders
       });
     }
 
