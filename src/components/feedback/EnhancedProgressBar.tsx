@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { BreadcrumbNavigation } from './BreadcrumbNavigation';
+import { MotivationalProgress } from './MotivationalProgress';
+import { CompactProgressBar } from './CompactProgressBar';
 import { MobileProgressBar } from './MobileProgressBar';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 import { useDynamicBranding } from '@/hooks/useDynamicBranding';
-import { Progress } from '@/components/ui/progress';
 
 interface EnhancedProgressBarProps {
   currentQuestionIndex: number;
@@ -19,7 +20,6 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
 }) => {
   const { isMobile } = useMobileDetection();
   const { colors } = useDynamicBranding();
-  const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
 
   if (isMobile) {
     return (
@@ -33,9 +33,10 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
 
   return (
     <div 
-      className="mb-8 p-6 rounded-2xl border bg-white/50 backdrop-blur-sm"
+      className="mb-8 p-4 rounded-lg border"
       style={{ 
-        borderColor: `${colors.primary}20`
+        backgroundColor: `${colors.primary}08`,
+        borderColor: `${colors.primary}30`
       }}
       role="progressbar" 
       aria-valuenow={currentQuestionIndex + 1} 
@@ -48,15 +49,17 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
         completedQuestions={completedQuestions}
       />
       
-      <div className="flex items-center gap-4 mt-4">
-        <span className="text-sm font-medium tabular-nums w-[90px]" style={{ color: colors.textSecondary }}>
-          Question {currentQuestionIndex + 1} of {totalQuestions}
-        </span>
-        <Progress value={progress} className="flex-1 h-2" />
-        <span className="text-sm font-bold tabular-nums w-[40px] text-right" style={{ color: colors.primary }}>
-          {Math.round(progress)}%
-        </span>
-      </div>
+      <MotivationalProgress
+        currentIndex={currentQuestionIndex}
+        totalQuestions={totalQuestions}
+        completedQuestions={completedQuestions}
+      />
+      
+      <CompactProgressBar
+        currentIndex={currentQuestionIndex}
+        totalQuestions={totalQuestions}
+        completedQuestions={completedQuestions}
+      />
     </div>
   );
 };

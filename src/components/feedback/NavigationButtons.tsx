@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrandedButton } from './BrandedButton';
 import { MobileNavigationButtons } from './MobileNavigationButtons';
-import { ChevronLeft, ChevronRight, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 interface NavigationButtonsProps {
@@ -24,26 +24,24 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = (props) => {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   return (
-    <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200/80 animate-fade-in">
+    <div className="flex justify-between items-center animate-fade-in">
       <BrandedButton
         variant="outline"
-        size="lg"
         onClick={onPrevious}
         disabled={currentQuestionIndex === 0}
-        className="flex items-center gap-2 px-6 py-3"
+        className="flex items-center gap-2"
       >
-        <ChevronLeft size={18} />
+        <ChevronLeft size={16} />
         Previous
       </BrandedButton>
 
       <BrandedButton
-        size="lg"
         onClick={onNext}
         disabled={!canGoNext}
-        className="flex items-center gap-2 px-8 py-3"
+        className="flex items-center gap-2"
       >
-        {isLastQuestion ? 'Submit Feedback' : 'Next Question'}
-        {isLastQuestion ? <Send size={18} /> : <ChevronRight size={18} />}
+        {isLastQuestion ? 'Submit' : 'Next'}
+        {!isLastQuestion && <ChevronRight size={16} />}
       </BrandedButton>
     </div>
   );
