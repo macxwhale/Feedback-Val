@@ -64,6 +64,7 @@ export interface CreateOrganizationData {
   max_responses?: number;
   created_by_user_id?: string;
   settings?: any;
+  features_config?: any;
 }
 
 export const getOrganizationBySlug = async (slug: string): Promise<Organization | null> => {
@@ -254,6 +255,8 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
       secondary_color: orgData.secondary_color || '#073763',
       plan_type: safePlanType,
       max_responses: orgData.max_responses || 100,
+      features_config: orgData.features_config || null,
+      trial_ends_at: orgData.trial_ends_at || null,
     };
 
     const { data, error } = await supabase
@@ -266,6 +269,19 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
       console.error('Error creating organization:', error);
       return null;
     }
+
+    // Log in organization_audit_log (if table exists and user authenticated, best effort)
+    if (data?.id && user?.id) {
+      await supabase
+        .from('organization_audit_log')
+        .insert({
+          organization_id: data.id,
+          action: "create_organization",
+          performed_by: user.id,
+          new_value: data,
+        });
+    }
+
     return data;
   } catch (error) {
     console.error('Error creating organization:', error);

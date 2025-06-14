@@ -283,6 +283,44 @@ export type Database = {
           },
         ]
       }
+      organization_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          organization_id: string | null
+          performed_by: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          organization_id?: string | null
+          performed_by?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          organization_id?: string | null
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_themes: {
         Row: {
           colors: Json
@@ -403,6 +441,7 @@ export type Database = {
           thank_you_title: string | null
           trial_ends_at: string | null
           updated_at: string
+          updated_by_user_id: string | null
           welcome_screen_description: string | null
           welcome_screen_title: string | null
         }
@@ -431,6 +470,7 @@ export type Database = {
           thank_you_title?: string | null
           trial_ends_at?: string | null
           updated_at?: string
+          updated_by_user_id?: string | null
           welcome_screen_description?: string | null
           welcome_screen_title?: string | null
         }
@@ -459,6 +499,7 @@ export type Database = {
           thank_you_title?: string | null
           trial_ends_at?: string | null
           updated_at?: string
+          updated_by_user_id?: string | null
           welcome_screen_description?: string | null
           welcome_screen_title?: string | null
         }

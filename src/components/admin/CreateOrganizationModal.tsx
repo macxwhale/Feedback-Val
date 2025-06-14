@@ -22,17 +22,33 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
     logo_url: '',
     primary_color: '#007ACE',
     secondary_color: '#073763',
-    plan_type: 'free',
+    plan_type: 'starter',
+    trial_ends_at: '',
     billing_email: '',
-    max_responses: 100
+    max_responses: 100,
+    features_config: undefined,
   });
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [featuresOverride, setFeaturesOverride] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.slug) {
       return;
     }
-    onSubmit(formData);
+    let customFeatures = undefined;
+    try {
+      if (featuresOverride.trim()) customFeatures = JSON.parse(featuresOverride);
+    } catch (err) {
+      alert("Invalid JSON in Feature Overrides!");
+      return;
+    }
+    onSubmit({
+      ...formData,
+      features_config: customFeatures,
+      trial_ends_at: formData.trial_ends_at ? new Date(formData.trial_ends_at).toISOString() : undefined
+    });
   };
 
   const generateSlug = (name: string) => {
@@ -150,17 +166,54 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
             </div>
 
             <div>
-              <Label htmlFor="plan_type">Plan Type</Label>
+              <Label htmlFor="plan_type">Plan Type / Tier</Label>
               <select
                 id="plan_type"
                 value={formData.plan_type}
                 onChange={(e) => setFormData(prev => ({ ...prev, plan_type: e.target.value }))}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               >
-                <option value="free">Free</option>
+                <option value="starter">Starter</option>
                 <option value="pro">Pro</option>
                 <option value="enterprise">Enterprise</option>
               </select>
+            </div>
+
+            <div>
+              <Label htmlFor="trial_ends_at">Trial Ends At</Label>
+              <Input
+                id="trial_ends_at"
+                type="datetime-local"
+                value={formData.trial_ends_at || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, trial_ends_at: e.target.value }))}
+                placeholder="Trial end date"
+              />
+            </div>
+
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowAdvanced(s => !s)}
+              >
+                {showAdvanced
+                  ? "Hide Feature Overrides"
+                  : "Show Feature Overrides (Advanced)"}
+              </Button>
+              {showAdvanced && (
+                <div className="mt-2 space-y-1">
+                  <Label htmlFor="features_override">Feature Overrides (JSON)</Label>
+                  <textarea
+                    id="features_override"
+                    className="w-full min-h-[120px] border rounded p-2 font-mono text-xs"
+                    placeholder='e.g. { "analytics": true, "modules": {"settings": false} }'
+                    value={featuresOverride}
+                    onChange={(e) => setFeaturesOverride(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500">Advanced: Override plan tier settings on a per-feature basis.</p>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
