@@ -9,6 +9,7 @@ export const useDashboardNavigation = ({ setActiveTab }: DashboardNavigationProp
     if (url.includes('members')) setActiveTab('members');
     else if (url.includes('questions')) setActiveTab('questions');
     else if (url.includes('feedback')) setActiveTab('feedback');
+    else if (url.includes('inbox')) setActiveTab('inbox');
     else if (url.includes('settings')) setActiveTab('settings');
   };
 
@@ -17,6 +18,7 @@ export const useDashboardNavigation = ({ setActiveTab }: DashboardNavigationProp
       overview: 'Overview',
       members: 'Members',
       feedback: 'Feedback Analytics',
+      inbox: 'Feedback Inbox',
       questions: 'Questions Management',
       settings: 'Settings'
     };

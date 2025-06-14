@@ -18,6 +18,7 @@ import { QuestionsTab } from './tabs/QuestionsTab';
 import { SentimentTab } from './tabs/SentimentTab';
 import { SettingsTab } from './tabs/SettingsTab';
 const MembersTab = React.lazy(() => import('@/components/org-admin/dashboard/MembersTab'));
+const InboxTab = React.lazy(() => import('@/components/admin/dashboard/tabs/InboxTab'));
 
 export type DashboardModuleKey =
   | 'overview'
@@ -26,6 +27,7 @@ export type DashboardModuleKey =
   | 'performance'
   | 'members'
   | 'feedback'
+  | 'inbox'
   | 'questions'
   | 'settings'
   | 'integrations';
@@ -86,6 +88,11 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
         </TabsContent>
         <TabsContent value="feedback">
           <FeedbackTab organizationId={organization.id} />
+        </TabsContent>
+        <TabsContent value="inbox">
+          <Suspense fallback={<div>Loading inbox…</div>}>
+            <InboxTab organizationId={organization.id} />
+          </Suspense>
         </TabsContent>
         <TabsContent value="questions">
           <QuestionsTab />

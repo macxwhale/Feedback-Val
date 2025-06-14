@@ -1,5 +1,5 @@
 
-import { Users, MessageSquare, BarChart3, Settings, TrendingUp, Brain } from 'lucide-react';
+import { Users, MessageSquare, BarChart3, Settings, TrendingUp, Brain, Inbox } from 'lucide-react';
 
 export type DashboardTabSection = {
   label: string;
@@ -28,7 +28,8 @@ export const tabSections: DashboardTabSection[] = [
   {
     label: 'Content Management',
     tabs: [
-      { id: 'feedback', label: 'Feedback', icon: MessageSquare },
+      { id: 'inbox', label: 'Inbox', icon: Inbox },
+      { id: 'feedback', label: 'Feedback Analytics', icon: MessageSquare },
       { id: 'questions', label: 'Questions', icon: MessageSquare }
     ]
   },
