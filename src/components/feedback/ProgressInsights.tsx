@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock, Star, Target } from 'lucide-react';
 
@@ -20,7 +18,6 @@ export const ProgressInsights: React.FC<ProgressInsightsProps> = ({
   estimatedTimeRemaining,
   averageResponseTime
 }) => {
-  const completionPercentage = (currentIndex / totalQuestions) * 100;
   const efficiency = averageResponseTime < 30 ? 'fast' : averageResponseTime < 60 ? 'steady' : 'thoughtful';
   
   const getEfficiencyColor = () => {
@@ -58,12 +55,7 @@ export const ProgressInsights: React.FC<ProgressInsightsProps> = ({
             </Badge>
           </div>
           
-          <div className="relative">
-            <Progress value={completionPercentage} className="h-3 bg-white/60 shadow-inner" />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full pointer-events-none" />
-          </div>
-          
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6 pt-4">
             <div className="text-center bg-white/40 rounded-xl p-4 backdrop-blur-sm border border-white/30 shadow-sm">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <div className="p-2 bg-blue-100 rounded-full">
