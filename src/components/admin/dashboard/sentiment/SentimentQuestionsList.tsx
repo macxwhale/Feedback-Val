@@ -10,7 +10,6 @@ interface SentimentQuestionsListProps {
   questionSentiments: Array<{
     question_text: string;
     sentiment: string;
-    avg_score: number;
     total_responses: number;
     completion_rate: number;
   }>;
@@ -41,7 +40,7 @@ export const SentimentQuestionsList: React.FC<SentimentQuestionsListProps> = ({
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold">{question.avg_score}/5</div>
+                <div className="text-lg font-bold">{question.completion_rate}%</div>
                 {question.sentiment === 'negative' && (
                   <AlertTriangle className="w-4 h-4 text-red-500 ml-auto mt-1" />
                 )}

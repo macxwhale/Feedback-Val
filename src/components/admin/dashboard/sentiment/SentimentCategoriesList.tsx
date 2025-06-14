@@ -9,10 +9,8 @@ interface SentimentCategoriesListProps {
   categorySentiments: Array<{
     category: string;
     sentiment: string;
-    avg_score: number;
     total_questions: number;
     total_responses: number;
-    completion_rate: number;
   }>;
 }
 
@@ -41,8 +39,8 @@ export const SentimentCategoriesList: React.FC<SentimentCategoriesListProps> = (
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-xl font-bold">{category.avg_score}/5</div>
-                <div className="text-sm text-gray-500">{category.completion_rate}% completion</div>
+                <div className="text-xl font-bold">{category.total_responses}</div>
+                <div className="text-sm text-gray-500">responses</div>
               </div>
             </div>
           ))}
