@@ -88,8 +88,8 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
                   summary={analyticsData.summary}
                 />
                 <AnalyticsInsights 
-                  data={analyticsData}
-                  organizationId={organizationId}
+                  stats={stats}
+                  isLoading={isLoading}
                 />
               </>
             )}
