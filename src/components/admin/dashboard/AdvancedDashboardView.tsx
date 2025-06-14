@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,9 +6,12 @@ import { Label } from '@/components/ui/label';
 import { DashboardOverview } from './DashboardOverview';
 import { RealTimeAnalytics } from './RealTimeAnalytics';
 import { AnalyticsTable } from './AnalyticsTable';
-import { QuickActions } from './QuickActions';
-import { RecentActivity } from './RecentActivity';
+import { AnalyticsCharts } from './AnalyticsCharts';
+import { QuickActionButtons } from './QuickActionButtons';
+import { RecentActivityList } from './RecentActivityList';
 import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
+import { useRecentActivity } from '@/hooks/useRecentActivity';
+import { useAnalyticsSummary } from '@/hooks/useAnalyticsSummary';
 
 interface AdvancedDashboardViewProps {
   organizationId: string;
@@ -39,14 +41,19 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
 }) => {
   const [activeView, setActiveView] = useState('overview');
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsTableData(organizationId);
+  const { data: recentActivity, isLoading: activityLoading } = useRecentActivity(organizationId);
+  const { data: summaryData } = useAnalyticsSummary(organizationId);
 
   return (
     <div className="space-y-8" data-testid="advanced-dash">
       {/* Main statistics/summary section */}
       <DashboardOverview organizationId={organizationId} />
 
+      {/* Remove the repeated AnalyticsSummaryCards section */}
+      {/* <AnalyticsSummaryCards summary={summaryData} /> */}
+
       {/* Quick action buttons */}
-      <QuickActions
+      <QuickActionButtons
         onCreateQuestion={handleQuickActions.onCreateQuestion}
         onInviteUser={handleQuickActions.onInviteUser}
         onExportData={handleQuickActions.onExportData}
@@ -85,36 +92,38 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
-              <RecentActivity organizationId={organizationId} />
+              <RecentActivityList 
+                activities={recentActivity || []} 
+                isLoading={activityLoading} 
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="charts" className="space-y-6">
-          {/* No AnalyticsCharts component found; you may implement charts here if needed or leave blank */}
           <Card>
-            <CardContent className="p-6 text-center text-muted-foreground">
+            <CardContent className="p-6">
               <h3 className="text-lg font-medium mb-4">Analytics Charts</h3>
-              {/* Placeholder - implement chart visuals here if needed */}
-              <div>No charts available.</div>
+              <AnalyticsCharts 
+                data={analyticsData} 
+                isLoading={analyticsLoading} 
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="details" className="space-y-6">
-          <AnalyticsTable
-            questions={analyticsData?.questions || []}
-            categories={analyticsData?.categories || []}
-            summary={analyticsData?.summary || {
-              total_questions: 0,
-              total_responses: 0,
-              overall_avg_score: 0,
-              overall_completion_rate: 0
-            }}
-          />
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-medium mb-4">Detailed Analytics</h3>
+              <AnalyticsTable 
+                data={analyticsData} 
+                isLoading={analyticsLoading} 
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
 };
-
