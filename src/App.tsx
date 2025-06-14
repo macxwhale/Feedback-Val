@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +15,7 @@ import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import EtaApplicationPage from "./pages/EtaApplication";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,9 @@ const App = () => (
             <Routes>
               {/* Landing page */}
               <Route path="/" element={<Landing />} />
+
+              {/* eTA Application */}
+              <Route path="/apply-for-eta" element={<EtaApplicationPage />} />
               
               {/* System admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
