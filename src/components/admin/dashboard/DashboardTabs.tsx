@@ -54,7 +54,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   // Tab configuration w/ gating info
   const tabs = [
     { id: 'overview', label: 'Analytics', icon: BarChart3, module: 'analytics' },
-    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: 'customerInsights' },
+    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: 'customerInsights' }, // fixed case
     { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain, module: 'sentiment' },
     { id: 'performance', label: 'Performance', icon: BarChart3, module: 'performance' },
     { id: 'members', label: 'Members', icon: Users, module: 'members' },
