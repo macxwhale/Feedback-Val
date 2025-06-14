@@ -17,6 +17,7 @@ interface AnalyticsInsightsProps {
     total_sessions: number;
     completed_sessions: number;
     active_members: number;
+    overall_avg_score?: number; // Made optional
     growth_metrics: {
       sessions_this_month: number;
       sessions_last_month: number;
