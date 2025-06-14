@@ -51,10 +51,10 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   // Visible debug block for org plan/features_config
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Tab configuration w/ gating info
+  // Tab configuration w/ gating info (camelCase - exactly matching PLAN_FEATURE_MATRIX)
   const tabs = [
     { id: 'overview', label: 'Analytics', icon: BarChart3, module: 'analytics' },
-    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: 'customerInsights' }, // fixed case
+    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: 'customerInsights' },
     { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain, module: 'sentiment' },
     { id: 'performance', label: 'Performance', icon: BarChart3, module: 'performance' },
     { id: 'members', label: 'Members', icon: Users, module: 'members' },
@@ -63,7 +63,19 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     { id: 'settings', label: 'Settings', icon: Settings, module: 'settings' },
   ];
 
-  // Determine which tabs are accessible/locked
+  // Add console log for each module access
+  if (typeof window !== "undefined") {
+    console.groupCollapsed("%c[DashboardTabs] DEBUG TAB ACCESS", "background: #222;color: #eec321");
+    console.log("activeTab:", activeTab);
+    tabs.forEach(tab => {
+      console.log(
+        `[Tab: ${tab.label}] | module: "${tab.module}" | plan: "${plan}" | hasModuleAccess:`,
+        hasModuleAccess(tab.module)
+      );
+    });
+    console.groupEnd();
+  }
+
   const tabAccess = tabs.map(tab => ({
     ...tab,
     accessible: hasModuleAccess(tab.module as any)
