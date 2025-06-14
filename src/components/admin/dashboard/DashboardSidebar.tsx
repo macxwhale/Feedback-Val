@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
@@ -58,11 +59,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           {organizationName}
         </h2>
       </SidebarHeader>
-      
       <SidebarContent>
-        {groupedMenuItems.map(section => (
-          <SidebarGroup key={section.label}>
-            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+        {groupedMenuItems.map((section, idx) => (
+          <SidebarGroup key={section.label} className={idx !== 0 ? "pt-2 mt-2 border-t border-gray-200" : ""}>
+            <SidebarGroupLabel className="uppercase tracking-wide font-bold text-gray-700 text-xs px-1 mb-0.5">
+              {section.label}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => (
@@ -95,8 +97,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
         {/* Quick Stats */}
         {stats && !isLoading && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Quick Stats</SidebarGroupLabel>
+          <SidebarGroup className="pt-2 mt-2 border-t border-gray-200">
+            <SidebarGroupLabel className="uppercase tracking-wide font-bold text-gray-700 text-xs px-1 mb-0.5">
+              Quick Stats
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <div className="px-3 py-2 space-y-2">
                 <div className="flex justify-between text-sm">
