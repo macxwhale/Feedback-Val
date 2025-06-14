@@ -108,7 +108,7 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
               showDrillDown={true}
             />
           )}
-        </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
