@@ -79,7 +79,22 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = Rea
     });
 
     // Derived
-    const users = usersData?.users || [];
+    // Defensive fix: zod parse should ensure right shape, but we add extra filter just in case
+    const users = (usersData?.users ?? []).filter(
+      (user: any): user is {
+        id: string;
+        email: string;
+        role: string;
+        status: string;
+        created_at: string;
+      } =>
+        !!user &&
+        typeof user.id === "string" &&
+        typeof user.email === "string" &&
+        typeof user.role === "string" &&
+        typeof user.status === "string" &&
+        typeof user.created_at === "string"
+    );
     const totalCount = usersData?.total_count || 0;
     const hasMore = usersData?.has_more || false;
     const totalPages = Math.ceil(totalCount / pageSize);
