@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Users, MessageSquare, Settings, TrendingUp, Brain } from 'lucide-react';
+import { ChevronDown, ChevronRight, BarChart3, Users, MessageSquare, Settings, TrendingUp, Brain } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
+import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 interface DashboardSidebarProps {
   organizationName: string;
@@ -20,7 +21,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   stats,
   isLoading = false
 }) => {
-  // Grouped menu items for sidebar
+  const { isMobile } = useMobileDetection();
+
+  // For mobile: Store state of which groups are expanded
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+
+  // Side navigation grouping
   const groupedMenuItems = [
     {
       label: "Core Analytics",
@@ -52,6 +58,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     }
   ];
 
+  // Handler for toggling group visibility on mobile
+  const toggleGroup = (label: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
+  };
+
   return (
     <Sidebar className="border-r bg-white">
       <SidebarHeader className="border-b p-4">
@@ -60,40 +74,64 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         </h2>
       </SidebarHeader>
       <SidebarContent>
-        {groupedMenuItems.map((section, idx) => (
-          <SidebarGroup key={section.label} className={idx !== 0 ? "pt-2 mt-2 border-t border-gray-200" : ""}>
-            <SidebarGroupLabel className="uppercase tracking-wide font-bold text-gray-700 text-xs px-1 mb-0.5">
-              {section.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      onClick={() => onTabChange(item.id)}
-                      isActive={activeTab === item.id}
-                      className="flex items-center justify-between w-full"
-                    >
-                      <div className="flex items-center">
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.label}</span>
-                      </div>
-                      {isLoading ? (
-                        <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
-                      ) : (
-                        item.badge && (
-                          <Badge variant="secondary" className="ml-2">
-                            {item.badge}
-                          </Badge>
-                        )
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {groupedMenuItems.map((section, idx) => {
+          // Only mobile: allow group toggle
+          const isExpanded = isMobile ? expandedGroups[section.label] !== false : true;
+          return (
+            <SidebarGroup
+              key={section.label}
+              className={idx !== 0 ? "pt-2 mt-2 border-t border-gray-200" : ""}
+            >
+              <div className="flex items-center justify-between cursor-pointer select-none"
+                   onClick={isMobile ? () => toggleGroup(section.label) : undefined}
+                   tabIndex={isMobile ? 0 : -1}
+                   aria-label={section.label + " Menu"}
+                   aria-expanded={isExpanded}
+              >
+                <SidebarGroupLabel className="uppercase tracking-wide font-bold text-gray-700 text-xs px-1 mb-0.5">
+                  {section.label}
+                </SidebarGroupLabel>
+                {isMobile && (
+                  isExpanded
+                    ? <ChevronDown className="w-4 h-4 text-gray-400" />
+                    : <ChevronRight className="w-4 h-4 text-gray-400" />
+                )}
+              </div>
+              <SidebarGroupContent className={isExpanded ? "block" : "hidden"}>
+                <SidebarMenu>
+                  {section.items.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => {
+                          onTabChange(item.id);
+                        }}
+                        isActive={activeTab === item.id}
+                        className={`flex items-center justify-between w-full 
+                          ${isMobile ? "py-3 px-2 gap-3" : ""}
+                        `}
+                        style={isMobile ? { minHeight: 48, fontSize: 16 } : undefined}
+                      >
+                        <div className="flex items-center">
+                          <item.icon className={`mr-2 ${isMobile ? "w-5 h-5" : "h-4 w-4"}`} />
+                          <span>{item.label}</span>
+                        </div>
+                        {isLoading ? (
+                          <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
+                        ) : (
+                          item.badge && (
+                            <Badge variant="secondary" className="ml-2">
+                              {item.badge}
+                            </Badge>
+                          )
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
 
         {/* Quick Stats */}
         {stats && !isLoading && (
@@ -136,3 +174,4 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     </Sidebar>
   );
 };
+
