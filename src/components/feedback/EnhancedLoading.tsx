@@ -1,16 +1,25 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { useOrganizationConfig } from '@/hooks/useOrganizationConfig';
 
 export const EnhancedLoading: React.FC = () => {
+  const { colors } = useOrganizationConfig();
+
+  const backgroundStyle = {
+    background: `linear-gradient(135deg, ${colors.primary}1A 0%, ${colors.secondary}1A 50%, ${colors.accent}1A 100%)`
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center p-4" style={backgroundStyle}>
       <div className="text-center animate-fade-in">
         <div className="relative mb-6">
-          <Loader2 className="h-16 w-16 text-[#f97316] animate-spin mx-auto" />
-          <div className="absolute inset-0 h-16 w-16 border-4 border-orange-200 rounded-full animate-pulse" />
+          <Loader2 
+            className="h-16 w-16 animate-spin mx-auto"
+            style={{ color: colors.accent }} 
+          />
         </div>
-        <h3 className="text-xl font-semibold text-[#073763] mb-2">
+        <h3 className="text-xl font-semibold mb-2" style={{ color: colors.primary }}>
           Loading Your Feedback Form
         </h3>
         <p className="text-gray-600 animate-pulse">
@@ -20,8 +29,11 @@ export const EnhancedLoading: React.FC = () => {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="w-2 h-2 bg-[#f97316] rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.1}s` }}
+              className="w-2 h-2 rounded-full animate-bounce"
+              style={{
+                backgroundColor: colors.accent,
+                animationDelay: `${i * 0.1}s`,
+              }}
             />
           ))}
         </div>

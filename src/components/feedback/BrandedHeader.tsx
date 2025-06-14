@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useDynamicBranding } from '@/hooks/useDynamicBranding';
+import { useOrganizationConfig } from '@/hooks/useOrganizationConfig';
 
 interface BrandedHeaderProps {
   title: string;
@@ -13,21 +13,21 @@ export const BrandedHeader: React.FC<BrandedHeaderProps> = ({
   subtitle,
   showSecureIndicator = false
 }) => {
-  const { colors, assets, organizationName } = useDynamicBranding();
+  const { colors, logoAsset, organization } = useOrganizationConfig();
 
   const headerStyle = {
     background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`
   };
 
+  const organizationName = organization?.name || "Pulsify";
+
   // Update default logo alt text and site name if fallback is triggered
   return (
     <div className="p-8 text-white text-center" style={headerStyle}>
-      {assets.logoUrl && (
+      {logoAsset?.asset_url && (
         <img 
-          src={assets.logoUrl}
-          alt={assets.logoAlt && assets.logoAlt !== "Pulselify Logo"
-            ? assets.logoAlt.replace(/Pulselify/gi, 'Pulsify')
-            : "Pulsify Logo"}
+          src={logoAsset.asset_url}
+          alt={logoAsset.alt_text || `${organizationName} Logo`}
           className="h-20 mx-auto mb-6 drop-shadow-lg object-contain"
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/lovable-uploads/pulse-favicon-64.png';
