@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -19,6 +18,17 @@ import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import { UpgradePrompt } from './UpgradePrompt';
+
+// Define strict type for dashboard module keys
+type DashboardModuleKey =
+  | "analytics"
+  | "questions"
+  | "settings"
+  | "customerInsights"
+  | "sentiment"
+  | "performance"
+  | "members"
+  | "feedback";
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -51,23 +61,29 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   // Visible debug block for org plan/features_config
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Tab configuration w/ gating info (camelCase - exactly matching PLAN_FEATURE_MATRIX)
-  const tabs = [
-    { id: 'overview', label: 'Analytics', icon: BarChart3, module: 'analytics' },
-    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: 'customerInsights' },
-    { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain, module: 'sentiment' },
-    { id: 'performance', label: 'Performance', icon: BarChart3, module: 'performance' },
-    { id: 'members', label: 'Members', icon: Users, module: 'members' },
-    { id: 'feedback', label: 'Feedback', icon: MessageSquare, module: 'feedback' },
-    { id: 'questions', label: 'Questions', icon: MessageSquare, module: 'questions' },
-    { id: 'settings', label: 'Settings', icon: Settings, module: 'settings' },
+  // Typed tab configuration - module keys strictly matched
+  const tabs: {
+    id: string;
+    label: string;
+    icon: React.ElementType;
+    module: DashboardModuleKey;
+  }[] = [
+    { id: 'overview', label: 'Analytics', icon: BarChart3, module: "analytics" },
+    { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp, module: "customerInsights" },
+    { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain, module: "sentiment" },
+    { id: 'performance', label: 'Performance', icon: BarChart3, module: "performance" },
+    { id: 'members', label: 'Members', icon: Users, module: "members" },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquare, module: "feedback" },
+    { id: 'questions', label: 'Questions', icon: MessageSquare, module: "questions" },
+    { id: 'settings', label: 'Settings', icon: Settings, module: "settings" },
   ];
 
-  // Add console log for each module access
+  // --- log for debugging, explicit type use ---
   if (typeof window !== "undefined") {
     console.groupCollapsed("%c[DashboardTabs] DEBUG TAB ACCESS", "background: #222;color: #eec321");
     console.log("activeTab:", activeTab);
     tabs.forEach(tab => {
+      // show type checking
       console.log(
         `[Tab: ${tab.label}] | module: "${tab.module}" | plan: "${plan}" | hasModuleAccess:`,
         hasModuleAccess(tab.module)
@@ -76,9 +92,10 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     console.groupEnd();
   }
 
+  // Explicit typing for moduleKey argument
   const tabAccess = tabs.map(tab => ({
     ...tab,
-    accessible: hasModuleAccess(tab.module as any)
+    accessible: hasModuleAccess(tab.module)
   }));
 
   // If user tries to activate a locked tab, show the upgrade modal instead
@@ -200,4 +217,3 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     </div>
   );
 };
-
