@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DashboardOverview } from './DashboardOverview';
 import { AnalyticsTable } from './AnalyticsTable';
@@ -91,7 +90,9 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
       {/* Core Analytics Overview (contains the proper stat cards) */}
       <DashboardOverview organizationId={organizationId} />
 
-      {/* Analytics Tabs */}
+      {/* Ensure that section labels and navigation are not duplicated here */}
+      {/* The Tabs, TabsList, SectionLabel, and tab labels are handled ONLY in DashboardTabs.tsx */}
+
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
@@ -114,7 +115,6 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Show AnalyticsTable even with partial data */}
             <AnalyticsTable
               questions={analyticsData?.questions || []}
               categories={analyticsData?.categories || []}
