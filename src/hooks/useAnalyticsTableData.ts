@@ -1,8 +1,15 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { processResponsesByType } from '@/services/responseDataProcessor';
 import { useDashboard } from '@/context/DashboardContext';
+
+export interface TrendDataPoint {
+  date: string;
+  total_sessions: number;
+  completed_sessions: number;
+  completion_rate: number;
+  avg_score: number;
+}
 
 export interface QuestionAnalytics {
   id: string;
@@ -34,6 +41,7 @@ export interface AnalyticsTableData {
     total_responses: number;
     overall_completion_rate: number;
   };
+  trendData: TrendDataPoint[];
 }
 
 export const useAnalyticsTableData = (organizationId: string) => {
@@ -78,7 +86,7 @@ export const useAnalyticsTableData = (organizationId: string) => {
       // Get all sessions for completion rate calculation, with date filtering
       let sessionsQuery = supabase
         .from('feedback_sessions')
-        .select('id, status, created_at')
+        .select('id, status, created_at, total_score')
         .eq('organization_id', organizationId);
 
       if (dateRange?.from) {
@@ -179,6 +187,42 @@ export const useAnalyticsTableData = (organizationId: string) => {
       const totalQuestions = questions?.length || 0;
       const totalResponses = responses?.length || 0;
 
+      // NEW: Process trend data
+      const trendData: TrendDataPoint[] = [];
+      if (sessions) {
+        const sessionsByDate = sessions.reduce((acc, session) => {
+          const date = new Date(session.created_at).toISOString().split('T')[0];
+          if (!acc[date]) {
+            acc[date] = { date, total_sessions: 0, completed_sessions: 0, scores: [] };
+          }
+          acc[date].total_sessions++;
+          if (session.status === 'completed') {
+            acc[date].completed_sessions++;
+          }
+          if (typeof session.total_score === 'number') {
+            acc[date].scores.push(session.total_score);
+          }
+          return acc;
+        }, {} as Record<string, { date: string; total_sessions: number; completed_sessions: number; scores: number[] }>);
+
+        const sortedDates = Object.keys(sessionsByDate).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+        for (const date of sortedDates) {
+          const dayData = sessionsByDate[date];
+          const totalScore = dayData.scores.reduce((sum, score) => sum + score, 0);
+          const avgScore = dayData.scores.length > 0 ? totalScore / dayData.scores.length : 0;
+          const completionRate = dayData.total_sessions > 0 ? (dayData.completed_sessions / dayData.total_sessions) * 100 : 0;
+
+          trendData.push({
+            date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            total_sessions: dayData.total_sessions,
+            completed_sessions: dayData.completed_sessions,
+            completion_rate: Math.round(completionRate),
+            avg_score: Math.round(avgScore),
+          });
+        }
+      }
+
       return {
         questions: questionAnalytics,
         categories: categoryAnalytics,
@@ -186,7 +230,8 @@ export const useAnalyticsTableData = (organizationId: string) => {
           total_questions: totalQuestions,
           total_responses: totalResponses,
           overall_completion_rate: Math.round(overallCompletionRate)
-        }
+        },
+        trendData,
       };
     },
     enabled: !!organizationId,

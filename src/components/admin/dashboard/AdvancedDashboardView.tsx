@@ -1,13 +1,98 @@
+
 import React from 'react';
 import { DashboardOverview } from './DashboardOverview';
 import { AnalyticsTable } from './AnalyticsTable';
 import { AnalyticsInsights } from './AnalyticsInsights';
 import { RealTimeAnalytics } from './RealTimeAnalytics';
 import { RefactoredExecutiveDashboard } from './RefactoredExecutiveDashboard';
-import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
+import { useAnalyticsTableData, TrendDataPoint } from '@/hooks/useAnalyticsTableData';
 import { useEnhancedOrganizationStats } from '@/hooks/useEnhancedOrganizationStats';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, LineChart as LineChartIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+// New component for trend analysis
+const TrendAnalysisChart: React.FC<{ data: TrendDataPoint[]; isLoading: boolean }> = ({ data, isLoading }) => {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="h-6 w-1/3 rounded bg-gray-200 animate-pulse mb-2"></div>
+          <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse"></div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 rounded bg-gray-200 animate-pulse"></div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Trend Analysis</CardTitle>
+          <CardDescription>Key metrics over the selected period.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 flex flex-col items-center justify-center text-center text-gray-500">
+            <LineChartIcon className="w-12 h-12 mb-4" />
+            <p className="font-semibold">No Trend Data Available</p>
+            <p className="text-sm">Try selecting a different date range to see trend analysis.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Trend Analysis</CardTitle>
+        <CardDescription>Key metrics over the selected period.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-80 -ml-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis domain={[0, 100]} unit="%" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 'var(--radius)',
+                }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="completion_rate"
+                name="Completion Rate"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="avg_score"
+                name="Average Score"
+                stroke="hsl(var(--destructive))"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 8 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 // MAIN: No Tabs, only pure content switching!
 interface AdvancedDashboardViewProps {
@@ -70,8 +155,9 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
 
   // Alerts
   const errorAlert = (analyticsError || enhancedError) ? (
-    <Alert className="border-yellow-500 mb-4">
+    <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Error</AlertTitle>
       <AlertDescription>
         Some dashboard data may be unavailable. {analyticsError?.message || enhancedError?.message}
       </AlertDescription>
@@ -84,6 +170,7 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
       <div className="space-y-6">
         {errorAlert}
         <DashboardOverview organizationId={organizationId} />
+        <TrendAnalysisChart data={analyticsData?.trendData || []} isLoading={analyticsLoading} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AnalyticsTable
             questions={analyticsData?.questions || []}
