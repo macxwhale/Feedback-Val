@@ -28,50 +28,34 @@ export const LoginPage: React.FC = () => {
   const createOrganizationForUser = async (email: string) => {
     setOrgLoading(true);
     try {
-      // Wait for Supabase auth to return the user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !user.id) throw new Error("No user found");
 
-      // Use slugified name if possible, fallback to UUID
-      const slug = orgName
-        ? orgName.toLowerCase().replace(/[^\w]+/g, "-").replace(/(^-|-$)/g, "")
-        : "org-" + uuidv4();
+      // Call the edge function
+      const res = await fetch(
+        `https://rigurrwjiaucodxuuzeh.functions.supabase.co/create-organization`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            userId: user.id,
+            orgName,
+          }),
+        }
+      );
+      const result = await res.json();
 
-      // Set default name if not provided
-      const safeName = orgName || (email.split("@")[0] + "'s Organization");
-
-      const res = await supabase
-        .from('organizations')
-        .insert({
-          name: safeName,
-          slug,
-          plan_type: 'starter', // Explicitly assign free plan
-          is_active: true,
-          created_by_user_id: user.id,
-          billing_email: email,
-        })
-        .select()
-        .single();
-
-      if (res.error) throw res.error;
-
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "Edge function error (org create)");
+      }
       toast({
         title: "Organization Created",
-        description: `Welcome to ${safeName}!`,
+        description: `Welcome to ${result.organization?.name || orgName}!`,
       });
 
-      // Optional: automatically assign org admin role
-      await supabase
-        .from('organization_users')
-        .insert({
-          user_id: user.id,
-          organization_id: res.data.id,
-          email,
-          role: 'admin'
-        });
-
       // Redirect to org admin dashboard (optional)
-      navigate(`/admin/${slug}`);
+      navigate(`/admin/${result.organization?.slug}`);
     } catch (err: any) {
       toast({
         title: "Error creating organization",
