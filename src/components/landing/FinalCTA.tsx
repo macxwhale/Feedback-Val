@@ -8,25 +8,25 @@ export const FinalCTA: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-20 bg-gradient-to-r from-[#edf1f3] via-[#f5f2fa] to-[#fff8ea]">
+    <section className="py-20 bg-gradient-to-r from-[#edf1f3] via-[#f5f2fa] to-[#fff8ea] animate-fade-in">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl font-bold text-gray-800 mb-6">
           Ready to build deeper customer loyalty?
         </h2>
         <p className="text-xl text-gray-500 mb-8">
-          Join modern teams using Pulselify to stay truly connected—now and tomorrow.
+          See how Pulselify turns feedback into meaningful growth.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={() => navigate('/auth')}
-            className="bg-gradient-to-r from-blue-600 via-purple-500 to-orange-400 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:brightness-105 hover:scale-105"
+            className="bg-gradient-to-r from-blue-600 via-purple-500 to-orange-400 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:brightness-110 hover:scale-105 animate-scale-in"
           >
             Start your free trial
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             variant="outline"
             className="border-0 bg-white/80 text-blue-700 hover:bg-orange-50 hover:text-orange-600 text-lg px-8 py-4 rounded-full"
           >

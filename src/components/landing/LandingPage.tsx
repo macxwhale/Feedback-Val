@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Header } from './Header';
 import { Hero } from './Hero';
@@ -8,6 +7,7 @@ import { Features } from './Features';
 import { SocialProof } from './SocialProof';
 import { FinalCTA } from './FinalCTA';
 import { Footer } from './Footer';
+import { HeroVisual } from './HeroVisual';
 
 export const LandingPage: React.FC = () => (
   <div className="min-h-screen bg-gradient-to-br from-[#fbfaf7] via-[#f5f8f9] to-[#f7f8fa] text-gray-800">
