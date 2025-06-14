@@ -50,12 +50,17 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
   // Analyze question performance using utility function
   const { topPerformers, lowPerformers, completionTrends } = analyzeQuestionPerformance(analyticsData.questions);
 
-  // Calculate performance metrics using utility function - remove avg_score dependency
+  // Calculate performance metrics using utility function
   const performanceInsights = calculatePerformanceInsights(analyticsData.questions, analyticsData.summary);
+
+  const scoredQuestions = analyticsData.questions.filter(q => q.avg_score > 0);
+  const overallAvgScore = scoredQuestions.length > 0
+    ? scoredQuestions.reduce((sum, q) => sum + q.avg_score, 0) / scoredQuestions.length
+    : 0;
 
   // Category performance analysis based on completion rates and response counts
   const categoryPerformance = analyticsData.categories
-    .sort((a, b) => b.completion_rate - a.completion_rate);
+    .sort((a, b) => b.avg_score - a.avg_score);
 
   return (
     <div className="space-y-6">
@@ -69,7 +74,7 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
       {/* Performance Overview */}
       <PerformanceOverviewCards 
         performanceInsights={performanceInsights}
-        avgScore={0} // Remove score dependency
+        avgScore={overallAvgScore}
         totalQuestions={analyticsData.summary.total_questions}
       />
 
@@ -97,7 +102,7 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
         <TabsContent value="categories" className="space-y-4">
           <CategoryPerformanceTab categoryPerformance={categoryPerformance.map(c => ({
             category: c.category,
-            avg_score: 0, // Remove score dependency
+            avg_score: c.avg_score,
             total_questions: c.total_questions,
             total_responses: c.total_responses,
             completion_rate: c.completion_rate

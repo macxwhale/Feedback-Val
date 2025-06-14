@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { processResponsesByType } from '@/services/responseDataProcessor';
@@ -10,6 +9,7 @@ export interface QuestionAnalytics {
   category: string;
   total_responses: number;
   completion_rate: number;
+  avg_score: number;
   response_distribution: Record<string, number>;
   insights: string[];
   trend: 'positive' | 'neutral' | 'negative' | 'mixed';
@@ -21,6 +21,7 @@ export interface CategoryAnalytics {
   total_responses: number;
   completion_rate: number;
   questions: QuestionAnalytics[];
+  avg_score: number;
 }
 
 export interface AnalyticsTableData {
@@ -78,6 +79,10 @@ export const useAnalyticsTableData = (organizationId: string) => {
           const questionResponses = responses?.filter(r => r.question_id === question.id) || [];
           const uniqueSessions = new Set(questionResponses.map(r => r.session_id));
           
+          const scoredResponses = questionResponses.filter(r => typeof r.score === 'number');
+          const totalScore = scoredResponses.reduce((sum, r) => sum + (r.score as number), 0);
+          const avgScore = scoredResponses.length > 0 ? totalScore / scoredResponses.length : 0;
+
           // Process real response data
           const processedData = processResponsesByType(
             question.question_type || 'text',
@@ -100,6 +105,7 @@ export const useAnalyticsTableData = (organizationId: string) => {
             category: question.category || 'General',
             total_responses: questionResponses.length,
             completion_rate: Math.round(questionCompletionRate),
+            avg_score: avgScore,
             response_distribution: processedData.distribution,
             insights: processedData.insights,
             trend
@@ -115,7 +121,8 @@ export const useAnalyticsTableData = (organizationId: string) => {
               total_questions: 0,
               total_responses: 0,
               completion_rate: 0,
-              questions: []
+              questions: [],
+              avg_score: 0,
             });
           }
 
@@ -129,8 +136,17 @@ export const useAnalyticsTableData = (organizationId: string) => {
       // Calculate category averages
       const categoryAnalytics: CategoryAnalytics[] = [];
       categoryMap.forEach(category => {
-        const avgCompletionRate = category.questions.reduce((sum, q) => sum + q.completion_rate, 0) / category.total_questions;
+        const avgCompletionRate = category.questions.length > 0
+          ? category.questions.reduce((sum, q) => sum + q.completion_rate, 0) / category.questions.length
+          : 0;
+        
+        const scoredQuestions = category.questions.filter(q => q.avg_score > 0);
+        const avgCategoryScore = scoredQuestions.length > 0
+          ? scoredQuestions.reduce((sum, q) => sum + q.avg_score, 0) / scoredQuestions.length
+          : 0;
+
         category.completion_rate = Math.round(avgCompletionRate);
+        category.avg_score = avgCategoryScore;
         categoryAnalytics.push(category);
       });
 
