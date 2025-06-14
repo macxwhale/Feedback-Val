@@ -275,8 +275,9 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
 
 export const updateOrganization = async (id: string, updates: Partial<Organization>): Promise<Organization | null> => {
   try {
-    let safeUpdates = { ...updates };
-    // If updating plan_type, limit to supported enum or fallback to 'starter'
+    // Fix: Only allow correct plan_type values and type them properly!
+    let safeUpdates: Partial<Omit<Organization, 'plan_type'>> & { plan_type?: 'starter' | 'pro' | 'enterprise' } = { ...updates };
+
     if (updates.plan_type !== undefined) {
       if (updates.plan_type === 'starter' || updates.plan_type === 'pro' || updates.plan_type === 'enterprise') {
         safeUpdates.plan_type = updates.plan_type;
@@ -284,6 +285,7 @@ export const updateOrganization = async (id: string, updates: Partial<Organizati
         safeUpdates.plan_type = 'starter';
       }
     }
+
     const { data, error } = await supabase
       .from('organizations')
       .update(safeUpdates)
