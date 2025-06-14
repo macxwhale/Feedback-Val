@@ -44,7 +44,7 @@ export const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section className="relative py-24 bg-transparent dark:bg-transparent overflow-hidden">
+    <section className="relative py-24 bg-warm-gray-50 dark:bg-dark-warm-50 overflow-hidden">
       <FluidBackground />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,7 +72,7 @@ export const HowItWorks: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {targetAudiences.map((audience, index) => (
-              <div key={index} className="group relative bg-white/70 dark:bg-dark-warm-100/70 backdrop-blur-sm rounded-2xl p-6 border border-warm-gray-200/30 dark:border-dark-warm-300/30 hover:shadow-xl hover:scale-105 transition-all duration-500">
+              <div key={index} className="group relative bg-white/95 dark:bg-dark-warm-100/95 rounded-2xl p-8 border border-warm-gray-200 dark:border-dark-warm-200 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="absolute inset-0 bg-gradient-to-br from-sunset-500/5 via-coral-500/5 to-golden-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative">
                   <div className="w-12 h-12 bg-gradient-to-br from-sunset-500 to-coral-500 rounded-xl flex items-center justify-center text-white mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">

@@ -1,12 +1,8 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 export const FinalCTA: React.FC = () => {
-  const navigate = useNavigate();
-
   return (
     <section className="relative py-32 bg-gradient-to-br from-sunset-500 via-coral-500 to-golden-500 overflow-hidden">
       {/* Background decorative elements */}
@@ -40,40 +36,11 @@ export const FinalCTA: React.FC = () => {
           your customer feedback?
         </h2>
         
-        <p className="text-2xl lg:text-3xl text-white/95 mb-16 leading-relaxed max-w-4xl mx-auto font-medium">
+        <p className="text-2xl lg:text-3xl text-white/95 leading-relaxed max-w-4xl mx-auto font-medium">
           Join thousands of businesses using Pulsify to make{' '}
           <span className="font-bold">better decisions</span>
         </p>
         
-        <div className="flex flex-col gap-6 justify-center mb-16 max-w-md mx-auto">
-          <Button 
-            size="lg" 
-            onClick={() => navigate('/auth')}
-            variant="outline"
-            className="w-full"
-          >
-            <span className="flex items-center justify-center">
-              Start Free
-              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </span>
-          </Button>
-          
-          <Button 
-            size="lg" 
-            variant="outline"
-            className="w-full"
-          >
-            Contact Sales
-          </Button>
-        </div>
-        
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 max-w-2xl mx-auto border border-white/20">
-          <p className="text-xl lg:text-2xl text-white/90 font-medium">
-            <span className="font-bold">No credit card required</span> • Setup takes less than 5 minutes
-            <br />
-            <span className="text-white/80">14-day free trial with full access to all features</span>
-          </p>
-        </div>
       </div>
     </section>
   );

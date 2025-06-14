@@ -5,7 +5,7 @@ import { FluidBackground } from './FluidBackground';
 
 export const DashboardPreview: React.FC = () => {
   return (
-    <section className="relative py-24 bg-transparent dark:bg-transparent overflow-hidden">
+    <section className="relative py-24 bg-white dark:bg-background overflow-hidden">
       <FluidBackground variant="dark" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +50,7 @@ export const DashboardPreview: React.FC = () => {
           {/* Dashboard Preview */}
           <div className="lg:col-span-7">
             <div className="relative">
-              <div className="bg-white/80 dark:bg-dark-warm-100/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-warm-gray-200/30 dark:border-dark-warm-300/30 p-8 hover:shadow-3xl transition-all duration-500">
+              <div className="bg-white/95 dark:bg-dark-warm-100/95 rounded-3xl shadow-xl border border-warm-gray-200 dark:border-dark-warm-200 p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
                 
                 <div className="flex items-center justify-between mb-8">
                   <div>
@@ -73,7 +73,7 @@ export const DashboardPreview: React.FC = () => {
                     { icon: <TrendingUp className="w-5 h-5" />, value: "+23%", label: "Growth", color: "from-golden-400 to-sunset-500" },
                     { icon: <BarChart3 className="w-5 h-5" />, value: "4.8", label: "Avg Rating", color: "from-sunset-500 to-coral-500" }
                   ].map((stat, index) => (
-                    <div key={index} className="bg-gradient-to-br from-white/60 to-warm-gray-50/60 dark:from-dark-warm-200/60 dark:to-dark-warm-100/60 backdrop-blur-sm rounded-xl p-4 border border-warm-gray-200/30 dark:border-dark-warm-300/30 hover:scale-105 transition-transform duration-300">
+                    <div key={index} className="bg-white/90 dark:bg-dark-warm-200/90 rounded-xl p-4 border border-warm-gray-200/50 dark:border-dark-warm-300/50 hover:-translate-y-1 transition-transform duration-300">
                       <div className={`w-8 h-8 bg-gradient-to-r ${stat.color} rounded-lg flex items-center justify-center text-white mb-2`}>
                         {stat.icon}
                       </div>
@@ -83,7 +83,7 @@ export const DashboardPreview: React.FC = () => {
                   ))}
                 </div>
                 
-                <div className="bg-gradient-to-br from-sunset-50/60 via-coral-50/60 to-golden-50/60 dark:from-dark-warm-200/60 dark:via-dark-warm-300/60 dark:to-dark-warm-200/60 backdrop-blur-sm rounded-xl p-6 min-h-32 flex items-center justify-center border border-warm-gray-200/30 dark:border-dark-warm-400/30">
+                <div className="bg-warm-gray-50 dark:bg-dark-warm-200 rounded-xl p-6 min-h-32 flex items-center justify-center border border-warm-gray-200 dark:border-dark-warm-300">
                   <div className="text-center">
                     <div className="w-12 h-12 bg-gradient-to-br from-sunset-500 to-coral-500 rounded-xl flex items-center justify-center text-white mx-auto mb-3">
                       <BarChart3 className="w-6 h-6" />
