@@ -1,7 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 const FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/questions-crud';
+const PUBLIC_QUESTIONS_FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/public-questions';
 
 interface QuestionFormData {
   question_text: string;
@@ -120,12 +120,17 @@ export const storeFeedbackResponses = async (
 };
 
 // Fetch questions for frontend form (optimized for user feedback)
-export const fetchQuestions = async (organizationId?: string) => {
+export const fetchQuestions = async (organizationSlug?: string) => {
+  if (!organizationSlug) {
+    console.warn('fetchQuestions called without organizationSlug');
+    return [];
+  }
   try {
-    const headers = await getAuthHeaders();
-    const response = await fetch(FUNCTION_URL, {
+    const response = await fetch(`${PUBLIC_QUESTIONS_FUNCTION_URL}?organizationSlug=${organizationSlug}`, {
       method: 'GET',
-      headers
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     
     const questions = await handleResponse(response);

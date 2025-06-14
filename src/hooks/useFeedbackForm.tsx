@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
 import { fetchQuestions } from '@/services/questionsService';
@@ -60,7 +59,7 @@ export const useFeedbackForm = () => {
       try {
         setIsLoading(true);
         
-        const data = await fetchQuestions(organization?.id);
+        const data = await fetchQuestions(organization?.slug);
         console.log('useFeedbackForm - Questions loaded:', data);
         setQuestions(data);
         
@@ -86,7 +85,7 @@ export const useFeedbackForm = () => {
     };
 
     loadQuestions();
-  }, [organization?.id, orgLoading]); // Only depend on organization ID and loading state
+  }, [organization?.id, organization?.slug, orgLoading]); // Only depend on organization ID and loading state
 
   const isCurrentQuestionAnswered = () => {
     const currentQuestion = questions[currentQuestionIndex];
