@@ -21,19 +21,6 @@ export const ModernHero: React.FC = () => {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="text-center space-y-12 animate-fade-in">
           {/* Trust indicator */}
-          <div className="flex items-center justify-center">
-            <div className="flex items-center bg-black dark:bg-dark-warm-100 rounded-full px-4 py-2 space-x-3">
-              <span className="bg-gradient-to-r from-green-400 to-green-500 text-black text-xs font-bold px-2 py-1 rounded-full">
-                NEW
-              </span>
-              <span className="text-white dark:text-dark-warm-800 text-sm font-medium">
-                We've just released new features
-              </span>
-              <ArrowRight className="w-4 h-4 text-white dark:text-dark-warm-800" />
-            </div>
-          </div>
-
-          {/* Pulsify Tagline */}
           <div className="flex items-center justify-center space-x-2 text-warm-gray-600 dark:text-dark-warm-600">
             <div className="flex -space-x-1">
               <div className="w-6 h-6 bg-sunset-400 rounded-full border-2 border-white dark:border-dark-warm-100 animate-pulse-gentle"></div>
