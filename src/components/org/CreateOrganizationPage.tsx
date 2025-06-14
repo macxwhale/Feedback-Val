@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -135,7 +134,11 @@ export const CreateOrganizationPage: React.FC = () => {
             )}
             {!created && (
               <div className="flex justify-center mt-6">
-                <Button variant="ghost" disabled loading={loading} className="pointer-events-none select-none">
+                <Button
+                  variant="ghost"
+                  disabled
+                  className="pointer-events-none select-none"
+                >
                   {loading ? "Creating organization..." : "Preparing..."}
                 </Button>
               </div>
