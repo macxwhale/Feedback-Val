@@ -107,7 +107,7 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-8">
       <UserManagementHeader
         organizationName={organizationName}
         onInviteUser={handleInviteUser}
