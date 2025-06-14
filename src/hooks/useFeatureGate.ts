@@ -1,7 +1,6 @@
-
 import { useOrganization } from "@/context/OrganizationContext";
 
-// Map features to availability per plan
+// Expanded PLAN_FEATURE_MATRIX
 const PLAN_FEATURE_MATRIX = {
   starter: {
     maxResponses: 1000,
@@ -10,6 +9,16 @@ const PLAN_FEATURE_MATRIX = {
     multiUser: false,
     analytics: false,
     export: false,
+    modules: {
+      analytics: true,
+      questions: true,
+      settings: true,
+      customerInsights: false,
+      sentiment: false,
+      performance: false,
+      members: false,
+      feedback: false,
+    }
   },
   pro: {
     maxResponses: 10000,
@@ -18,14 +27,34 @@ const PLAN_FEATURE_MATRIX = {
     multiUser: true,
     analytics: true,
     export: true,
+    modules: {
+      analytics: true,
+      questions: true,
+      settings: true,
+      customerInsights: true,
+      sentiment: true,
+      performance: false,
+      members: true,
+      feedback: true,
+    }
   },
   enterprise: {
-    maxResponses: null, // unlimited
+    maxResponses: null,
     questionTypes: ["star", "nps", "likert", "single-choice", "multi-choice", "text"],
     customBranding: true,
     multiUser: true,
     analytics: true,
     export: true,
+    modules: {
+      analytics: true,
+      questions: true,
+      settings: true,
+      customerInsights: true,
+      sentiment: true,
+      performance: true,
+      members: true,
+      feedback: true,
+    }
   }
 };
 
@@ -63,10 +92,23 @@ export const useFeatureGate = () => {
     return PLAN_FEATURE_MATRIX[plan].maxResponses;
   }
 
+  function hasModuleAccess(module: keyof typeof PLAN_FEATURE_MATRIX["starter"]["modules"]): boolean {
+    if (!organization) return PLAN_FEATURE_MATRIX.starter.modules[module];
+    if (
+      organization.features_config &&
+      organization.features_config["modules"] &&
+      typeof organization.features_config["modules"][module] === "boolean"
+    ) {
+      return organization.features_config["modules"][module];
+    }
+    return PLAN_FEATURE_MATRIX[plan].modules[module];
+  }
+
   return {
     hasFeature,
     allowedQuestionTypes,
     responseLimit,
     plan,
+    hasModuleAccess,
   };
 };
