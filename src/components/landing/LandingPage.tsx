@@ -6,22 +6,18 @@ import { HowItWorks } from './HowItWorks';
 import { DashboardPreview } from './DashboardPreview';
 import { Features } from './Features';
 import { SocialProof } from './SocialProof';
-import { Pricing } from './Pricing';
 import { FinalCTA } from './FinalCTA';
 import { Footer } from './Footer';
 
-export const LandingPage: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <Hero />
-      <HowItWorks />
-      <DashboardPreview />
-      <Features />
-      <SocialProof />
-      <Pricing />
-      <FinalCTA />
-      <Footer />
-    </div>
-  );
-};
+export const LandingPage: React.FC = () => (
+  <div className="min-h-screen bg-gradient-to-br from-[#fbfaf7] via-[#f5f8f9] to-[#f7f8fa] text-gray-800">
+    <Header />
+    <Hero />
+    <HowItWorks />
+    <DashboardPreview />
+    <Features />
+    <SocialProof />
+    <FinalCTA />
+    <Footer />
+  </div>
+);
