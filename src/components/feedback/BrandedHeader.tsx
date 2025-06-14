@@ -27,7 +27,7 @@ export const BrandedHeader: React.FC<BrandedHeaderProps> = ({
       {logoAsset?.asset_url && (
         <img 
           src={logoAsset.asset_url}
-          alt={logoAsset.alt_text || `${organizationName} Logo`}
+          alt={logoAsset.asset_name || `${organizationName} Logo`}
           className="h-20 mx-auto mb-6 drop-shadow-lg object-contain"
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/lovable-uploads/pulse-favicon-64.png';
