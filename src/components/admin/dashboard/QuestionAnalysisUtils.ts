@@ -126,20 +126,29 @@ const generateRecommendations = (
 };
 
 const analyzeStarRating = (question: any): QuestionAnalysis => {
-  const { avg_score, completion_rate, total_responses } = question;
+  const { completion_rate, total_responses, response_distribution } = question;
   let analysis = '';
   let insights = [];
   let recommendations = [];
   
-  if (avg_score >= 4.5) {
+  // Calculate average from distribution
+  let totalStars = 0;
+  let totalCount = 0;
+  Object.entries(response_distribution).forEach(([rating, count]) => {
+    totalStars += parseInt(rating) * (count as number);
+    totalCount += count as number;
+  });
+  const avgRating = totalCount > 0 ? totalStars / totalCount : 0;
+  
+  if (avgRating >= 4.5) {
     analysis = 'Excellent';
     insights.push('High customer satisfaction');
     recommendations.push('Maintain current service quality');
-  } else if (avg_score >= 3.5) {
+  } else if (avgRating >= 3.5) {
     analysis = 'Good';
     insights.push('Above average satisfaction');
     recommendations.push('Identify areas for improvement');
-  } else if (avg_score >= 2.5) {
+  } else if (avgRating >= 2.5) {
     analysis = 'Average';
     insights.push('Room for improvement');
     recommendations.push('Investigate specific pain points');
@@ -154,11 +163,11 @@ const analyzeStarRating = (question: any): QuestionAnalysis => {
     recommendations.push('Consider simplifying or repositioning');
   }
   
-  return { type: 'Star Rating', analysis, score: avg_score, insights, recommendations, trend: 'neutral' };
+  return { type: 'Star Rating', analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeNPSScore = (question: any): QuestionAnalysis => {
-  const { avg_score, response_distribution } = question;
+  const { response_distribution } = question;
   
   // NPS calculation (0-6 detractors, 7-8 passives, 9-10 promoters)
   let promoters = 0, passives = 0, detractors = 0;
@@ -195,11 +204,11 @@ const analyzeNPSScore = (question: any): QuestionAnalysis => {
     recommendations.push('Address detractor concerns immediately');
   }
   
-  return { type: 'NPS', analysis, score: npsScore, insights, recommendations, trend: 'neutral' };
+  return { type: 'NPS', analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeLikertScale = (question: any): QuestionAnalysis => {
-  const { avg_score, response_distribution } = question;
+  const { response_distribution } = question;
   
   let analysis = '';
   let insights = [];
@@ -250,7 +259,6 @@ const analyzeChoiceQuestion = (question: any): QuestionAnalysis => {
   // Find most and least popular options
   const sortedResponses = responses.sort((a, b) => (b[1] as number) - (a[1] as number));
   const mostPopular = sortedResponses[0];
-  const leastPopular = sortedResponses[sortedResponses.length - 1];
   
   const topChoicePercentage = totalResponses > 0 ? 
     Math.round(((mostPopular[1] as number) / totalResponses) * 100) : 0;
@@ -279,11 +287,20 @@ const analyzeChoiceQuestion = (question: any): QuestionAnalysis => {
 };
 
 const analyzeSlider = (question: any): QuestionAnalysis => {
-  const { avg_score, response_distribution } = question;
+  const { response_distribution } = question;
   
   let analysis = '';
   let insights = [];
   let recommendations = [];
+  
+  // Calculate average from distribution
+  let totalValue = 0;
+  let totalCount = 0;
+  Object.entries(response_distribution).forEach(([value, count]) => {
+    totalValue += parseFloat(value) * (count as number);
+    totalCount += count as number;
+  });
+  const avgValue = totalCount > 0 ? totalValue / totalCount : 0;
   
   // Assuming 0-100 or 1-10 scale
   const values = Object.keys(response_distribution).map(Number).filter(n => !isNaN(n));
@@ -291,7 +308,7 @@ const analyzeSlider = (question: any): QuestionAnalysis => {
   const minValue = Math.min(...values);
   const range = maxValue - minValue;
   
-  const normalizedScore = range > 0 ? ((avg_score - minValue) / range) * 100 : 50;
+  const normalizedScore = range > 0 ? ((avgValue - minValue) / range) * 100 : 50;
   
   if (normalizedScore >= 75) {
     analysis = 'High Value';
@@ -377,24 +394,20 @@ const analyzeRanking = (question: any): QuestionAnalysis => {
 };
 
 const analyzeMatrix = (question: any): QuestionAnalysis => {
-  const { avg_score } = question;
+  const { total_responses } = question;
   
   let analysis = '';
   let insights = [];
   let recommendations = [];
   
-  if (avg_score >= 4) {
-    analysis = 'Strong Performance';
-    insights.push('Multiple dimensions show positive results');
-    recommendations.push('Maintain current approach across all areas');
-  } else if (avg_score >= 3) {
-    analysis = 'Mixed Performance';
-    insights.push('Some dimensions perform better than others');
-    recommendations.push('Focus on underperforming areas');
+  if (total_responses > 10) {
+    analysis = 'Active Responses';
+    insights.push('Multiple dimensions show user engagement');
+    recommendations.push('Continue monitoring across all areas');
   } else {
-    analysis = 'Needs Improvement';
-    insights.push('Multiple areas require attention');
-    recommendations.push('Develop comprehensive improvement plan');
+    analysis = 'Low Engagement';
+    insights.push('Matrix questions may need simplification');
+    recommendations.push('Consider breaking into separate questions');
   }
   
   return { type: 'Matrix', analysis, insights, recommendations, trend: 'neutral' };

@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { processResponsesByType } from '@/services/responseDataProcessor';
@@ -18,7 +19,6 @@ export interface CategoryAnalytics {
   category: string;
   total_questions: number;
   total_responses: number;
-  avg_score: number;
   completion_rate: number;
   questions: QuestionAnalytics[];
 }
@@ -29,7 +29,6 @@ export interface AnalyticsTableData {
   summary: {
     total_questions: number;
     total_responses: number;
-    overall_avg_score: number;
     overall_completion_rate: number;
   };
 }
@@ -115,7 +114,6 @@ export const useAnalyticsTableData = (organizationId: string) => {
               category: categoryKey,
               total_questions: 0,
               total_responses: 0,
-              avg_score: 0,
               completion_rate: 0,
               questions: []
             });
@@ -146,7 +144,6 @@ export const useAnalyticsTableData = (organizationId: string) => {
         summary: {
           total_questions: totalQuestions,
           total_responses: totalResponses,
-          overall_avg_score: 0,
           overall_completion_rate: Math.round(overallCompletionRate)
         }
       };
@@ -167,7 +164,7 @@ const determineTrend = (
     case 'star rating': {
       const entries = Object.entries(distribution);
       const highRatings = entries.filter(([rating]) => parseInt(rating) >= 4)
-        .reduce((sum, [count]) => sum + count, 0);
+        .reduce((sum, [, count]) => sum + count, 0);
       const highPercentage = (highRatings / totalResponses) * 100;
       
       if (highPercentage > 60) return 'positive';

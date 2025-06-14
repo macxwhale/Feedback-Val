@@ -101,10 +101,10 @@ export const QuestionsAnalyticsTable: React.FC<QuestionsAnalyticsTableProps> = (
                 <SortButton field="total_responses">Responses</SortButton>
               </TableHead>
               <TableHead className="text-right">
-                <SortButton field="avg_score">Avg Score</SortButton>
-              </TableHead>
-              <TableHead className="text-right">
                 <SortButton field="completion_rate">Completion Rate</SortButton>
+              </TableHead>
+              <TableHead>
+                <SortButton field="trend">Trend</SortButton>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -145,19 +145,16 @@ export const QuestionsAnalyticsTable: React.FC<QuestionsAnalyticsTableProps> = (
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      <span className="font-medium">{question.avg_score}/5</span>
-                      <div className="w-12">
-                        <Progress value={(question.avg_score / 5) * 100} className="h-2" />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end space-x-2">
                       <span className="font-medium">{question.completion_rate}%</span>
                       <div className="w-12">
                         <Progress value={question.completion_rate} className="h-2" />
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={question.trend === 'positive' ? 'default' : question.trend === 'negative' ? 'destructive' : 'secondary'}>
+                      {question.trend}
+                    </Badge>
                   </TableCell>
                 </TableRow>
                 
@@ -175,6 +172,17 @@ export const QuestionsAnalyticsTable: React.FC<QuestionsAnalyticsTableProps> = (
                               </div>
                             ))}
                           </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">Insights</h4>
+                          <ul className="text-sm space-y-1">
+                            {question.insights.map((insight, idx) => (
+                              <li key={idx} className="flex items-start space-x-2">
+                                <span className="text-blue-500 mt-1">•</span>
+                                <span>{insight}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
                     </TableCell>

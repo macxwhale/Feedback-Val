@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,13 +50,13 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
     );
   }
 
-  // Analyze sentiment by question (remove score indicators from UI)
+  // Analyze sentiment by question trend instead of score
   const questionSentiments = analyticsData.questions.map(question => {
-    const sentiment = calculateSentiment(question.avg_score);
+    const sentiment = question.trend === 'positive' ? 'positive' : 
+                    question.trend === 'negative' ? 'negative' : 'neutral';
     return {
       ...question,
       sentiment,
-      // Remove sentimentScore property from all displays below
     };
   });
 
@@ -64,12 +65,20 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
   const totalQuestions = questionSentiments.length;
   const overallSentiment = calculateOverallSentiment(sentimentStats);
 
-  // Category sentiment analysis
-  const categorySentiments = analyticsData.categories.map(category => ({
-    ...category,
-    sentiment: calculateSentiment(category.avg_score),
-    sentimentScore: category.avg_score
-  }));
+  // Category sentiment analysis based on question trends
+  const categorySentiments = analyticsData.categories.map(category => {
+    const positiveQuestions = category.questions.filter(q => q.trend === 'positive').length;
+    const totalCategoryQuestions = category.questions.length;
+    const positiveRate = totalCategoryQuestions > 0 ? positiveQuestions / totalCategoryQuestions : 0;
+    
+    const sentiment = positiveRate > 0.6 ? 'positive' : 
+                     positiveRate < 0.3 ? 'negative' : 'neutral';
+    
+    return {
+      ...category,
+      sentiment
+    };
+  });
 
   return (
     <div className="space-y-6">
@@ -95,13 +104,21 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
         </TabsList>
 
         <TabsContent value="questions" className="space-y-4">
-          {/* Remove score displays inside SentimentQuestionsList */}
-          <SentimentQuestionsList questionSentiments={questionSentiments} />
+          <SentimentQuestionsList questionSentiments={questionSentiments.map(q => ({
+            question_text: q.question_text,
+            sentiment: q.sentiment,
+            total_responses: q.total_responses,
+            completion_rate: q.completion_rate
+          }))} />
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-4">
-          {/* Remove score displays inside SentimentCategoriesList */}
-          <SentimentCategoriesList categorySentiments={categorySentiments} />
+          <SentimentCategoriesList categorySentiments={categorySentiments.map(c => ({
+            category: c.category,
+            sentiment: c.sentiment,
+            total_questions: c.total_questions,
+            total_responses: c.total_responses
+          }))} />
         </TabsContent>
       </Tabs>
     </div>

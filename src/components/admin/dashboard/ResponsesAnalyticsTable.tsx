@@ -29,11 +29,11 @@ export const ResponsesAnalyticsTable: React.FC<ResponsesAnalyticsTableProps> = (
   
   // Top performing questions/categories
   const topQuestions = [...questions]
-    .sort((a, b) => b.avg_score - a.avg_score)
+    .sort((a, b) => b.total_responses - a.total_responses)
     .slice(0, 5);
     
   const topCategories = [...categories]
-    .sort((a, b) => b.avg_score - a.avg_score)
+    .sort((a, b) => b.total_responses - a.total_responses)
     .slice(0, 5);
 
   // Response distribution insights
@@ -62,14 +62,14 @@ export const ResponsesAnalyticsTable: React.FC<ResponsesAnalyticsTableProps> = (
       });
     }
     
-    // High scoring questions
-    const highScoringQuestions = questions.filter(q => q.avg_score >= 4.0);
-    if (highScoringQuestions.length > 0) {
+    // Positive trend questions
+    const positiveTrendQuestions = questions.filter(q => q.trend === 'positive');
+    if (positiveTrendQuestions.length > 0) {
       insights.push({
         type: 'success',
-        title: 'High Satisfaction Questions',
-        count: highScoringQuestions.length,
-        description: 'Questions with excellent satisfaction scores'
+        title: 'Positive Trend Questions',
+        count: positiveTrendQuestions.length,
+        description: 'Questions showing positive response patterns'
       });
     }
     
@@ -154,9 +154,9 @@ export const ResponsesAnalyticsTable: React.FC<ResponsesAnalyticsTableProps> = (
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Badge variant="default">{item.avg_score}/5</Badge>
+                    <Badge variant="default">{item.total_responses} responses</Badge>
                     <div className="w-16">
-                      <Progress value={(item.avg_score / 5) * 100} className="h-2" />
+                      <Progress value={item.completion_rate} className="h-2" />
                     </div>
                   </div>
                 </div>

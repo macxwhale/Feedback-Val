@@ -87,9 +87,6 @@ export const CategoriesAnalyticsTable: React.FC<CategoriesAnalyticsTableProps> =
                 <SortButton field="total_responses">Responses</SortButton>
               </TableHead>
               <TableHead className="text-right">
-                <SortButton field="avg_score">Avg Score</SortButton>
-              </TableHead>
-              <TableHead className="text-right">
                 <SortButton field="completion_rate">Completion Rate</SortButton>
               </TableHead>
             </TableRow>
@@ -127,14 +124,6 @@ export const CategoriesAnalyticsTable: React.FC<CategoriesAnalyticsTableProps> =
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      <span className="font-medium">{category.avg_score}/5</span>
-                      <div className="w-12">
-                        <Progress value={(category.avg_score / 5) * 100} className="h-2" />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end space-x-2">
                       <span className="font-medium">{category.completion_rate}%</span>
                       <div className="w-12">
                         <Progress value={category.completion_rate} className="h-2" />
@@ -145,7 +134,7 @@ export const CategoriesAnalyticsTable: React.FC<CategoriesAnalyticsTableProps> =
                 
                 {expandedCategory === category.category && (
                   <TableRow>
-                    <TableCell colSpan={6} className="bg-gray-50">
+                    <TableCell colSpan={5} className="bg-gray-50">
                       <div className="p-4 space-y-4">
                         <h4 className="font-medium">Questions in this category</h4>
                         <div className="space-y-2">
@@ -161,8 +150,10 @@ export const CategoriesAnalyticsTable: React.FC<CategoriesAnalyticsTableProps> =
                               </div>
                               <div className="flex items-center space-x-4 text-sm">
                                 <div className="text-center">
-                                  <div className="font-medium">{question.avg_score}/5</div>
-                                  <div className="text-xs text-gray-500">Score</div>
+                                  <Badge variant={question.trend === 'positive' ? 'default' : question.trend === 'negative' ? 'destructive' : 'secondary'}>
+                                    {question.trend}
+                                  </Badge>
+                                  <div className="text-xs text-gray-500 mt-1">Trend</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="font-medium">{question.completion_rate}%</div>
