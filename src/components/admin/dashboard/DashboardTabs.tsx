@@ -18,6 +18,16 @@ import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
 import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 
+export type DashboardModuleKey = 
+  | 'analytics'
+  | 'customer-insights'
+  | 'sentiment'
+  | 'performance'
+  | 'members'
+  | 'feedback'
+  | 'questions'
+  | 'settings';
+
 interface DashboardTabsProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
