@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -80,12 +81,41 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
 
   return (
     <div>
+      {/* DEV: Show detailed module access for each tab */}
       {isDev && (
         <div className="mb-3 text-xs px-2 py-2 bg-yellow-50 border border-yellow-200 rounded flex flex-col gap-2">
           <div>
             <span className="font-bold">DEBUG:</span> plan_type: <span className="font-mono">{organization?.plan_type ?? "N/A"}</span>
             {' | '}
             features_config: <span className="font-mono break-all">{organization?.features_config ? JSON.stringify(organization.features_config) : "N/A"}</span>
+          </div>
+          <div className="mt-2">
+            <table className="table-auto w-full border text-[11px]">
+              <thead>
+                <tr>
+                  <th className="border px-2 py-1">Tab</th>
+                  <th className="border px-2 py-1">Module Key</th>
+                  <th className="border px-2 py-1">Accessible?</th>
+                  <th className="border px-2 py-1">hasModuleAccess Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tabs.map(tab => (
+                  <tr key={tab.id}>
+                    <td className="border px-2 py-1">{tab.label} ({tab.id})</td>
+                    <td className="border px-2 py-1">{tab.module}</td>
+                    <td className={`border px-2 py-1 font-bold ${hasModuleAccess(tab.module as any) ? 'text-green-700' : 'text-red-700'}`}>
+                      {hasModuleAccess(tab.module as any) ? 'YES' : 'NO'}
+                    </td>
+                    <td className="border px-2 py-1">
+                      <code>
+                        {String(hasModuleAccess(tab.module as any))}
+                      </code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -158,3 +188,4 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     </div>
   );
 };
+
