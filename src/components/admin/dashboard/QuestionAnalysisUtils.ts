@@ -1,15 +1,26 @@
-
 export interface QuestionAnalysis {
   type: string;
   analysis: string;
-  score?: number;
   insights: string[];
   recommendations: string[];
+  trend: 'positive' | 'neutral' | 'negative' | 'mixed';
 }
 
 export const analyzeQuestionByType = (question: any): QuestionAnalysis => {
-  const { question_type, avg_score, completion_rate, total_responses, response_distribution } = question;
+  const { question_type, completion_rate, total_responses, response_distribution, insights, trend } = question;
   
+  // Use the real insights and trend from the processed data
+  if (insights && trend) {
+    return {
+      type: question_type,
+      analysis: getTrendLabel(trend),
+      insights: insights,
+      recommendations: generateRecommendations(question_type, trend, completion_rate, total_responses),
+      trend: trend
+    };
+  }
+  
+  // Fallback for backwards compatibility
   switch (question_type.toLowerCase()) {
     case 'star rating':
       return analyzeStarRating(question);
@@ -44,9 +55,74 @@ export const analyzeQuestionByType = (question: any): QuestionAnalysis => {
         type: question_type,
         analysis: 'Standard Analysis',
         insights: ['Basic response tracking'],
-        recommendations: ['Continue monitoring responses']
+        recommendations: ['Continue monitoring responses'],
+        trend: 'neutral'
       };
   }
+};
+
+const getTrendLabel = (trend: string): string => {
+  switch (trend) {
+    case 'positive':
+      return 'Performing Well';
+    case 'negative':
+      return 'Needs Attention';
+    case 'mixed':
+      return 'Mixed Results';
+    default:
+      return 'Neutral';
+  }
+};
+
+const generateRecommendations = (
+  questionType: string, 
+  trend: string, 
+  completionRate: number, 
+  totalResponses: number
+): string[] => {
+  const recommendations: string[] = [];
+  
+  // General completion rate recommendations
+  if (completionRate < 70) {
+    recommendations.push('Consider simplifying the question or making it optional');
+  } else if (completionRate > 90) {
+    recommendations.push('Question performs well, consider using similar format for others');
+  }
+  
+  // Trend-based recommendations
+  switch (trend) {
+    case 'positive':
+      recommendations.push('Maintain current approach');
+      recommendations.push('Consider highlighting this success');
+      break;
+    case 'negative':
+      recommendations.push('Review question wording for clarity');
+      recommendations.push('Consider follow-up questions to understand issues');
+      break;
+    case 'mixed':
+      recommendations.push('Analyze response patterns for insights');
+      recommendations.push('Consider segmenting results by demographics');
+      break;
+  }
+  
+  // Question type specific recommendations
+  switch (questionType.toLowerCase()) {
+    case 'text input':
+      if (totalResponses > 20) {
+        recommendations.push('Perform sentiment analysis on text responses');
+      }
+      break;
+    case 'star rating':
+    case 'nps score':
+      recommendations.push('Track trends over time');
+      break;
+    case 'single choice':
+    case 'multiple choice':
+      recommendations.push('Consider adding "Other" option if not present');
+      break;
+  }
+  
+  return recommendations.length > 0 ? recommendations : ['Continue monitoring responses'];
 };
 
 const analyzeStarRating = (question: any): QuestionAnalysis => {
@@ -78,7 +154,7 @@ const analyzeStarRating = (question: any): QuestionAnalysis => {
     recommendations.push('Consider simplifying or repositioning');
   }
   
-  return { type: 'Star Rating', analysis, score: avg_score, insights, recommendations };
+  return { type: 'Star Rating', analysis, score: avg_score, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeNPSScore = (question: any): QuestionAnalysis => {
@@ -119,7 +195,7 @@ const analyzeNPSScore = (question: any): QuestionAnalysis => {
     recommendations.push('Address detractor concerns immediately');
   }
   
-  return { type: 'NPS', analysis, score: npsScore, insights, recommendations };
+  return { type: 'NPS', analysis, score: npsScore, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeLikertScale = (question: any): QuestionAnalysis => {
@@ -159,7 +235,7 @@ const analyzeLikertScale = (question: any): QuestionAnalysis => {
     recommendations.push('Reconsider approach or gather more context');
   }
   
-  return { type: 'Likert Scale', analysis, insights, recommendations };
+  return { type: 'Likert Scale', analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeChoiceQuestion = (question: any): QuestionAnalysis => {
@@ -199,7 +275,7 @@ const analyzeChoiceQuestion = (question: any): QuestionAnalysis => {
     insights.push('High engagement with options provided');
   }
   
-  return { type: question_type, analysis, insights, recommendations };
+  return { type: question_type, analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeSlider = (question: any): QuestionAnalysis => {
@@ -231,7 +307,7 @@ const analyzeSlider = (question: any): QuestionAnalysis => {
     recommendations.push('Significant improvement needed');
   }
   
-  return { type: 'Slider', analysis, insights, recommendations };
+  return { type: 'Slider', analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeEmojiRating = (question: any): QuestionAnalysis => {
@@ -276,7 +352,7 @@ const analyzeEmojiRating = (question: any): QuestionAnalysis => {
     recommendations.push('Address underlying issues');
   }
   
-  return { type: 'Emoji Rating', analysis, insights, recommendations };
+  return { type: 'Emoji Rating', analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeRanking = (question: any): QuestionAnalysis => {
@@ -295,7 +371,8 @@ const analyzeRanking = (question: any): QuestionAnalysis => {
     type: 'Ranking',
     analysis: 'Priority Analysis',
     insights,
-    recommendations
+    recommendations,
+    trend: 'neutral'
   };
 };
 
@@ -320,7 +397,7 @@ const analyzeMatrix = (question: any): QuestionAnalysis => {
     recommendations.push('Develop comprehensive improvement plan');
   }
   
-  return { type: 'Matrix', analysis, insights, recommendations };
+  return { type: 'Matrix', analysis, insights, recommendations, trend: 'neutral' };
 };
 
 const analyzeTextInput = (question: any): QuestionAnalysis => {
@@ -349,5 +426,5 @@ const analyzeTextInput = (question: any): QuestionAnalysis => {
     recommendations.push('Perform sentiment and keyword analysis');
   }
   
-  return { type: 'Text Input', analysis, insights, recommendations };
+  return { type: 'Text Input', analysis, insights, recommendations, trend: 'neutral' };
 };

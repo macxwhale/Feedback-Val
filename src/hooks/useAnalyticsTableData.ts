@@ -1,6 +1,6 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { processResponsesByType } from '@/services/responseDataProcessor';
 
 export interface QuestionAnalytics {
   id: string;
@@ -8,9 +8,10 @@ export interface QuestionAnalytics {
   question_type: string;
   category: string;
   total_responses: number;
-  avg_score: number;
   completion_rate: number;
   response_distribution: Record<string, number>;
+  insights: string[];
+  trend: 'positive' | 'neutral' | 'negative' | 'mixed';
 }
 
 export interface CategoryAnalytics {
@@ -53,9 +54,9 @@ export const useAnalyticsTableData = (organizationId: string) => {
           id,
           question_id,
           response_value,
-          score,
           question_category,
-          session_id
+          session_id,
+          created_at
         `)
         .eq('organization_id', organizationId);
 
@@ -78,18 +79,15 @@ export const useAnalyticsTableData = (organizationId: string) => {
           const questionResponses = responses?.filter(r => r.question_id === question.id) || [];
           const uniqueSessions = new Set(questionResponses.map(r => r.session_id));
           
-          // Calculate response distribution based on question type
-          const responseDistribution: Record<string, number> = {};
-          questionResponses.forEach(response => {
-            const value = String(response.response_value);
-            responseDistribution[value] = (responseDistribution[value] || 0) + 1;
-          });
+          // Process real response data
+          const processedData = processResponsesByType(
+            question.question_type || 'text',
+            questionResponses,
+            totalSessions
+          );
 
-          // Calculate average score
-          const scoresWithValues = questionResponses.filter(r => r.score !== null);
-          const avgScore = scoresWithValues.length > 0
-            ? scoresWithValues.reduce((sum, r) => sum + r.score, 0) / scoresWithValues.length
-            : 0;
+          // Determine trend based on question type and responses
+          const trend = determineTrend(question.question_type, processedData.distribution, questionResponses.length);
 
           // Calculate completion rate for this question
           const questionCompletionRate = totalSessions > 0 
@@ -102,9 +100,10 @@ export const useAnalyticsTableData = (organizationId: string) => {
             question_type: question.question_type || 'text',
             category: question.category || 'General',
             total_responses: questionResponses.length,
-            avg_score: Math.round(avgScore * 10) / 10,
             completion_rate: Math.round(questionCompletionRate),
-            response_distribution: responseDistribution
+            response_distribution: processedData.distribution,
+            insights: processedData.insights,
+            trend
           };
 
           questionAnalytics.push(questionAnalytic);
@@ -132,11 +131,7 @@ export const useAnalyticsTableData = (organizationId: string) => {
       // Calculate category averages
       const categoryAnalytics: CategoryAnalytics[] = [];
       categoryMap.forEach(category => {
-        const totalScores = category.questions.reduce((sum, q) => sum + (q.avg_score * q.total_responses), 0);
-        const totalResponses = category.questions.reduce((sum, q) => sum + q.total_responses, 0);
         const avgCompletionRate = category.questions.reduce((sum, q) => sum + q.completion_rate, 0) / category.total_questions;
-
-        category.avg_score = totalResponses > 0 ? Math.round((totalScores / totalResponses) * 10) / 10 : 0;
         category.completion_rate = Math.round(avgCompletionRate);
         categoryAnalytics.push(category);
       });
@@ -144,9 +139,6 @@ export const useAnalyticsTableData = (organizationId: string) => {
       // Calculate overall summary
       const totalQuestions = questions?.length || 0;
       const totalResponses = responses?.length || 0;
-      const overallAvgScore = responses && responses.length > 0
-        ? responses.filter(r => r.score !== null).reduce((sum, r) => sum + r.score, 0) / responses.filter(r => r.score !== null).length
-        : 0;
 
       return {
         questions: questionAnalytics,
@@ -154,7 +146,7 @@ export const useAnalyticsTableData = (organizationId: string) => {
         summary: {
           total_questions: totalQuestions,
           total_responses: totalResponses,
-          overall_avg_score: Math.round(overallAvgScore * 10) / 10,
+          overall_avg_score: 0,
           overall_completion_rate: Math.round(overallCompletionRate)
         }
       };
@@ -162,4 +154,56 @@ export const useAnalyticsTableData = (organizationId: string) => {
     enabled: !!organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+};
+
+const determineTrend = (
+  questionType: string, 
+  distribution: Record<string, number>,
+  totalResponses: number
+): 'positive' | 'neutral' | 'negative' | 'mixed' => {
+  if (totalResponses === 0) return 'neutral';
+  
+  switch (questionType?.toLowerCase()) {
+    case 'star rating': {
+      const entries = Object.entries(distribution);
+      const highRatings = entries.filter(([rating]) => parseInt(rating) >= 4)
+        .reduce((sum, [count]) => sum + count, 0);
+      const highPercentage = (highRatings / totalResponses) * 100;
+      
+      if (highPercentage > 60) return 'positive';
+      if (highPercentage < 30) return 'negative';
+      return 'mixed';
+    }
+    
+    case 'nps score': {
+      let promoters = 0, detractors = 0;
+      Object.entries(distribution).forEach(([score, count]) => {
+        const numScore = parseInt(score) || 0;
+        if (numScore >= 9) promoters += count;
+        else if (numScore <= 6) detractors += count;
+      });
+      
+      const nps = ((promoters - detractors) / totalResponses) * 100;
+      if (nps > 20) return 'positive';
+      if (nps < -20) return 'negative';
+      return 'mixed';
+    }
+    
+    case 'likert scale': {
+      let agreement = 0;
+      Object.entries(distribution).forEach(([response, count]) => {
+        if (response.toLowerCase().includes('agree') && !response.toLowerCase().includes('disagree')) {
+          agreement += count;
+        }
+      });
+      
+      const agreementRate = (agreement / totalResponses) * 100;
+      if (agreementRate > 60) return 'positive';
+      if (agreementRate < 30) return 'negative';
+      return 'mixed';
+    }
+    
+    default:
+      return 'neutral';
+  }
 };

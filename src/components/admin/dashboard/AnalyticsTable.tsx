@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +13,6 @@ import {
 } from '@/components/ui/table';
 import { QuestionDrillDown } from './QuestionDrillDown';
 import { ChevronRight, BarChart3, List, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
-import { analyzeQuestionByType } from './QuestionAnalysisUtils';
 import type { QuestionAnalytics, CategoryAnalytics } from '@/hooks/useAnalyticsTableData';
 
 interface AnalyticsTableProps {
@@ -37,38 +35,43 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
 }) => {
   const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
 
-  const getAnalysisIcon = (analysis: string) => {
-    const lowerAnalysis = analysis.toLowerCase();
-    if (lowerAnalysis.includes('excellent') || lowerAnalysis.includes('strong') || lowerAnalysis.includes('high')) {
-      return <CheckCircle className="w-4 h-4 text-green-600" />;
+  const getAnalysisIcon = (trend: string) => {
+    switch (trend) {
+      case 'positive':
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'negative':
+        return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      case 'mixed':
+        return <TrendingUp className="w-4 h-4 text-yellow-600" />;
+      default:
+        return <TrendingUp className="w-4 h-4 text-gray-600" />;
     }
-    if (lowerAnalysis.includes('good') || lowerAnalysis.includes('moderate')) {
-      return <TrendingUp className="w-4 h-4 text-yellow-600" />;
-    }
-    return <AlertTriangle className="w-4 h-4 text-red-600" />;
   };
 
-  const getAnalysisColor = (analysis: string): string => {
-    const lowerAnalysis = analysis.toLowerCase();
-    if (lowerAnalysis.includes('excellent') || lowerAnalysis.includes('strong') || lowerAnalysis.includes('high')) {
-      return 'text-green-600 bg-green-50';
+  const getAnalysisColor = (trend: string): string => {
+    switch (trend) {
+      case 'positive':
+        return 'text-green-600 bg-green-50';
+      case 'negative':
+        return 'text-red-600 bg-red-50';
+      case 'mixed':
+        return 'text-yellow-600 bg-yellow-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
     }
-    if (lowerAnalysis.includes('good') || lowerAnalysis.includes('moderate')) {
-      return 'text-yellow-600 bg-yellow-50';
-    }
-    return 'text-red-600 bg-red-50';
   };
 
-  // Mock drill-down data generator
-  const generateMockResponses = (questionId: string, totalResponses: number) => {
-    return Array.from({ length: Math.min(totalResponses, 10) }, (_, index) => ({
-      id: `response-${questionId}-${index}`,
-      responseValue: `Response ${index + 1}`,
-      score: Math.floor(Math.random() * 5) + 1,
-      isSatisfactory: Math.random() > 0.3,
-      selectedOption: ['Option A', 'Option B', 'Option C', 'Other'][Math.floor(Math.random() * 4)],
-      createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-    }));
+  const getTrendLabel = (trend: string): string => {
+    switch (trend) {
+      case 'positive':
+        return 'Positive';
+      case 'negative':
+        return 'Needs Attention';
+      case 'mixed':
+        return 'Mixed Results';
+      default:
+        return 'Neutral';
+    }
   };
 
   return (
@@ -98,14 +101,13 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                     <TableHead>Category</TableHead>
                     <TableHead>Responses</TableHead>
                     <TableHead>Completion Rate</TableHead>
-                    <TableHead>Analysis</TableHead>
+                    <TableHead>Trend</TableHead>
                     <TableHead>Key Insights</TableHead>
                     {showDrillDown && <TableHead>Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {questions.map((question) => {
-                    const analysis = analyzeQuestionByType(question);
                     return (
                       <React.Fragment key={question.id}>
                         <TableRow>
@@ -119,17 +121,14 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                           <TableCell>{question.total_responses}</TableCell>
                           <TableCell>{question.completion_rate}%</TableCell>
                           <TableCell>
-                            <div className={`flex items-center space-x-2 px-2 py-1 rounded-md ${getAnalysisColor(analysis.analysis)}`}>
-                              {getAnalysisIcon(analysis.analysis)}
-                              <span className="font-medium">{analysis.analysis}</span>
-                              {analysis.score && (
-                                <span className="text-xs">({analysis.score})</span>
-                              )}
+                            <div className={`flex items-center space-x-2 px-2 py-1 rounded-md ${getAnalysisColor(question.trend)}`}>
+                              {getAnalysisIcon(question.trend)}
+                              <span className="font-medium">{getTrendLabel(question.trend)}</span>
                             </div>
                           </TableCell>
                           <TableCell className="max-w-xs">
                             <div className="text-sm">
-                              {analysis.insights.slice(0, 2).map((insight, idx) => (
+                              {question.insights.slice(0, 2).map((insight, idx) => (
                                 <div key={idx} className="truncate">{insight}</div>
                               ))}
                             </div>
@@ -158,8 +157,8 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                                   questionId={question.id}
                                   questionText={question.question_text}
                                   questionType={question.question_type}
-                                  responses={generateMockResponses(question.id, question.total_responses)}
-                                  avgScore={question.avg_score}
+                                  responses={[]} // Will be fetched inside component
+                                  avgScore={0} // Remove scoring dependency
                                   completionRate={question.completion_rate}
                                 />
                                 
@@ -167,11 +166,11 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <Card>
                                     <CardHeader className="pb-2">
-                                      <CardTitle className="text-sm">Detailed Insights</CardTitle>
+                                      <CardTitle className="text-sm">Response Insights</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                       <ul className="text-sm space-y-1">
-                                        {analysis.insights.map((insight, idx) => (
+                                        {question.insights.map((insight, idx) => (
                                           <li key={idx} className="flex items-start space-x-2">
                                             <span className="text-blue-500 mt-1">•</span>
                                             <span>{insight}</span>
@@ -183,17 +182,17 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                                   
                                   <Card>
                                     <CardHeader className="pb-2">
-                                      <CardTitle className="text-sm">Recommendations</CardTitle>
+                                      <CardTitle className="text-sm">Response Distribution</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                      <ul className="text-sm space-y-1">
-                                        {analysis.recommendations.map((rec, idx) => (
-                                          <li key={idx} className="flex items-start space-x-2">
-                                            <span className="text-green-500 mt-1">→</span>
-                                            <span>{rec}</span>
-                                          </li>
+                                      <div className="text-sm space-y-1">
+                                        {Object.entries(question.response_distribution).slice(0, 3).map(([value, count], idx) => (
+                                          <div key={idx} className="flex justify-between">
+                                            <span className="truncate">{value}</span>
+                                            <span className="font-medium">{count}</span>
+                                          </div>
                                         ))}
-                                      </ul>
+                                      </div>
                                     </CardContent>
                                   </Card>
                                 </div>
