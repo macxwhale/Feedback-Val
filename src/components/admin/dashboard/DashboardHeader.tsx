@@ -29,7 +29,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           />
         </div>
         <div className="flex items-center space-x-4">
-          <NotificationDropdown />
+          <NotificationDropdown organizationId={organizationId} />
           <DashboardSearch 
             organizationId={organizationId}
             onNavigate={onNavigate}
