@@ -3,25 +3,17 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  UserPlus, 
-  MessageSquare, 
-  Download, 
   Settings,
   Plus,
-  Send
 } from 'lucide-react';
 
 interface QuickActionsProps {
   onCreateQuestion: () => void;
-  onInviteUser: () => void;
-  onExportData: () => void;
   onViewSettings: () => void;
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({
   onCreateQuestion,
-  onInviteUser,
-  onExportData,
   onViewSettings
 }) => {
   const actions = [
@@ -31,20 +23,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       icon: Plus,
       onClick: onCreateQuestion,
       variant: 'default' as const
-    },
-    {
-      title: 'Invite User',
-      description: 'Send invitation to new member',
-      icon: UserPlus,
-      onClick: onInviteUser,
-      variant: 'outline' as const
-    },
-    {
-      title: 'Export Data',
-      description: 'Download feedback reports',
-      icon: Download,
-      onClick: onExportData,
-      variant: 'outline' as const
     },
     {
       title: 'Settings',

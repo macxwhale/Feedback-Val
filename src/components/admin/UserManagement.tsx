@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserPlus, Mail, Trash2, Shield } from 'lucide-react';
-import { InviteUserModal } from './InviteUserModal';
+import { Users, Mail, Trash2, Shield } from 'lucide-react';
 import { MembersList } from './MembersList';
 import { PendingInvitations } from './PendingInvitations';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +39,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
   organizationId,
   organizationName
 }) => {
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'members' | 'invitations'>('members');
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -104,45 +101,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
         ...item,
         invited_by: null // We'll handle this separately if needed
       })) as Invitation[];
-    }
-  });
-
-  // Send invitation mutation
-  const inviteUserMutation = useMutation({
-    mutationFn: async ({ email, role }: { email: string; role: string }) => {
-      const { data: userData } = await supabase.auth.getUser();
-      
-      // Insert directly into user_invitations table
-      const { data, error } = await supabase
-        .from('user_invitations')
-        .insert({
-          organization_id: organizationId,
-          email,
-          role,
-          invited_by_user_id: userData.user?.id || '',
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-invitations'] });
-      queryClient.invalidateQueries({ queryKey: ['organization-members'] });
-      setShowInviteModal(false);
-      toast({
-        title: "Invitation sent!",
-        description: "The user will receive an email invitation to join the organization.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to send invitation",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   });
 
@@ -226,10 +184,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     }
   });
 
-  const handleInviteUser = (email: string, role: string) => {
-    inviteUserMutation.mutate({ email, role });
-  };
-
   const handleUpdateRole = (userId: string, newRole: string) => {
     updateRoleMutation.mutate({ userId, newRole });
   };
@@ -258,10 +212,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
           <h2 className="text-2xl font-bold">User Management</h2>
           <p className="text-gray-600">Manage members and invitations for {organizationName}</p>
         </div>
-        <Button onClick={() => setShowInviteModal(true)}>
-          <UserPlus className="w-4 h-4 mr-2" />
-          Invite User
-        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -341,15 +291,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
           invitations={pendingInvitations}
           loading={invitationsLoading}
           onCancelInvitation={handleCancelInvitation}
-        />
-      )}
-
-      {/* Invite User Modal */}
-      {showInviteModal && (
-        <InviteUserModal
-          onClose={() => setShowInviteModal(false)}
-          onInvite={handleInviteUser}
-          loading={inviteUserMutation.isPending}
         />
       )}
     </div>

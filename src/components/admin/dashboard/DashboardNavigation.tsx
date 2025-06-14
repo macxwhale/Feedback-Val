@@ -1,4 +1,3 @@
-
 interface DashboardNavigationProps {
   setActiveTab: (tab: string) => void;
 }
@@ -27,8 +26,6 @@ export const useDashboardNavigation = ({ setActiveTab }: DashboardNavigationProp
 
   const handleQuickActions = {
     onCreateQuestion: () => setActiveTab('questions'),
-    onInviteUser: () => setActiveTab('members'),
-    onExportData: () => setActiveTab('feedback'),
     onViewSettings: () => setActiveTab('settings')
   };
 

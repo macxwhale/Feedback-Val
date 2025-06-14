@@ -26,12 +26,7 @@ export const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organiza
                 <p className="text-gray-600">Organization Dashboard</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button size="sm">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Invite Member
-              </Button>
-            </div>
+            {/* "Invite Member" button removed */}
           </div>
         </div>
       </div>

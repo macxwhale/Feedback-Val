@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuditLogging } from '@/hooks/useAuditLogging';
-import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { UserManagementHeader } from './UserManagementHeader';
@@ -30,7 +29,6 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = Rea
     const [currentPage, setCurrentPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const logAction = useAuditLogging();
     const pageSize = 20;
@@ -98,12 +96,6 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = Rea
       setRoleFilter('all');
       setCurrentPage(0);
     };
-    const handleInviteUser = () => {
-      toast({
-        title: "Feature coming soon",
-        description: "Invite user functionality will be implemented soon.",
-      });
-    };
 
     // Error boundary UI
     if (error || (!isLoading && !isAdmin)) {
@@ -144,7 +136,6 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = Rea
       <div className="space-y-6 mt-8">
         <UserManagementHeader
           organizationName={organizationName}
-          onInviteUser={handleInviteUser}
         />
         <UserManagementStats
           totalCount={totalCount}
