@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { FeedbackResponse } from '@/components/FeedbackForm';
 import { supabase } from '@/integrations/supabase/client';
-import { useOrganizationContext } from '@/context/OrganizationContext';
+import { useOrganization } from '@/context/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFormResponses = () => {
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { organization } = useOrganizationContext();
+  const { organization } = useOrganization();
   const { toast } = useToast();
 
   const handleResponse = (questionId: string, value: any) => {
@@ -36,7 +36,6 @@ export const useFormResponses = () => {
     setIsSubmitting(true);
     try {
       console.log('Submitting feedback via Edge Function...');
-      
       // Call the Edge Function instead of direct database operations
       const { data, error } = await supabase.functions.invoke('submit-feedback', {
         body: {

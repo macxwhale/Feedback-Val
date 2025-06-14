@@ -239,15 +239,21 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
   try {
     // Get current user ID for created_by_user_id
     const { data: { user } } = await supabase.auth.getUser();
-    
+
+    // Accept plan_type only as supported enum, fallback to 'starter'
+    let safePlanType: 'starter' | 'pro' | 'enterprise' = 'starter';
+    if (orgData.plan_type === 'pro' || orgData.plan_type === 'enterprise') {
+      safePlanType = orgData.plan_type;
+    }
+
     const organizationToCreate = {
       ...orgData,
       created_by_user_id: user?.id || orgData.created_by_user_id,
       is_active: true,
       primary_color: orgData.primary_color || '#007ACE',
       secondary_color: orgData.secondary_color || '#073763',
-      plan_type: orgData.plan_type || 'free',
-      max_responses: orgData.max_responses || 100
+      plan_type: safePlanType,
+      max_responses: orgData.max_responses || 100,
     };
 
     const { data, error } = await supabase
@@ -260,7 +266,6 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
       console.error('Error creating organization:', error);
       return null;
     }
-
     return data;
   } catch (error) {
     console.error('Error creating organization:', error);
@@ -270,9 +275,18 @@ export const createOrganization = async (orgData: CreateOrganizationData): Promi
 
 export const updateOrganization = async (id: string, updates: Partial<Organization>): Promise<Organization | null> => {
   try {
+    let safeUpdates = { ...updates };
+    // If updating plan_type, limit to supported enum or fallback to 'starter'
+    if (updates.plan_type !== undefined) {
+      if (updates.plan_type === 'starter' || updates.plan_type === 'pro' || updates.plan_type === 'enterprise') {
+        safeUpdates.plan_type = updates.plan_type;
+      } else {
+        safeUpdates.plan_type = 'starter';
+      }
+    }
     const { data, error } = await supabase
       .from('organizations')
-      .update(updates)
+      .update(safeUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -281,7 +295,6 @@ export const updateOrganization = async (id: string, updates: Partial<Organizati
       console.error('Error updating organization:', error);
       return null;
     }
-
     return data;
   } catch (error) {
     console.error('Error updating organization:', error);

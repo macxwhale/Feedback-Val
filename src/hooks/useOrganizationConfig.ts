@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useOrganizationContext } from '@/context/OrganizationContext';
+import { useOrganization } from '@/context/OrganizationContext';
 import { getOrganizationAssets, getOrganizationTheme, OrganizationAsset, OrganizationTheme } from '@/services/organizationService';
 
 export interface OrganizationConfig {
@@ -10,7 +10,7 @@ export interface OrganizationConfig {
 }
 
 export const useOrganizationConfig = () => {
-  const { organization } = useOrganizationContext();
+  const { organization } = useOrganization();
   const [config, setConfig] = useState<OrganizationConfig>({
     assets: [],
     theme: null,
@@ -27,7 +27,7 @@ export const useOrganizationConfig = () => {
 
       try {
         setIsLoading(true);
-        
+
         const [assets, theme] = await Promise.all([
           getOrganizationAssets(organization.id),
           getOrganizationTheme(organization.id)

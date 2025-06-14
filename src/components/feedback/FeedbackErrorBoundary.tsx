@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useOrganizationContext } from '@/context/OrganizationContext';
 
 interface FeedbackErrorBoundaryProps {
   orgLoading: boolean;
