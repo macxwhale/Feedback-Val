@@ -5,7 +5,6 @@ import { ModernHero } from './ModernHero';
 import { HowItWorks } from './HowItWorks';
 import { DashboardPreview } from './DashboardPreview';
 import { Features } from './Features';
-import { SocialProof } from './SocialProof';
 import { Pricing } from './Pricing';
 import { FinalCTA } from './FinalCTA';
 import { Footer } from './Footer';
@@ -18,7 +17,6 @@ export const LandingPage: React.FC = () => {
       <HowItWorks />
       <DashboardPreview />
       <Features />
-      <SocialProof />
       <Pricing />
       <FinalCTA />
       <Footer />

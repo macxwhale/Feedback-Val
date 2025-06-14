@@ -16,14 +16,12 @@ export const FinalCTA: React.FC = () => {
         <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/5 rounded-full animate-morph blur-lg"></div>
         <div className="absolute bottom-1/3 right-1/3 w-36 h-36 bg-white/5 rounded-full animate-blob blur-xl"></div>
         
-        {/* Fluid shapes */}
         <div className="absolute top-40 right-40 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-flow" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}></div>
         <div className="absolute bottom-40 left-40 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float" style={{ borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' }}></div>
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
-        {/* Trust indicator */}
         <div className="flex items-center justify-center space-x-3 mb-12">
           <div className="relative">
             <Heart className="w-8 h-8 text-white animate-pulse-gentle" />
@@ -32,7 +30,7 @@ export const FinalCTA: React.FC = () => {
           <span className="text-white/90 text-lg font-space font-medium">Join 2,000+ happy customers</span>
         </div>
 
-        <h2 className="text-6xl lg:text-8xl font-space font-black text-white mb-10 leading-tight">
+        <h2 className="text-5xl lg:text-7xl font-space font-black text-white mb-10 leading-tight">
           Ready to{' '}
           <span className="relative">
             transform
@@ -42,27 +40,27 @@ export const FinalCTA: React.FC = () => {
           your customer feedback?
         </h2>
         
-        <p className="text-3xl lg:text-4xl text-white/95 mb-16 leading-relaxed max-w-4xl mx-auto font-medium">
-          Join thousands of businesses using Pulselify to make{' '}
+        <p className="text-2xl lg:text-3xl text-white/95 mb-16 leading-relaxed max-w-4xl mx-auto font-medium">
+          Join thousands of businesses using Pulsify to make{' '}
           <span className="font-bold">better decisions</span>
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-8 justify-center mb-16">
+        <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 max-w-2xl mx-auto">
           <Button 
             size="lg" 
             onClick={() => navigate('/auth')}
-            className="bg-white text-sunset-600 hover:bg-warm-gray-50 text-2xl font-space font-bold px-16 py-8 shadow-2xl group rounded-2xl hover:scale-105 transition-all duration-300"
+            className="bg-white text-sunset-600 hover:bg-warm-gray-50 text-xl font-space font-bold px-12 py-6 shadow-2xl group rounded-full hover:scale-105 transition-all duration-300 w-full sm:w-auto"
           >
-            <span className="flex items-center">
+            <span className="flex items-center justify-center">
               Start your free trial
-              <ArrowRight className="ml-4 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
+              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
             </span>
           </Button>
           
           <Button 
             size="lg" 
             variant="outline"
-            className="border-4 border-white text-white hover:bg-white hover:text-sunset-600 text-2xl font-space font-bold px-16 py-8 rounded-2xl backdrop-blur-sm bg-white/10 hover:scale-105 transition-all duration-300"
+            className="border-3 border-white text-white hover:bg-white hover:text-sunset-600 text-xl font-space font-bold px-12 py-6 rounded-full backdrop-blur-sm bg-white/10 hover:scale-105 transition-all duration-300 w-full sm:w-auto"
           >
             Contact sales
           </Button>

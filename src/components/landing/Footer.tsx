@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
                 <Heart className="w-10 h-10 text-sunset-500" />
                 <div className="absolute inset-0 w-10 h-10 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
               </div>
-              <span className="text-3xl font-space font-bold">Pulselify</span>
+              <span className="text-3xl font-space font-bold">Pulsify</span>
             </div>
             
             <p className="text-xl text-warm-gray-300 dark:text-dark-warm-600 leading-relaxed mb-8 max-w-md font-medium">
@@ -25,15 +25,15 @@ export const Footer: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-sunset-500" />
-                <span className="text-warm-gray-300 dark:text-dark-warm-600">hello@pulselify.com</span>
+                <span className="text-warm-gray-300 dark:text-dark-warm-600">info@pulsify.bunisystems.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-sunset-500" />
-                <span className="text-warm-gray-300 dark:text-dark-warm-600">+1 (555) 123-4567</span>
+                <span className="text-warm-gray-300 dark:text-dark-warm-600">+254207862379</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-sunset-500" />
-                <span className="text-warm-gray-300 dark:text-dark-warm-600">San Francisco, CA</span>
+                <span className="text-warm-gray-300 dark:text-dark-warm-600">Nairobi, Kenya</span>
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
         <div className="border-t border-warm-gray-700 dark:border-dark-warm-300 pt-12 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-8 mb-6 md:mb-0">
             <p className="text-warm-gray-400 dark:text-dark-warm-500 font-medium">
-              © 2024 Pulselify. All rights reserved.
+              © 2024 Pulsify. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <a href="#" className="text-warm-gray-400 dark:text-dark-warm-500 hover:text-sunset-400 transition-colors duration-300">
