@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Organization } from '@/services/organizationService';
-import { Building2, Calendar, Users, Settings, UserPlus } from 'lucide-react';
+import { Building2, Calendar, Users, UserPlus } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { EditOrganizationModal } from './EditOrganizationModal';
@@ -25,15 +23,6 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   const [editedOrg, setEditedOrg] = useState(org);
   const isDev = process.env.NODE_ENV !== 'production';
 
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'free': return 'bg-gray-100 text-gray-700';
-      case 'pro': return 'bg-blue-100 text-blue-700';
-      case 'enterprise': return 'bg-purple-100 text-purple-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
   return (
     <>
       <Card className={`transition-all ${editedOrg.is_active ? 'border-green-200' : 'border-red-200 opacity-75'}`}>
@@ -46,12 +35,10 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <h3 className="text-lg font-semibold">{editedOrg.name}</h3>
-                  <Badge variant={editedOrg.is_active ? 'default' : 'secondary'}>
+                  {/* Show Active/Inactive badge only */}
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${editedOrg.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
                     {editedOrg.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                  <Badge className={getPlanColor(editedOrg.plan_type || 'free')}>
-                    {(editedOrg.plan_type || 'free').toUpperCase()}
-                  </Badge>
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
                   <div className="flex items-center space-x-2">
@@ -109,19 +96,7 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
                   </DialogContent>
                 </Dialog>
               </div>
-              <Select
-                value={editedOrg.plan_type || 'free'}
-                onValueChange={(value) => onUpdatePlan(editedOrg.id, value)}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="pro">Pro</SelectItem>
-                  <SelectItem value="enterprise">Enterprise</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Removed plan select and plan badge */}
             </div>
           </div>
           {isDev && (

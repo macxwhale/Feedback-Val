@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Organization, OrganizationAsset, OrganizationTheme, CreateOrganizationData } from './organizationService.types';
 
 export interface Organization {
   id: string;
