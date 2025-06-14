@@ -6,7 +6,6 @@ import { CompactProgressBar } from './CompactProgressBar';
 import { MobileProgressBar } from './MobileProgressBar';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 import { useDynamicBranding } from '@/hooks/useDynamicBranding';
-import { ProgressInsights } from './ProgressInsights';
 
 interface EnhancedProgressBarProps {
   currentQuestionIndex: number;
@@ -54,14 +53,6 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
         completedQuestions={completedQuestions}
       />
 
-      <ProgressInsights
-        currentIndex={currentQuestionIndex}
-        totalQuestions={totalQuestions}
-        completedQuestions={completedQuestions}
-        estimatedTimeRemaining={estimatedTimeRemaining}
-        averageResponseTime={averageResponseTime}
-      />
-      
       <MotivationalProgress
         currentIndex={currentQuestionIndex}
         totalQuestions={totalQuestions}
@@ -72,6 +63,8 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
         currentIndex={currentQuestionIndex}
         totalQuestions={totalQuestions}
         completedQuestions={completedQuestions}
+        estimatedTimeRemaining={estimatedTimeRemaining}
+        averageResponseTime={averageResponseTime}
       />
     </div>
   );

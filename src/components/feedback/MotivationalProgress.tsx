@@ -14,7 +14,6 @@ export const MotivationalProgress: React.FC<MotivationalProgressProps> = ({
   completedQuestions
 }) => {
   const progress = ((currentIndex + 1) / totalQuestions) * 100;
-  const completionRate = (completedQuestions.length / totalQuestions) * 100;
 
   const getMotivationalMessage = () => {
     if (progress < 25) return "Great start! Your feedback matters.";
@@ -41,17 +40,6 @@ export const MotivationalProgress: React.FC<MotivationalProgressProps> = ({
         <div className="text-sm font-bold text-orange-600">
           {Math.round(progress)}%
         </div>
-      </div>
-      
-      <div className="relative w-full bg-white/60 rounded-full h-3 overflow-hidden">
-        <div 
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-orange-500 rounded-full transition-all duration-700"
-          style={{ width: `${progress}%` }}
-        />
-        <div 
-          className="absolute top-0 left-0 h-full bg-green-400/40 rounded-full transition-all duration-500"
-          style={{ width: `${completionRate}%` }}
-        />
       </div>
     </div>
   );
