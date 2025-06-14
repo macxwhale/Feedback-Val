@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,9 +19,6 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				'space-grotesk': ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -64,11 +62,7 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				'sunset-orange': '#FF6B35',
-				'golden-yellow': '#FFC93C',
-				'warm-coral': '#F67280',
-				'slate-dark': '#22272B'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -121,20 +115,6 @@ export default {
 						transform: 'scale(1.1)',
 						opacity: '0.8'
 					}
-				},
-				'pulse-ring': {
-					'0%': {
-						transform: 'scale(0.95)',
-						opacity: '0.7',
-					},
-					'60%': {
-						transform: 'scale(1.15)',
-						opacity: '0.32',
-					},
-					'100%': {
-						transform: 'scale(1.5)',
-						opacity: '0',
-					},
 				}
 			},
 			animation: {
@@ -142,12 +122,9 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',
-				'pulse-success': 'pulse-success 0.5s ease-in-out',
-				'pulse-ring': 'pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'pulse-success': 'pulse-success 0.5s ease-in-out'
 			}
 		}
 	},
-	plugins: [
-		require("tailwindcss-animate")
-	],
+	plugins: [require("tailwindcss-animate")],
 } satisfies Config;

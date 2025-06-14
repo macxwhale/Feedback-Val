@@ -1,50 +1,54 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { HeroVisual } from "./HeroVisual";
+import { ArrowRight, Star, PlayCircle } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   const navigate = useNavigate();
+
   return (
-    <section className="relative pt-32 pb-16 bg-gradient-to-b from-[#fcfbf8] via-[#f3f5fa] to-[#f5f5fa]">
-      <div className="absolute inset-0 z-0">
-        <div className="w-full h-full opacity-80 bg-gradient-to-tl from-blue-50 via-white to-purple-50"></div>
-      </div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-        <div className="text-center max-w-3xl mx-auto">
-          <Badge className="mb-7 bg-black/5 text-blue-600 px-4 shadow font-medium tracking-wide backdrop-blur-xl animate-fade-in">
-            Trusted by 2,000+ teams worldwide
+    <section className="pt-32 pb-20 bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-4xl mx-auto">
+          <Badge className="mb-6 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+            <Star className="w-3 h-3 mr-1" />
+            Trusted by 2,000+ businesses
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight text-gray-800 drop-shadow-sm animate-fade-in">
-            Customer Feedback, <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-orange-300 bg-clip-text text-transparent">Transformed Into Clarity</span>
+          
+          <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Turn Customer Feedback Into
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Growth</span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in">
-            Pulselify turns every signal into stories—helping teams grow, retain, and build trust through true listening and actionable insights.
+          
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Collect, analyze, and act on customer feedback with AI-powered insights. 
+            Make data-driven decisions that actually move the needle.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
-            <Button
-              size="lg"
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Button 
+              size="lg" 
               onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-blue-600 via-purple-500 to-orange-400 text-white text-lg px-8 py-4 rounded-full shadow-lg hover:brightness-110 hover:scale-105 animate-scale-in"
+              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 shadow-lg shadow-blue-600/25 group"
             >
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
+              Start free trial
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
-              size="lg"
+            <Button 
+              size="lg" 
               variant="outline"
-              className="border-0 bg-white/80 text-blue-700 px-8 py-4 rounded-full shadow hover:bg-blue-50 hover:text-blue-800 font-medium transition animate-scale-in"
-              onClick={() => window.scrollTo({top: 1200, behavior: 'smooth'})}
+              className="text-gray-700 border-gray-300 hover:bg-gray-50 text-lg px-8 py-4 group"
             >
-              Request Live Demo
+              <PlayCircle className="mr-2 h-4 w-4" />
+              Watch demo
             </Button>
           </div>
-          <p className="text-sm text-gray-400 animate-fade-in">
-            No credit card required &nbsp;•&nbsp; Onboarding in minutes &nbsp;•&nbsp; Personal support
+
+          <p className="text-sm text-gray-500">
+            No credit card required • 14-day free trial • Setup in under 5 minutes
           </p>
-          <HeroVisual />
         </div>
       </div>
     </section>
