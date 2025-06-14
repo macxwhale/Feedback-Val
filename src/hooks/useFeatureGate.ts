@@ -62,6 +62,20 @@ export const useFeatureGate = () => {
   const { organization } = useOrganization();
   const plan = organization?.plan_type || "starter"; // fallback to starter
 
+  // === Add Debug Logging ===
+  if (typeof window !== "undefined") {
+    // only log in browser
+    console.log(
+      "DEBUG [useFeatureGate]:",
+      {
+        effective_plan_type: organization?.plan_type,
+        features_config: organization?.features_config,
+        PLAN_FEATURE_MATRIX: PLAN_FEATURE_MATRIX[plan],
+        organization
+      }
+    );
+  }
+
   // This allows forced override via features_config if present
   function hasFeature(feature: keyof typeof PLAN_FEATURE_MATRIX["starter"]) {
     if (!organization) return false;

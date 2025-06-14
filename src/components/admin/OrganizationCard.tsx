@@ -23,6 +23,7 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editedOrg, setEditedOrg] = useState(org);
+  const isDev = process.env.NODE_ENV !== 'production';
 
   const getPlanColor = (plan: string) => {
     switch (plan) {
@@ -123,6 +124,20 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
               </Select>
             </div>
           </div>
+          {isDev && (
+            <div className="mt-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+              <div>
+                <span className="font-bold">DEBUG:</span> plan_type:{" "}
+                <span className="font-mono">{editedOrg.plan_type ?? "N/A"}</span><br />
+                features_config:{" "}
+                <span className="font-mono break-all">
+                  {editedOrg.features_config
+                    ? JSON.stringify(editedOrg.features_config)
+                    : "N/A"}
+                </span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       {editOpen && (

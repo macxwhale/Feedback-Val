@@ -46,6 +46,10 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   const { hasModuleAccess, plan } = useFeatureGate();
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<null | string>(null);
 
+  // ========= Diagnostics for Debugging =========
+  // Visible debug block for org plan/features_config
+  const isDev = process.env.NODE_ENV !== 'production';
+
   // Tab configuration w/ gating info
   const tabs = [
     { id: 'overview', label: 'Analytics', icon: BarChart3, module: 'analytics' },
@@ -76,6 +80,15 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
 
   return (
     <div>
+      {isDev && (
+        <div className="mb-3 text-xs px-2 py-2 bg-yellow-50 border border-yellow-200 rounded flex flex-col gap-2">
+          <div>
+            <span className="font-bold">DEBUG:</span> plan_type: <span className="font-mono">{organization?.plan_type ?? "N/A"}</span>
+            {' | '}
+            features_config: <span className="font-mono break-all">{organization?.features_config ? JSON.stringify(organization.features_config) : "N/A"}</span>
+          </div>
+        </div>
+      )}
       {/* Upgrade Prompt Modal */}
       {showUpgradePrompt && (
         <UpgradePrompt lockedFeature={showUpgradePrompt} onClose={() => setShowUpgradePrompt(null)} />
