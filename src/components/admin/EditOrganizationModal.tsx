@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Organization, updateOrganization } from "@/services/organizationService";
+import { updateOrganization } from "@/services/organizationService";
+import type { Organization } from "@/services/organizationService.types";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditOrganizationModalProps {

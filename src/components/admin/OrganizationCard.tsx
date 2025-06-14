@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Organization } from '@/services/organizationService';
+import type { Organization } from '@/services/organizationService.types';
 import { Building2, Calendar, Users, UserPlus } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Organization } from '@/services/organizationService';
+import type { Organization } from '@/services/organizationService.types';
 
 interface OrganizationStatsProps {
   organizations: Organization[];

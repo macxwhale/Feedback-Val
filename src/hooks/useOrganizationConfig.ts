@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useOrganization } from '@/context/OrganizationContext';
-import { getOrganizationAssets, getOrganizationTheme, OrganizationAsset, OrganizationTheme } from '@/services/organizationService';
+import { getOrganizationAssets, getOrganizationTheme } from '@/services/organizationService';
+import type { OrganizationAsset, OrganizationTheme } from '@/services/organizationService.types';
 
 export interface OrganizationConfig {
   assets: OrganizationAsset[];

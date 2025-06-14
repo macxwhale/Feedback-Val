@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllOrganizations, updateOrganization, createOrganization, CreateOrganizationData } from '@/services/organizationService';
+import { getAllOrganizations, updateOrganization, createOrganization } from '@/services/organizationService';
+import type { CreateOrganizationData } from '@/services/organizationService.types';
 import { AdminStats } from './AdminStats';
 import { FormConfig } from './FormConfig';
 import { WebhookSettings } from './WebhookSettings';

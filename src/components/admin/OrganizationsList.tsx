@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { Organization } from '@/services/organizationService';
+import type { Organization } from '@/services/organizationService.types';
 import { OrganizationStats } from './OrganizationStats';
 import { OrganizationCard } from './OrganizationCard';
 
