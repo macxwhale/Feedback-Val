@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { WelcomeScreen } from './feedback/WelcomeScreen';
 import { EnhancedLoading } from './feedback/EnhancedLoading';
@@ -9,7 +8,6 @@ import { FeedbackErrorBoundary } from './feedback/FeedbackErrorBoundary';
 import { useFeedbackForm } from '@/hooks/useFeedbackForm';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
-import { useSaveContinue } from '@/hooks/useSaveContinue';
 import { useOrganization } from '@/hooks/useOrganization';
 
 export interface QuestionConfig {
@@ -59,16 +57,9 @@ const FeedbackForm = () => {
   const {
     trackQuestionStart,
     trackQuestionResponse,
-    getAverageResponseTime,
-    getEstimatedTimeRemaining
   } = useAnalytics(responses, questions.length, finalResponses);
 
   const { hasConsented, showPrivacyNotice, acceptPrivacy } = usePrivacyConsent();
-  const { saveProgress, pauseAndExit, hasUnsavedChanges } = useSaveContinue(
-    responses,
-    currentQuestionIndex,
-    completedQuestions
-  );
 
   useEffect(() => {
     if (!showWelcome && questions.length > 0) {
@@ -138,14 +129,9 @@ const FeedbackForm = () => {
         completedQuestions={completedQuestions}
         hasConsented={hasConsented}
         canGoNext={isCurrentQuestionAnswered()}
-        estimatedTimeRemaining={getEstimatedTimeRemaining(currentQuestionIndex)}
-        averageResponseTime={getAverageResponseTime()}
-        hasUnsavedChanges={hasUnsavedChanges}
         onQuestionResponse={handleQuestionResponse}
         onNext={goToNext}
         onPrevious={goToPrevious}
-        onSaveProgress={saveProgress}
-        onPauseAndExit={pauseAndExit}
         getValidationResult={getValidationResult}
       />
 
