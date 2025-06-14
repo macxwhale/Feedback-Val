@@ -29,7 +29,7 @@ export const FeedbackInbox: React.FC<FeedbackInboxProps> = ({ organizationId }) 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['feedbackResponses', organizationId, page, pageSize],
     queryFn: () => getPaginatedFeedbackResponses(organizationId, page, pageSize),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 
   const responses = data?.data as FeedbackResponse[] | null;
