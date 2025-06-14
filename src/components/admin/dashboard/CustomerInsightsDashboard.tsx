@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,26 +48,37 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
     );
   }
 
-  // Analyze completion patterns
+  // CALCULATION EXPLANATIONS (For user's clarity)
+  /*
+    Avg Completion Rate: 
+      (Sum of all question completion rates) / number of questions
+
+    High Performers:
+      Questions with completion_rate >= 90% 
+      (Threshold, adjustable by user).
+
+    Need Attention:
+      Questions with completion_rate < 70%.
+
+    Low Completion:
+      completion_rate < 80%
+  */
   const completionRates = analyticsData.questions.map(q => q.completion_rate);
   const avgCompletionRate = completionRates.reduce((sum, rate) => sum + rate, 0) / completionRates.length;
   
-  // Identify recurring themes
   const themes = analyticsData.questions.reduce((acc, question) => {
-    if (question.avg_score < 3) {
-      acc.lowPerforming.push(question);
-    } else if (question.avg_score >= 4.5) {
-      acc.highPerforming.push(question);
-    }
-    
     if (question.completion_rate < 80) {
       acc.lowCompletion.push(question);
+    } else if (question.completion_rate >= 90) {
+      acc.highPerforming.push(question);
     }
-    
+    if (question.completion_rate < 70) {
+      acc.needAttention.push(question);
+    }
     return acc;
   }, {
-    lowPerforming: [] as any[],
     highPerforming: [] as any[],
+    needAttention: [] as any[],
     lowCompletion: [] as any[]
   });
 
@@ -104,7 +114,7 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
             </div>
             <div className="mt-2">
               <div className="text-2xl font-bold">{themes.highPerforming.length}</div>
-              <div className="text-sm text-gray-500">questions scoring 4.5+</div>
+              <div className="text-sm text-gray-500">questions ≥ 90% completion</div>
             </div>
           </CardContent>
         </Card>
@@ -116,8 +126,8 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
               <span className="text-sm font-medium text-gray-600">Need Attention</span>
             </div>
             <div className="mt-2">
-              <div className="text-2xl font-bold">{themes.lowPerforming.length}</div>
-              <div className="text-sm text-gray-500">questions scoring below 3</div>
+              <div className="text-2xl font-bold">{themes.needAttention.length}</div>
+              <div className="text-sm text-gray-500">questions &lt; 70% completion</div>
             </div>
           </CardContent>
         </Card>
@@ -130,7 +140,7 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
             </div>
             <div className="mt-2">
               <div className="text-2xl font-bold">{themes.lowCompletion.length}</div>
-              <div className="text-sm text-gray-500">questions below 80%</div>
+              <div className="text-sm text-gray-500">questions &lt; 80% completion</div>
             </div>
           </CardContent>
         </Card>
@@ -160,7 +170,6 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold">{category.avg_score}/5</div>
                       <div className="text-sm text-gray-500">{category.completion_rate}% completion</div>
                     </div>
                   </div>
@@ -182,9 +191,6 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
                     <div key={index} className="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
                       <div className="font-medium text-sm">{question.question_text}</div>
                       <div className="flex justify-between items-center mt-2">
-                        <Badge className="bg-green-100 text-green-800">
-                          {question.avg_score}/5
-                        </Badge>
                         <span className="text-sm text-gray-600">{question.total_responses} responses</span>
                       </div>
                     </div>
@@ -202,18 +208,15 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {themes.lowPerforming.slice(0, 5).map((question, index) => (
+                  {themes.needAttention.slice(0, 5).map((question, index) => (
                     <div key={index} className="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
                       <div className="font-medium text-sm">{question.question_text}</div>
                       <div className="flex justify-between items-center mt-2">
-                        <Badge className="bg-red-100 text-red-800">
-                          {question.avg_score}/5
-                        </Badge>
                         <span className="text-sm text-gray-600">{question.total_responses} responses</span>
                       </div>
                     </div>
                   ))}
-                  {themes.lowPerforming.length === 0 && (
+                  {themes.needAttention.length === 0 && (
                     <p className="text-gray-500 text-center py-4">All questions performing well!</p>
                   )}
                 </div>
@@ -240,7 +243,6 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
                     ))}
                   </div>
                 </div>
-
                 <div>
                   <h4 className="font-medium mb-3">Response Distribution</h4>
                   <div className="space-y-2">

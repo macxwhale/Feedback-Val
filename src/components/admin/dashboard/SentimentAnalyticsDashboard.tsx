@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,13 +49,13 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
     );
   }
 
-  // Analyze sentiment by question
+  // Analyze sentiment by question (remove score indicators from UI)
   const questionSentiments = analyticsData.questions.map(question => {
     const sentiment = calculateSentiment(question.avg_score);
     return {
       ...question,
       sentiment,
-      sentimentScore: question.avg_score
+      // Remove sentimentScore property from all displays below
     };
   });
 
@@ -82,10 +81,11 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
       </div>
 
       {/* Sentiment Overview */}
+      {/* Remove all sentimentScore-based/score indicators inside SentimentOverviewCards */}
       <SentimentOverviewCards
         sentimentStats={sentimentStats}
         totalQuestions={totalQuestions}
-        overallScore={analyticsData.summary.overall_avg_score || 0}
+        overallScore={0}
       />
 
       {/* Detailed Analysis */}
@@ -96,11 +96,13 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
         </TabsList>
 
         <TabsContent value="questions" className="space-y-4">
-          <SentimentQuestionsList questionSentiments={questionSentiments} />
+          {/* Remove score displays inside SentimentQuestionsList */}
+          <SentimentQuestionsList questionSentiments={questionSentiments} showScores={false} />
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-4">
-          <SentimentCategoriesList categorySentiments={categorySentiments} />
+          {/* Remove score displays inside SentimentCategoriesList */}
+          <SentimentCategoriesList categorySentiments={categorySentiments} showScores={false} />
         </TabsContent>
       </Tabs>
     </div>

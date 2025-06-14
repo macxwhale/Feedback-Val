@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -41,7 +40,6 @@ export const SentimentOverviewCards: React.FC<SentimentOverviewCardsProps> = ({
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
@@ -62,7 +60,6 @@ export const SentimentOverviewCards: React.FC<SentimentOverviewCardsProps> = ({
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
@@ -83,23 +80,7 @@ export const SentimentOverviewCards: React.FC<SentimentOverviewCardsProps> = ({
           </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-2">
-            <Brain className="w-5 h-5 text-blue-600" />
-            <span className="text-sm font-medium text-gray-600">Sentiment Score</span>
-          </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold text-blue-600">
-              {overallScore.toFixed(1)}/5
-            </div>
-            <div className="text-sm text-gray-500">
-              Overall satisfaction
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Removed overallScore/score display card */}
     </div>
   );
 };

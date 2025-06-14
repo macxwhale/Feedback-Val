@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,6 +59,20 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
     }));
   };
 
+  const analyzeSatisfaction = (question: QuestionAnalytics) => {
+    // Example logic: Category-based satisfaction; can be expanded based on rules.
+    if (question.category.toLowerCase().includes('support') && question.avg_score >= 4) {
+      return "Satisfactory";
+    }
+    if (question.completion_rate >= 90) {
+      return "Satisfactory";
+    }
+    if (question.completion_rate < 70) {
+      return "Low Completion";
+    }
+    return "Needs Review";
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -77,7 +90,6 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
             </TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
-
           <TabsContent value="questions">
             <div className="space-y-4">
               <Table>
@@ -87,8 +99,9 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                     <TableHead>Type</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Responses</TableHead>
-                    <TableHead>Avg Score</TableHead>
+                    {/* Removed Avg Score */}
                     <TableHead>Completion Rate</TableHead>
+                    <TableHead>Satisfaction</TableHead>
                     {showDrillDown && <TableHead>Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -104,11 +117,12 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                         </TableCell>
                         <TableCell>{question.category}</TableCell>
                         <TableCell>{question.total_responses}</TableCell>
-                        <TableCell className={getScoreColor(question.avg_score)}>
-                          {question.avg_score}/5
-                        </TableCell>
-                        <TableCell className={getCompletionColor(question.completion_rate)}>
+                        {/* Remove Avg Score */}
+                        <TableCell>
                           {question.completion_rate}%
+                        </TableCell>
+                        <TableCell>
+                          {analyzeSatisfaction(question)}
                         </TableCell>
                         {showDrillDown && (
                           <TableCell>
@@ -148,7 +162,6 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
               </Table>
             </div>
           </TabsContent>
-
           <TabsContent value="categories">
             <Table>
               <TableHeader>
@@ -156,7 +169,7 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                   <TableHead>Category</TableHead>
                   <TableHead>Questions</TableHead>
                   <TableHead>Total Responses</TableHead>
-                  <TableHead>Avg Score</TableHead>
+                  {/* Removed Avg Score */}
                   <TableHead>Completion Rate</TableHead>
                 </TableRow>
               </TableHeader>
@@ -166,12 +179,8 @@ export const AnalyticsTable: React.FC<AnalyticsTableProps> = ({
                     <TableCell className="font-medium">{category.category}</TableCell>
                     <TableCell>{category.total_questions}</TableCell>
                     <TableCell>{category.total_responses}</TableCell>
-                    <TableCell className={getScoreColor(category.avg_score)}>
-                      {category.avg_score}/5
-                    </TableCell>
-                    <TableCell className={getCompletionColor(category.completion_rate)}>
-                      {category.completion_rate}%
-                    </TableCell>
+                    {/* Remove Avg Score */}
+                    <TableCell>{category.completion_rate}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

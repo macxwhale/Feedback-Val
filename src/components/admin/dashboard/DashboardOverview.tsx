@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Users, 
@@ -26,19 +25,20 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     return <DashboardErrorFallback onRetry={() => refetch()} />;
   }
 
+  // Remove 'Active Members' and 'Avg. Score' metrics:
   const cards = [
-    {
-      title: 'Active Members',
-      value: stats?.active_members || 0,
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      trend: {
-        value: 12,
-        label: 'vs last month',
-        isPositive: true
-      }
-    },
+    // {
+    //   title: 'Active Members',
+    //   value: stats?.active_members || 0,
+    //   icon: Users,
+    //   color: 'text-blue-600',
+    //   bgColor: 'bg-blue-50',
+    //   trend: {
+    //     value: 12,
+    //     label: 'vs last month',
+    //     isPositive: true
+    //   }
+    // },
     {
       title: 'Total Questions',
       value: stats?.total_questions || 0,
@@ -86,28 +86,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         label: 'vs last month',
         isPositive: true
       }
-    },
-    {
-      title: 'Avg. Score',
-      value: stats?.avg_session_score || 0,
-      icon: Target,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      suffix: '/5',
-      trend: {
-        value: 5,
-        label: 'improvement',
-        isPositive: true
-      }
     }
+    // Removed 'Avg. Score' card.
   ];
 
   return (
     <DashboardErrorBoundary>
       <div className="space-y-6">
         <StatsCards cards={cards} isLoading={isLoading} />
-        
-        {/* Additional completion rate badge for completed sessions card */}
+        {/* 
+          Completion rate badge remains, since it's not a score.
+        */}
         {!isLoading && stats && stats.total_sessions > 0 && (
           <div className="flex justify-center">
             <Badge variant="outline" className="text-sm">
