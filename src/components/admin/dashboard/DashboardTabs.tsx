@@ -16,6 +16,16 @@ import { AdvancedDashboardView } from './AdvancedDashboardView';
 import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
 import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
+import { tabSections } from './DashboardTabSections';
+import { SectionLabel } from './SectionLabel';
+import { AdvancedDashboardTab } from './tabs/AdvancedDashboardTab';
+import { CustomerInsightsTab } from './tabs/CustomerInsightsTab';
+import { SentimentTab } from './tabs/SentimentTab';
+import { PerformanceTab } from './tabs/PerformanceTab';
+import { MembersTab } from './tabs/MembersTab';
+import { FeedbackTab } from './tabs/FeedbackTab';
+import { QuestionsTab } from './tabs/QuestionsTab';
+import { SettingsTab } from './tabs/SettingsTab';
 
 export type DashboardModuleKey = 
   | 'overview'
@@ -96,13 +106,13 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     <div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full">
-          {tabSections.map((section, i) => (
+          {tabSections.map((section) => (
             <React.Fragment key={section.label}>
               <SectionLabel>{section.label}</SectionLabel>
               {section.tabs.map(({ id, label, icon: Icon }) => (
-                <TabsTrigger 
-                  key={id} 
-                  value={id} 
+                <TabsTrigger
+                  key={id}
+                  value={id}
                   className="flex items-center space-x-2"
                 >
                   <Icon className="w-4 h-4" />
@@ -113,46 +123,37 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           ))}
         </TabsList>
 
-        {/* Core Analytics: Only show analytics content/cards on this tab */}
         <TabsContent value="overview" className="space-y-6">
-          <AdvancedDashboardView
-            organizationId={organization.id}
-            organizationName={organization.name}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
+          <AdvancedDashboardTab
+            organization={organization}
             stats={stats}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             isLiveActivity={isLiveActivity}
             setIsLiveActivity={setIsLiveActivity}
             handleQuickActions={handleQuickActions}
           />
         </TabsContent>
-
-        {/* Customer Intelligence */}
         <TabsContent value="customer-insights">
-          <CustomerInsightsDashboard organizationId={organization.id} />
+          <CustomerInsightsTab organizationId={organization.id} />
         </TabsContent>
         <TabsContent value="sentiment">
-          <SentimentAnalyticsDashboard organizationId={organization.id} />
+          <SentimentTab organizationId={organization.id} />
         </TabsContent>
         <TabsContent value="performance">
-          <PerformanceAnalyticsDashboard organizationId={organization.id} />
+          <PerformanceTab organizationId={organization.id} />
         </TabsContent>
-
-        {/* Team & Settings */}
         <TabsContent value="members">
-          <EnhancedUserManagement 
-            organizationId={organization.id}
-            organizationName={organization.name}
-          />
+          <MembersTab organization={organization} />
         </TabsContent>
         <TabsContent value="feedback">
-          <OrganizationSpecificStats organizationId={organization.id} />
+          <FeedbackTab organizationId={organization.id} />
         </TabsContent>
         <TabsContent value="questions">
-          <QuestionsManagement />
+          <QuestionsTab />
         </TabsContent>
         <TabsContent value="settings">
-          <OrganizationSettingsTab organization={organization} />
+          <SettingsTab organization={organization} />
         </TabsContent>
       </Tabs>
     </div>
