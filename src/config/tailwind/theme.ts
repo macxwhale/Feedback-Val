@@ -12,8 +12,9 @@ export const themeConfig = {
   },
   extend: {
     fontFamily: {
-      'space': ['Space Grotesk', 'system-ui', 'sans-serif'],
-      'inter': ['Inter', 'system-ui', 'sans-serif'],
+      'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      'space': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      'inter': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
     },
     colors,
     borderRadius: {
