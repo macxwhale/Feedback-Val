@@ -81,7 +81,6 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
       </div>
 
       {/* Sentiment Overview */}
-      {/* Remove all sentimentScore-based/score indicators inside SentimentOverviewCards */}
       <SentimentOverviewCards
         sentimentStats={sentimentStats}
         totalQuestions={totalQuestions}
@@ -97,12 +96,12 @@ export const SentimentAnalyticsDashboard: React.FC<SentimentAnalyticsDashboardPr
 
         <TabsContent value="questions" className="space-y-4">
           {/* Remove score displays inside SentimentQuestionsList */}
-          <SentimentQuestionsList questionSentiments={questionSentiments} showScores={false} />
+          <SentimentQuestionsList questionSentiments={questionSentiments} />
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-4">
           {/* Remove score displays inside SentimentCategoriesList */}
-          <SentimentCategoriesList categorySentiments={categorySentiments} showScores={false} />
+          <SentimentCategoriesList categorySentiments={categorySentiments} />
         </TabsContent>
       </Tabs>
     </div>
