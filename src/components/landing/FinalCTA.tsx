@@ -8,16 +8,13 @@ export const FinalCTA: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative py-32 bg-gradient-to-br from-sunset-500 via-coral-500 to-golden-500 overflow-hidden">
+    <section className="relative py-32 bg-gradient-to-br from-purple-600 via-blue-600 to-green-500 overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-40 h-40 bg-white/10 rounded-full animate-float blur-xl"></div>
         <div className="absolute bottom-20 right-20 w-32 h-32 bg-white/10 rounded-full animate-pulse-gentle blur-lg"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/5 rounded-full animate-morph blur-lg"></div>
-        <div className="absolute bottom-1/3 right-1/3 w-36 h-36 bg-white/5 rounded-full animate-blob blur-xl"></div>
-        
-        <div className="absolute top-40 right-40 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-flow" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}></div>
-        <div className="absolute bottom-40 left-40 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float" style={{ borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' }}></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/5 rounded-full animate-pulse-gentle blur-lg"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-36 h-36 bg-white/5 rounded-full animate-float blur-xl"></div>
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -49,8 +46,7 @@ export const FinalCTA: React.FC = () => {
           <Button 
             size="lg" 
             onClick={() => navigate('/auth')}
-            variant="outline"
-            className="w-full"
+            className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 hover:border-white/50 rounded-full font-bold text-lg px-8 py-4 transition-all duration-300 hover:scale-105"
           >
             <span className="flex items-center justify-center">
               Start Free
@@ -60,8 +56,7 @@ export const FinalCTA: React.FC = () => {
           
           <Button 
             size="lg" 
-            variant="outline"
-            className="w-full"
+            className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 hover:border-white/40 rounded-full font-bold text-lg px-8 py-4 transition-all duration-300 hover:scale-105"
           >
             Contact Sales
           </Button>
