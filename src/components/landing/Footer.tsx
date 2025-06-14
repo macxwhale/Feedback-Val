@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Heart, Mail, MapPin, Phone } from 'lucide-react';
+import { Activity, Mail, MapPin, Phone } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-2">
             <div className="flex items-center space-x-3 mb-8">
               <div className="relative">
-                <Heart className="w-10 h-10 text-sunset-500" />
+                <Activity className="w-10 h-10 text-sunset-500" />
                 <div className="absolute inset-0 w-10 h-10 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
               </div>
               <span className="text-3xl font-space font-bold">Pulsify</span>

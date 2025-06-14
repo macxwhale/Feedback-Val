@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, Activity } from 'lucide-react';
 import { FluidBackground } from './FluidBackground';
 import { FloatingMetrics } from './FloatingMetrics';
 
@@ -34,11 +34,11 @@ export const ModernHero: React.FC = () => {
           <div className="space-y-8">
             <div className="flex items-center justify-center space-x-4 mb-6">
               <div className="relative">
-                <Heart className="w-12 h-12 text-sunset-500 animate-pulse-gentle" />
+                <Activity className="w-12 h-12 text-sunset-500 animate-pulse-gentle" />
                 <div className="absolute inset-0 w-12 h-12 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
               </div>
               <h1 className="text-6xl lg:text-8xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900 tracking-tight">
-                Pulselify
+                Pulsify
               </h1>
             </div>
             
@@ -67,14 +67,14 @@ export const ModernHero: React.FC = () => {
             drive real business results.
           </p>
 
-          {/* Premium CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
+          {/* Updated CTA buttons */}
+          <div className="flex flex-col gap-6 justify-center items-center pt-8 max-w-md mx-auto">
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 hover:from-sunset-600 hover:via-coral-600 hover:to-golden-500 text-white font-bold px-12 py-6 text-xl rounded-2xl shadow-2xl shadow-sunset-500/30 hover:shadow-3xl hover:shadow-sunset-500/50 transition-all duration-500 transform hover:scale-105 group relative overflow-hidden"
+              className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 hover:from-sunset-600 hover:via-coral-600 hover:to-golden-500 text-white font-bold px-12 py-6 text-xl rounded-full shadow-2xl shadow-sunset-500/30 hover:shadow-3xl hover:shadow-sunset-500/50 transition-all duration-500 transform hover:scale-105 group relative overflow-hidden w-full"
             >
-              <span className="relative z-10 flex items-center">
+              <span className="relative z-10 flex items-center justify-center">
                 Start Your Journey
                 <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
@@ -83,11 +83,10 @@ export const ModernHero: React.FC = () => {
             
             <Button 
               size="lg" 
-              variant="outline"
               onClick={() => navigate('/auth')}
-              className="border-2 border-warm-gray-300 dark:border-dark-warm-300 text-warm-gray-700 dark:text-dark-warm-700 hover:bg-warm-gray-50 dark:hover:bg-dark-warm-100 font-bold px-12 py-6 text-xl rounded-2xl backdrop-blur-sm bg-white/50 dark:bg-dark-warm-100/50 hover:shadow-xl transition-all duration-300"
+              className="border-2 border-warm-gray-300 dark:border-dark-warm-300 text-warm-gray-700 dark:text-dark-warm-700 hover:bg-warm-gray-50 dark:hover:bg-dark-warm-100 font-bold px-12 py-6 text-xl rounded-full backdrop-blur-sm bg-white/50 dark:bg-dark-warm-100/50 hover:shadow-xl transition-all duration-300 w-full"
             >
-              Watch Demo
+              Free Trial
             </Button>
           </div>
 

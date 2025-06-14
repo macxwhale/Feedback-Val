@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { FluidBackground } from './FluidBackground';
 
 export const Pricing: React.FC = () => {
   const navigate = useNavigate();
+  const [isYearly, setIsYearly] = useState(false);
 
   const urgencyIndicators = [
     {
@@ -31,8 +32,9 @@ export const Pricing: React.FC = () => {
   const plans = [
     {
       name: "Starter",
-      price: "$29",
-      period: "/month",
+      monthlyPrice: 29,
+      yearlyPrice: 290,
+      period: isYearly ? "/year" : "/month",
       description: "Perfect for small businesses starting their feedback journey",
       features: [
         "Up to 1,000 responses/month",
@@ -47,8 +49,9 @@ export const Pricing: React.FC = () => {
     },
     {
       name: "Professional", 
-      price: "$89",
-      period: "/month",
+      monthlyPrice: 89,
+      yearlyPrice: 890,
+      period: isYearly ? "/year" : "/month",
       description: "Advanced features for growing businesses needing deeper insights",
       features: [
         "Up to 10,000 responses/month",
@@ -65,7 +68,8 @@ export const Pricing: React.FC = () => {
     },
     {
       name: "Enterprise",
-      price: "Custom",
+      monthlyPrice: "Custom",
+      yearlyPrice: "Custom",
       period: "",
       description: "Tailored solutions for large organizations with complex needs", 
       features: [
@@ -82,6 +86,11 @@ export const Pricing: React.FC = () => {
       gradient: "from-golden-50 to-sunset-50"
     }
   ];
+
+  const getPrice = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === "Custom") return "Custom";
+    return isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+  };
 
   return (
     <section className="relative py-32 bg-gradient-to-br from-warm-gray-50 via-white to-sunset-50/30 dark:from-dark-warm-50 dark:via-dark-warm-100 dark:to-dark-warm-50 overflow-hidden">
@@ -143,9 +152,34 @@ export const Pricing: React.FC = () => {
             </span>
           </h2>
           
-          <p className="text-xl lg:text-2xl text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed font-medium max-w-4xl mx-auto">
+          <p className="text-xl lg:text-2xl text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed font-medium max-w-4xl mx-auto mb-12">
             Start free, scale as you grow. Upgrade or downgrade anytime.
           </p>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center space-x-4 mb-16">
+            <span className={`text-lg font-medium ${!isYearly ? 'text-sunset-600 dark:text-sunset-400' : 'text-warm-gray-600 dark:text-dark-warm-600'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setIsYearly(!isYearly)}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
+                isYearly ? 'bg-sunset-500' : 'bg-warm-gray-300 dark:bg-dark-warm-400'
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  isYearly ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-lg font-medium ${isYearly ? 'text-sunset-600 dark:text-sunset-400' : 'text-warm-gray-600 dark:text-dark-warm-600'}`}>
+              Yearly
+              <span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm rounded-full">
+                Save 20%
+              </span>
+            </span>
+          </div>
         </div>
         
         <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
@@ -157,8 +191,8 @@ export const Pricing: React.FC = () => {
             } bg-gradient-to-br ${plan.gradient} dark:from-dark-warm-100 dark:to-dark-warm-200`}>
               
               {plan.popular && (
-                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20">
-                  <Badge className="bg-gradient-to-r from-sunset-500 to-coral-500 text-white px-8 py-3 text-lg font-space font-bold shadow-lg">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+                  <Badge className="bg-gradient-to-r from-sunset-500 to-coral-500 text-white px-8 py-3 text-lg font-space font-bold shadow-lg rounded-full">
                     Most Popular
                   </Badge>
                 </div>
@@ -171,7 +205,7 @@ export const Pricing: React.FC = () => {
                 
                 <div className="mt-8 mb-6">
                   <span className="text-5xl lg:text-6xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900">
-                    {plan.price}
+                    ${getPrice(plan)}
                   </span>
                   {plan.period && (
                     <span className="text-warm-gray-600 dark:text-dark-warm-600 text-xl font-medium">

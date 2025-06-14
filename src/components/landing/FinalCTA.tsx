@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, Activity } from 'lucide-react';
 
 export const FinalCTA: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export const FinalCTA: React.FC = () => {
         
         <div className="flex items-center justify-center space-x-3 mb-12">
           <div className="relative">
-            <Heart className="w-8 h-8 text-white animate-pulse-gentle" />
+            <Activity className="w-8 h-8 text-white animate-pulse-gentle" />
             <div className="absolute inset-0 w-8 h-8 bg-white rounded-full opacity-20 animate-ping"></div>
           </div>
           <span className="text-white/90 text-lg font-space font-medium">Join 2,000+ happy customers</span>
@@ -45,11 +45,11 @@ export const FinalCTA: React.FC = () => {
           <span className="font-bold">better decisions</span>
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 max-w-2xl mx-auto">
+        <div className="flex flex-col gap-6 justify-center mb-16 max-w-md mx-auto">
           <Button 
             size="lg" 
             onClick={() => navigate('/auth')}
-            className="bg-white text-sunset-600 hover:bg-warm-gray-50 text-xl font-space font-bold px-12 py-6 shadow-2xl group rounded-full hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+            className="bg-white text-sunset-600 hover:bg-warm-gray-50 text-xl font-space font-bold px-12 py-6 shadow-2xl group rounded-full hover:scale-105 transition-all duration-300 w-full"
           >
             <span className="flex items-center justify-center">
               Start your free trial
@@ -60,7 +60,7 @@ export const FinalCTA: React.FC = () => {
           <Button 
             size="lg" 
             variant="outline"
-            className="border-3 border-white text-white hover:bg-white hover:text-sunset-600 text-xl font-space font-bold px-12 py-6 rounded-full backdrop-blur-sm bg-white/10 hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+            className="border-3 border-white text-white hover:bg-white hover:text-sunset-600 text-xl font-space font-bold px-12 py-6 rounded-full backdrop-blur-sm bg-white/10 hover:scale-105 transition-all duration-300 w-full"
           >
             Contact sales
           </Button>
