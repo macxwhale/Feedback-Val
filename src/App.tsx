@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrganizationProvider } from "@/context/OrganizationContext";
 import { AuthProvider } from "@/components/auth/AuthWrapper";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { LoginPage } from "@/components/auth/LoginPage";
+import LoginPage from "@/components/auth/LoginPage";
 import { AdminLoginPage } from "@/components/auth/AdminLoginPage";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { CreateOrganizationPage } from "@/components/org/CreateOrganizationPage";
