@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -232,15 +231,11 @@ export const Pricing: React.FC = () => {
                 </ul>
                 
                 <Button 
-                  className={`w-full font-bold text-lg py-6 rounded-full transition-all duration-300 group ${
-                    plan.popular 
-                      ? 'bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 hover:from-sunset-600 hover:via-coral-600 hover:to-golden-500 text-white shadow-xl shadow-sunset-500/30 hover:shadow-2xl hover:shadow-sunset-500/50' 
-                      : 'bg-warm-gray-900 hover:bg-warm-gray-800 dark:bg-dark-warm-900 dark:hover:bg-dark-warm-800 text-white shadow-lg'
-                  }`}
+                  className="w-full"
                   onClick={() => navigate('/auth')}
                 >
                   <span className="flex items-center justify-center">
-                    {plan.cta}
+                    {plan.cta === 'Start Free Trial' ? 'Start Free' : plan.cta === 'Contact Sales' ? 'Contact Sales' : 'Start Free'}
                     <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>

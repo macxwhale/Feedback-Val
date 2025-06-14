@@ -49,10 +49,11 @@ export const FinalCTA: React.FC = () => {
           <Button 
             size="lg" 
             onClick={() => navigate('/auth')}
-            className="bg-white text-sunset-600 hover:bg-warm-gray-50 text-xl font-space font-bold px-12 py-6 shadow-2xl group rounded-full hover:scale-105 transition-all duration-300 w-full"
+            variant="outline"
+            className="w-full"
           >
             <span className="flex items-center justify-center">
-              Start your free trial
+              Start Free
               <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
             </span>
           </Button>
@@ -60,9 +61,9 @@ export const FinalCTA: React.FC = () => {
           <Button 
             size="lg" 
             variant="outline"
-            className="border-3 border-white text-white hover:bg-white hover:text-sunset-600 text-xl font-space font-bold px-12 py-6 rounded-full backdrop-blur-sm bg-white/10 hover:scale-105 transition-all duration-300 w-full"
+            className="w-full"
           >
-            Contact sales
+            Contact Sales
           </Button>
         </div>
         

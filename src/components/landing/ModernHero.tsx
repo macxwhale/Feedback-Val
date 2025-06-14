@@ -72,19 +72,19 @@ export const ModernHero: React.FC = () => {
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 hover:from-sunset-600 hover:via-coral-600 hover:to-golden-500 text-white font-bold px-12 py-6 text-xl rounded-full shadow-2xl shadow-sunset-500/30 hover:shadow-3xl hover:shadow-sunset-500/50 transition-all duration-500 transform hover:scale-105 group relative overflow-hidden w-full"
+              className="w-full"
             >
-              <span className="relative z-10 flex items-center justify-center">
-                Start Your Journey
+              <span className="flex items-center justify-center">
+                Start Free
                 <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Button>
             
             <Button 
               size="lg" 
+              variant="outline"
+              className="w-full"
               onClick={() => navigate('/auth')}
-              className="border-2 border-warm-gray-300 dark:border-dark-warm-300 text-warm-gray-700 dark:text-dark-warm-700 hover:bg-warm-gray-50 dark:hover:bg-dark-warm-100 font-bold px-12 py-6 text-xl rounded-full backdrop-blur-sm bg-white/50 dark:bg-dark-warm-100/50 hover:shadow-xl transition-all duration-300 w-full"
             >
               Free Trial
             </Button>
