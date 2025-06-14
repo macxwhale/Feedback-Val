@@ -33,6 +33,16 @@ export const ModernHero: React.FC = () => {
             </div>
           </div>
 
+          {/* Pulsify Tagline */}
+          <div className="flex items-center justify-center space-x-2 text-warm-gray-600 dark:text-dark-warm-600">
+            <div className="flex -space-x-1">
+              <div className="w-6 h-6 bg-sunset-400 rounded-full border-2 border-white dark:border-dark-warm-100 animate-pulse-gentle"></div>
+              <div className="w-6 h-6 bg-golden-400 rounded-full border-2 border-white dark:border-dark-warm-100 animate-pulse-gentle" style={{ animationDelay: '0.5s' }}></div>
+              <div className="w-6 h-6 bg-coral-400 rounded-full border-2 border-white dark:border-dark-warm-100 animate-pulse-gentle" style={{ animationDelay: '1s' }}></div>
+            </div>
+            <span className="text-sm font-medium">Trusted by 2,000+ businesses worldwide</span>
+          </div>
+
           {/* Main headline with bold typography */}
           <div className="space-y-8">
             <div className="flex items-center justify-center space-x-4 mb-6">
