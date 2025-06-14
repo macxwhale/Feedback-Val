@@ -20,8 +20,8 @@ import { useFeatureGate } from '@/hooks/useFeatureGate';
 import { UpgradePrompt } from './UpgradePrompt';
 import { DashboardTabsDevPanel } from './DashboardTabsDevPanel';
 
-// Define strict type for dashboard module keys
-type DashboardModuleKey =
+// Define and EXPORT the DashboardModuleKey type
+export type DashboardModuleKey =
   | "analytics"
   | "questions"
   | "settings"
