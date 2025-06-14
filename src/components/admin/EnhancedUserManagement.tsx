@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { SearchAndFilters } from './dashboard/SearchAndFilters';
 import { usePaginatedUsers } from '@/hooks/usePaginatedUsers';
 import { useAuditLogging } from '@/hooks/useAuditLogging';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { UserManagementHeader } from './user-management/UserManagementHeader';
 import { UserManagementStats } from './user-management/UserManagementStats';
 import { UsersList } from './user-management/UsersList';

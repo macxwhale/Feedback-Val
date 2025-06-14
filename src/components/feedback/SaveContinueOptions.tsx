@@ -2,7 +2,7 @@
 import React from 'react';
 import { Save, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SaveContinueOptionsProps {
   onSave: () => void;

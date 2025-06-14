@@ -5,7 +5,7 @@ import { questionsService } from '@/services/questionsService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { QuestionForm } from './QuestionForm';
 import { QuestionsList } from './QuestionsList';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { QuestionFormData } from '@/types/questionTypes';
 
 export const QuestionsManagement: React.FC = () => {
