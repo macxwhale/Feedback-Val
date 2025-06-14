@@ -1,13 +1,9 @@
 
 import React from 'react';
-import { MessageSquare, BarChart3, Target, Users, Building2, TrendingUp, ArrowRight } from 'lucide-react';
+import { MessageSquare, BarChart3, Target, Users, Building2, TrendingUp } from 'lucide-react';
 import { FluidBackground } from './FluidBackground';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 export const HowItWorks: React.FC = () => {
-  const navigate = useNavigate();
-
   const targetAudiences = [
     {
       icon: <Building2 className="h-6 w-6" />,
@@ -48,7 +44,7 @@ export const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section className="relative py-24 bg-gradient-to-br from-warm-gray-50 via-white to-sunset-50/30 dark:from-dark-warm-50 dark:via-dark-warm-100 dark:to-dark-warm-50 overflow-hidden">
+    <section className="relative py-24 bg-transparent dark:bg-transparent overflow-hidden">
       <FluidBackground />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,16 +72,19 @@ export const HowItWorks: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {targetAudiences.map((audience, index) => (
-              <div key={index} className="bg-white dark:bg-dark-warm-100 rounded-2xl p-6 border border-warm-gray-200/50 dark:border-dark-warm-300/50 group hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 bg-gradient-to-br from-sunset-500 to-coral-500 rounded-xl flex items-center justify-center text-white mx-auto mb-4">
-                  {audience.icon}
+              <div key={index} className="group relative bg-white/70 dark:bg-dark-warm-100/70 backdrop-blur-sm rounded-2xl p-6 border border-warm-gray-200/30 dark:border-dark-warm-300/30 hover:shadow-xl hover:scale-105 transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-br from-sunset-500/5 via-coral-500/5 to-golden-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-br from-sunset-500 to-coral-500 rounded-xl flex items-center justify-center text-white mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {audience.icon}
+                  </div>
+                  <h3 className="text-lg font-space font-bold text-warm-gray-900 dark:text-dark-warm-900 mb-3">
+                    {audience.title}
+                  </h3>
+                  <p className="text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed text-sm">
+                    {audience.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-space font-bold text-warm-gray-900 dark:text-dark-warm-900 mb-3">
-                  {audience.title}
-                </h3>
-                <p className="text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed text-sm">
-                  {audience.description}
-                </p>
               </div>
             ))}
           </div>
@@ -114,7 +113,7 @@ export const HowItWorks: React.FC = () => {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-12 mb-16">
+        <div className="grid md:grid-cols-3 gap-12">
           {steps.map((step, index) => (
             <div key={index} className="text-center group relative">
               {index < 2 && (
@@ -123,13 +122,13 @@ export const HowItWorks: React.FC = () => {
               
               <div className="relative mb-8 group-hover:scale-110 transition-transform duration-300">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-sunset-500 via-coral-500 to-golden-400 rounded-2xl flex items-center justify-center text-white mx-auto shadow-xl">
+                  <div className="w-20 h-20 bg-gradient-to-br from-sunset-500 via-coral-500 to-golden-400 rounded-2xl flex items-center justify-center text-white mx-auto shadow-xl group-hover:shadow-2xl transition-shadow duration-300">
                     {step.icon}
                   </div>
                   <div className="absolute inset-0 w-20 h-20 bg-gradient-to-br from-sunset-500 via-coral-500 to-golden-400 rounded-2xl mx-auto opacity-20 animate-pulse"></div>
                 </div>
                 
-                <div className="absolute -top-3 -right-3 w-12 h-12 bg-white dark:bg-dark-warm-100 rounded-full border-4 border-sunset-500 flex items-center justify-center shadow-lg">
+                <div className="absolute -top-3 -right-3 w-12 h-12 bg-white dark:bg-dark-warm-100 rounded-full border-4 border-sunset-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <span className="text-lg font-space font-black text-sunset-600">{step.step}</span>
                 </div>
               </div>
@@ -143,18 +142,6 @@ export const HowItWorks: React.FC = () => {
               </p>
             </div>
           ))}
-        </div>
-
-        <div className="text-center">
-          <Button 
-            onClick={() => navigate('/auth')}
-            className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 hover:from-sunset-600 hover:via-coral-600 hover:to-golden-500 text-white font-space font-bold text-lg px-8 py-4 rounded-full shadow-lg transition-all duration-300"
-          >
-            <span className="flex items-center">
-              Start Your Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </span>
-          </Button>
         </div>
       </div>
     </section>

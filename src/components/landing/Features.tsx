@@ -8,16 +8,11 @@ import {
   Users, 
   Zap, 
   Shield,
-  ArrowRight,
   CheckCircle
 } from 'lucide-react';
 import { FluidBackground } from './FluidBackground';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 export const Features: React.FC = () => {
-  const navigate = useNavigate();
-
   const problems = [
     {
       problem: "Lost customers due to poor experiences",
@@ -71,7 +66,7 @@ export const Features: React.FC = () => {
   ];
 
   return (
-    <section className="relative py-24 bg-gradient-to-br from-white via-warm-gray-50 to-sunset-50/20 dark:from-dark-warm-50 dark:via-dark-warm-100 dark:to-dark-warm-50 overflow-hidden">
+    <section className="relative py-24 bg-transparent dark:bg-transparent overflow-hidden">
       <FluidBackground />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,15 +95,18 @@ export const Features: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-6">
             {problems.map((item, index) => (
-              <div key={index} className="bg-white dark:bg-dark-warm-100 rounded-2xl p-6 border border-warm-gray-200/50 dark:border-dark-warm-300/50 group hover:shadow-lg transition-all duration-300">
-                <div className={`w-12 h-12 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center text-white mx-auto mb-4`}>
-                  {item.icon}
-                </div>
-                <div className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
-                  Problem: {item.problem}
-                </div>
-                <div className="text-sm font-semibold text-green-600 dark:text-green-400">
-                  Solution: {item.solution}
+              <div key={index} className="group relative bg-white/70 dark:bg-dark-warm-100/70 backdrop-blur-sm rounded-2xl p-6 border border-warm-gray-200/30 dark:border-dark-warm-300/30 hover:shadow-xl hover:scale-105 transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-orange-500/5 to-yellow-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className={`w-12 h-12 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center text-white mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    {item.icon}
+                  </div>
+                  <div className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+                    Problem: {item.problem}
+                  </div>
+                  <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                    Solution: {item.solution}
+                  </div>
                 </div>
               </div>
             ))}
@@ -122,12 +120,13 @@ export const Features: React.FC = () => {
           </h3>
         </div>
         
-        <div className="grid lg:grid-cols-2 gap-8 mb-16">
+        <div className="grid lg:grid-cols-2 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="border-0 shadow-lg bg-white dark:bg-dark-warm-100 hover:shadow-xl transition-all duration-300 group rounded-2xl overflow-hidden">
-              <CardHeader className="pb-4">
+            <Card key={index} className="group relative border-0 shadow-lg bg-white/70 dark:bg-dark-warm-100/70 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-sunset-500/5 via-coral-500/5 to-golden-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="pb-4 relative">
                 <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center text-white flex-shrink-0`}>
+                  <div className={`w-12 h-12 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
                     {feature.icon}
                   </div>
                   <div className="flex-1">
@@ -140,7 +139,7 @@ export const Features: React.FC = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 relative">
                 <div className="space-y-2">
                   {feature.benefits.map((benefit, benefitIndex) => (
                     <div key={benefitIndex} className="flex items-center space-x-2">
@@ -152,18 +151,6 @@ export const Features: React.FC = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        <div className="text-center">
-          <Button 
-            onClick={() => navigate('/auth')}
-            className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 hover:from-sunset-600 hover:via-coral-600 hover:to-golden-500 text-white font-space font-bold text-lg px-8 py-4 rounded-full shadow-lg transition-all duration-300"
-          >
-            <span className="flex items-center">
-              See All Features
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </span>
-          </Button>
         </div>
       </div>
     </section>
