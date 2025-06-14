@@ -24,86 +24,86 @@ export const SocialProof: React.FC = () => {
     }
   ];
 
+  const companies = ['TechStart', 'RetailCorp', 'InnovateCo', 'GrowthLabs', 'ScaleUp'];
+
   return (
-    <section className="relative py-32 bg-white dark:bg-dark-warm-50 overflow-hidden">
-      {/* Fluid Background */}
+    <section className="relative py-24 bg-warm-gray-50 dark:bg-dark-warm-50 overflow-hidden">
       <FluidBackground variant="dark" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-24 animate-fade-in">
-          <div className="flex items-center justify-center space-x-2 text-warm-gray-600 dark:text-dark-warm-600 mb-8">
-            <Star className="w-6 h-6 text-golden-400 fill-current" />
-            <span className="text-lg font-space font-medium">Customer Love</span>
-            <Star className="w-6 h-6 text-golden-400 fill-current" />
+        {/* Trusted by companies */}
+        <div className="text-center mb-16">
+          <p className="text-warm-gray-500 dark:text-dark-warm-500 font-medium mb-8 text-sm uppercase tracking-wider">
+            Trusted by 2,000+ growing companies
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 lg:gap-12 opacity-60">
+            {companies.map((company, index) => (
+              <div key={index} className="text-lg lg:text-xl font-space font-bold text-warm-gray-400 dark:text-dark-warm-400 hover:text-sunset-500 transition-colors duration-300">
+                {company}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section header */}
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center space-x-2 text-warm-gray-600 dark:text-dark-warm-600 mb-6">
+            <Star className="w-5 h-5 text-golden-400 fill-current" />
+            <span className="text-sm font-medium uppercase tracking-wide">Customer Stories</span>
+            <Star className="w-5 h-5 text-golden-400 fill-current" />
           </div>
           
-          <h2 className="text-5xl lg:text-7xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900 mb-8 leading-tight">
+          <h2 className="text-3xl lg:text-5xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900 mb-6 leading-tight">
             Loved by{' '}
             <span className="relative">
               <span className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 bg-clip-text text-transparent">
                 businesses
               </span>
-              <div className="absolute -bottom-3 left-0 right-0 h-2 bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 rounded-full animate-scale-in"></div>
+              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 rounded-full"></div>
             </span>
             {' '}worldwide
           </h2>
           
-          <p className="text-2xl lg:text-3xl text-warm-gray-600 dark:text-dark-warm-600 max-w-4xl mx-auto leading-relaxed font-medium">
+          <p className="text-lg lg:text-xl text-warm-gray-600 dark:text-dark-warm-600 max-w-3xl mx-auto leading-relaxed font-medium">
             Join thousands of companies that trust Pulselify to{' '}
             <span className="text-sunset-600 dark:text-sunset-400 font-semibold">transform their customer relationships</span>
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        {/* Testimonials grid */}
+        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="border-0 shadow-2xl shadow-warm-gray-900/10 dark:shadow-dark-warm-50/20 bg-white/90 dark:bg-dark-warm-100/90 backdrop-blur-sm rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-500">
-              <CardContent className="p-12">
-                <div className="flex mb-8">
+            <Card key={index} className="border-0 shadow-lg bg-white dark:bg-dark-warm-100 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <CardContent className="p-8">
+                <div className="flex mb-6">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-6 h-6 fill-golden-400 text-golden-400" />
+                    <Star key={i} className="w-5 h-5 fill-golden-400 text-golden-400" />
                   ))}
                 </div>
                 
-                <div className="relative mb-10">
-                  <Quote className="absolute -top-4 -left-2 w-12 h-12 text-sunset-200 dark:text-sunset-600" />
-                  <blockquote className="text-warm-gray-700 dark:text-dark-warm-700 text-xl lg:text-2xl italic leading-relaxed font-medium pl-10">
+                <div className="relative mb-8">
+                  <Quote className="absolute -top-2 -left-1 w-8 h-8 text-sunset-200 dark:text-sunset-600" />
+                  <blockquote className="text-warm-gray-700 dark:text-dark-warm-700 text-lg leading-relaxed font-medium pl-6">
                     "{testimonial.quote}"
                   </blockquote>
                 </div>
                 
                 <div className="flex items-center">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${testimonial.gradient} rounded-2xl flex items-center justify-center text-white text-2xl font-space font-bold mr-6 shadow-lg`}>
+                  <div className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} rounded-xl flex items-center justify-center text-white text-lg font-space font-bold mr-4`}>
                     {testimonial.author.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
-                    <div className="text-xl font-space font-bold text-warm-gray-900 dark:text-dark-warm-900">
+                    <div className="text-lg font-space font-bold text-warm-gray-900 dark:text-dark-warm-900">
                       {testimonial.author}
                     </div>
-                    <div className="text-warm-gray-600 dark:text-dark-warm-600 font-medium">
-                      {testimonial.role}
-                    </div>
-                    <div className="text-sunset-600 dark:text-sunset-400 font-semibold">
-                      {testimonial.company}
+                    <div className="text-warm-gray-600 dark:text-dark-warm-600 font-medium text-sm">
+                      {testimonial.role} at {testimonial.company}
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
-        </div>
-        
-        {/* Company logos section */}
-        <div className="mt-24 text-center">
-          <p className="text-warm-gray-500 dark:text-dark-warm-500 font-medium mb-12 text-lg">
-            Trusted by leading companies worldwide
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-60">
-            {['TechStart', 'RetailCorp', 'InnovateCo', 'GrowthLabs', 'ScaleUp'].map((company, index) => (
-              <div key={index} className="text-2xl font-space font-bold text-warm-gray-400 dark:text-dark-warm-400 hover:text-sunset-500 transition-colors duration-300">
-                {company}
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>
