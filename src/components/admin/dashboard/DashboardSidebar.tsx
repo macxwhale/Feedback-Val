@@ -26,8 +26,15 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   // For mobile: Store state of which groups are expanded
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  // Side navigation grouping
+  // Reordered side navigation groups:
   const groupedMenuItems = [
+    {
+      label: "Team & Settings",
+      items: [
+        { id: 'members', label: 'Members', icon: Users, badge: stats?.active_members || 0 },
+        { id: 'settings', label: 'Settings', icon: Settings }
+      ]
+    },
     {
       label: "Core Analytics",
       items: [
@@ -47,13 +54,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       items: [
         { id: 'feedback', label: 'Feedback', icon: MessageSquare, badge: stats?.total_responses || 0 },
         { id: 'questions', label: 'Questions', icon: MessageSquare, badge: stats?.total_questions || 0 }
-      ]
-    },
-    {
-      label: "Team & Settings",
-      items: [
-        { id: 'members', label: 'Members', icon: Users, badge: stats?.active_members || 0 },
-        { id: 'settings', label: 'Settings', icon: Settings }
       ]
     }
   ];
