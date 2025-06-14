@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DashboardOverview } from './DashboardOverview';
 import { AnalyticsTable } from './AnalyticsTable';
@@ -6,10 +7,10 @@ import { RealTimeAnalytics } from './RealTimeAnalytics';
 import { RefactoredExecutiveDashboard } from './RefactoredExecutiveDashboard';
 import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
 import { useEnhancedOrganizationStats } from '@/hooks/useEnhancedOrganizationStats';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, TrendingUp, Clock, Target, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
+// MAIN: No Tabs, only pure content switching!
 interface AdvancedDashboardViewProps {
   organizationId: string;
   organizationName: string;
@@ -29,21 +30,14 @@ interface AdvancedDashboardViewProps {
 export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
   organizationId,
   organizationName,
+  activeTab,
   stats,
-  handleQuickActions
+  isLiveActivity,
+  setIsLiveActivity,
+  handleQuickActions,
 }) => {
   const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useAnalyticsTableData(organizationId);
   const { data: enhancedStats, isLoading: enhancedLoading, error: enhancedError } = useEnhancedOrganizationStats(organizationId);
-
-  console.log('AdvancedDashboardView - Render state:', {
-    organizationId,
-    analyticsLoading,
-    enhancedLoading,
-    analyticsData: analyticsData ? 'loaded' : 'null',
-    enhancedStats: enhancedStats ? 'loaded' : 'null',
-    analyticsError,
-    enhancedError
-  });
 
   // Show loading state only if both are loading
   if (analyticsLoading && enhancedLoading) {
@@ -66,7 +60,7 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
       total_responses: 0,
       overall_completion_rate: 0
     };
-    
+
     return {
       ...baseSummary,
       overall_avg_score: enhancedStats?.avg_session_score || 0
@@ -75,76 +69,72 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
 
   const enhancedSummary = createEnhancedSummary();
 
-  return (
-    <div className="space-y-6">
-      {/* Show error alerts if any */}
-      {(analyticsError || enhancedError) && (
-        <Alert className="border-yellow-500">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Some dashboard data may be unavailable. {analyticsError?.message || enhancedError?.message}
-          </AlertDescription>
-        </Alert>
-      )}
+  // Alerts
+  const errorAlert = (analyticsError || enhancedError) ? (
+    <Alert className="border-yellow-500 mb-4">
+      <AlertCircle className="h-4 w-4" />
+      <AlertDescription>
+        Some dashboard data may be unavailable. {analyticsError?.message || enhancedError?.message}
+      </AlertDescription>
+    </Alert>
+  ) : null;
 
-      {/* Core Analytics Overview (contains the proper stat cards) */}
-      <DashboardOverview organizationId={organizationId} />
-
-      {/* Ensure that section labels and navigation are not duplicated here */}
-      {/* The Tabs, TabsList, SectionLabel, and tab labels are handled ONLY in DashboardTabs.tsx */}
-
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full">
-          <TabsTrigger value="overview" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
-            <span>Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="executive" className="flex items-center space-x-2">
-            <Target className="w-4 h-4" />
-            <span>Executive</span>
-          </TabsTrigger>
-          <TabsTrigger value="realtime" className="flex items-center space-x-2">
-            <Clock className="w-4 h-4" />
-            <span>Real-Time</span>
-          </TabsTrigger>
-          <TabsTrigger value="detailed" className="flex items-center space-x-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>Detailed</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AnalyticsTable
-              questions={analyticsData?.questions || []}
-              categories={analyticsData?.categories || []}
-              summary={enhancedSummary}
-            />
-            <AnalyticsInsights 
-              stats={enhancedStats}
-              isLoading={enhancedLoading}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="executive">
-          <RefactoredExecutiveDashboard organizationId={organizationId} />
-        </TabsContent>
-
-        <TabsContent value="realtime">
-          <RealTimeAnalytics organizationId={organizationId} />
-        </TabsContent>
-
-        <TabsContent value="detailed">
-          {/* Show detailed view even with partial data */}
+  // Master switch: what content to show for each subview (from parent)
+  if (activeTab === "overview") {
+    return (
+      <div className="space-y-6">
+        {errorAlert}
+        <DashboardOverview organizationId={organizationId} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AnalyticsTable
             questions={analyticsData?.questions || []}
             categories={analyticsData?.categories || []}
             summary={enhancedSummary}
-            showDrillDown={true}
           />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <AnalyticsInsights
+            stats={enhancedStats}
+            isLoading={enhancedLoading}
+          />
+        </div>
+      </div>
+    );
+  }
+  if (activeTab === "executive") {
+    return (
+      <div className="space-y-6">
+        {errorAlert}
+        <RefactoredExecutiveDashboard organizationId={organizationId} />
+      </div>
+    );
+  }
+  if (activeTab === "realtime") {
+    return (
+      <div className="space-y-6">
+        {errorAlert}
+        <RealTimeAnalytics organizationId={organizationId} />
+      </div>
+    );
+  }
+  if (activeTab === "detailed") {
+    return (
+      <div className="space-y-6">
+        {errorAlert}
+        <AnalyticsTable
+          questions={analyticsData?.questions || []}
+          categories={analyticsData?.categories || []}
+          summary={enhancedSummary}
+          showDrillDown={true}
+        />
+      </div>
+    );
+  }
+
+  // Default fallback: allow parent to handle
+  return (
+    <>
+      {errorAlert}
+      <DashboardOverview organizationId={organizationId} />
+    </>
   );
 };
+
