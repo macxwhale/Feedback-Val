@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DashboardOverview } from './DashboardOverview';
 import { AnalyticsTable } from './AnalyticsTable';
@@ -137,4 +136,3 @@ export const AdvancedDashboardView: React.FC<AdvancedDashboardViewProps> = ({
     </>
   );
 };
-

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -14,6 +13,8 @@ import { useAuth } from '@/components/auth/AuthWrapper';
 import { useEnhancedOrganizationStats } from '@/hooks/useEnhancedOrganizationStats';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import { EnhancedLoadingSpinner } from './dashboard/EnhancedLoadingSpinner';
+import { DashboardProvider } from '@/context/DashboardContext';
+import { DashboardFilters } from './dashboard/DashboardFilters';
 
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -87,43 +88,47 @@ export const OrganizationAdminDashboard: React.FC = () => {
   }
 
   return (
-    <DashboardErrorBoundary>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gray-50">
-          <DashboardSidebar
-            organizationName={organization.name}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            stats={stats}
-            isLoading={statsLoading}
-          />
+    <DashboardProvider>
+      <DashboardErrorBoundary>
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full bg-gray-50">
+            <DashboardSidebar
+              organizationName={organization.name}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              stats={stats}
+              isLoading={statsLoading}
+            />
 
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <OrganizationHeader organization={organization} />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <OrganizationHeader organization={organization} />
 
-            <div className="flex-1 overflow-auto">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <DashboardHeader
-                  organizationName={organization.name}
-                  organizationId={organization.id}
-                  currentPage={getTabLabel(activeTab)}
-                  onNavigate={handleNavigate}
-                />
+              <div className="flex-1 overflow-auto">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                  <DashboardHeader
+                    organizationName={organization.name}
+                    organizationId={organization.id}
+                    currentPage={getTabLabel(activeTab)}
+                    onNavigate={handleNavigate}
+                  />
 
-                <DashboardTabs
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  organization={organization}
-                  stats={stats}
-                  isLiveActivity={isLiveActivity}
-                  setIsLiveActivity={setIsLiveActivity}
-                  handleQuickActions={handleQuickActions}
-                />
+                  <DashboardFilters organizationId={organization.id} />
+
+                  <DashboardTabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    organization={organization}
+                    stats={stats}
+                    isLiveActivity={isLiveActivity}
+                    setIsLiveActivity={setIsLiveActivity}
+                    handleQuickActions={handleQuickActions}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </SidebarProvider>
-    </DashboardErrorBoundary>
+        </SidebarProvider>
+      </DashboardErrorBoundary>
+    </DashboardProvider>
   );
 };

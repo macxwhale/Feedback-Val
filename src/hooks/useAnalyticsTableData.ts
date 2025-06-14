@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { processResponsesByType } from '@/services/responseDataProcessor';
+import { useDashboard } from '@/context/DashboardContext';
 
 export interface QuestionAnalytics {
   id: string;
@@ -36,8 +37,10 @@ export interface AnalyticsTableData {
 }
 
 export const useAnalyticsTableData = (organizationId: string) => {
+  const { dateRange } = useDashboard();
+
   return useQuery({
-    queryKey: ['analytics-table-data', organizationId],
+    queryKey: ['analytics-table-data', organizationId, dateRange],
     queryFn: async (): Promise<AnalyticsTableData> => {
       // Get all questions for the organization
       const { data: questions } = await supabase
@@ -48,8 +51,8 @@ export const useAnalyticsTableData = (organizationId: string) => {
         .order('category', { ascending: true })
         .order('order_index', { ascending: true });
 
-      // Get all responses for the organization
-      const { data: responses } = await supabase
+      // Get all responses for the organization, with date filtering
+      let responsesQuery = supabase
         .from('feedback_responses')
         .select(`
           id,
@@ -62,11 +65,31 @@ export const useAnalyticsTableData = (organizationId: string) => {
         `)
         .eq('organization_id', organizationId);
 
-      // Get all sessions for completion rate calculation
-      const { data: sessions } = await supabase
+      if (dateRange?.from) {
+        responsesQuery = responsesQuery.gte('created_at', dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setDate(toDate.getDate() + 1);
+        responsesQuery = responsesQuery.lt('created_at', toDate.toISOString());
+      }
+      const { data: responses } = await responsesQuery;
+
+      // Get all sessions for completion rate calculation, with date filtering
+      let sessionsQuery = supabase
         .from('feedback_sessions')
-        .select('id, status')
+        .select('id, status, created_at')
         .eq('organization_id', organizationId);
+
+      if (dateRange?.from) {
+        sessionsQuery = sessionsQuery.gte('created_at', dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setDate(toDate.getDate() + 1);
+        sessionsQuery = sessionsQuery.lt('created_at', toDate.toISOString());
+      }
+      const { data: sessions } = await sessionsQuery;
 
       const totalSessions = sessions?.length || 0;
       const completedSessions = sessions?.filter(s => s.status === 'completed').length || 0;
