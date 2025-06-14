@@ -73,7 +73,6 @@ export const useFeatureGate = () => {
     console.log("organization.features_config:", organization?.features_config);
   }
 
-  // Carefully determine the plan: fallback to starter ONLY if plan_type is missing/bad
   let plan: "starter" | "pro" | "enterprise" = "starter";
   if (
     organization &&
@@ -83,7 +82,6 @@ export const useFeatureGate = () => {
   ) {
     plan = organization.plan_type;
   } else if (organization && organization.plan_type) {
-    // Warn if bad type
     console.warn("[useFeatureGate] Unknown plan_type: ", organization.plan_type, "Falling back to 'starter'");
   }
 
@@ -93,13 +91,11 @@ export const useFeatureGate = () => {
     console.groupEnd();
   }
 
-  // This allows forced override via features_config if present
   function hasFeature(feature: keyof typeof PLAN_FEATURE_MATRIX["starter"]) {
     if (!organization) {
       if (typeof window !== "undefined") console.warn("hasFeature called but organization is null");
       return false;
     }
-    // Check override in features_config
     if (organization.features_config && organization.features_config[feature] !== undefined) {
       return organization.features_config[feature];
     }
@@ -123,12 +119,20 @@ export const useFeatureGate = () => {
   }
 
   function hasModuleAccess(module: keyof typeof PLAN_FEATURE_MATRIX["starter"]["modules"]): boolean {
+    if (typeof window !== "undefined") {
+      console.log("[hasModuleAccess] ---", {
+        plan,
+        module,
+        moduleKeys: Object.keys(PLAN_FEATURE_MATRIX[plan].modules),
+        planModules: PLAN_FEATURE_MATRIX[plan].modules,
+        features_config: organization?.features_config,
+        orgPlanType: organization?.plan_type
+      });
+    }
     if (!organization) {
       if (typeof window !== "undefined") console.warn("hasModuleAccess fallback to starter for module:", module);
       return PLAN_FEATURE_MATRIX.starter.modules[module];
     }
-
-    // features_config > modules > override
     if (
       organization.features_config &&
       typeof organization.features_config === "object" &&
@@ -141,7 +145,6 @@ export const useFeatureGate = () => {
       return organization.features_config["modules"][module];
     }
 
-    // Plan fallback
     if (typeof window !== "undefined")
       console.log("[hasModuleAccess] PLAN fallback for", module, ":", PLAN_FEATURE_MATRIX[plan].modules[module]);
     return PLAN_FEATURE_MATRIX[plan].modules[module];
@@ -155,4 +158,3 @@ export const useFeatureGate = () => {
     hasModuleAccess,
   };
 };
-

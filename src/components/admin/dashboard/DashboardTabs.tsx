@@ -61,8 +61,6 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   // ========= Diagnostics for Debugging =========
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // --- Context comparison debugging ---
-  // Compare context org with prop org, and log in dev for troubleshooting
   let orgContext;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -71,7 +69,6 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     orgContext = undefined;
   }
   if (typeof window !== "undefined" && isDev) {
-    // Compare the organization's id, plan_type, features_config
     const pOrg = organization || {};
     const cOrg = orgContext || {};
     const idsMatch = pOrg.id && cOrg.id && pOrg.id === cOrg.id;
@@ -86,6 +83,14 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     if (!idsMatch) console.warn("Organization ID mismatch between prop and context!");
     if (!plansMatch) console.warn("Organization plan_type mismatch between prop and context!");
     if (!featuresMatch) console.warn("Organization features_config mismatch between prop and context!");
+    const tabsToCheck = [
+      'analytics', 'customerInsights', 'sentiment', 'performance', 'members', 'feedback', 'questions', 'settings'
+    ];
+    const { useFeatureGate } = require('@/hooks/useFeatureGate');
+    const fg = useFeatureGate();
+    tabsToCheck.forEach(key => {
+      console.log(`[MODULE DEBUG] Tab: ${key} | plan: ${cOrg.plan_type} | hasModuleAccess(${key}):`, fg.hasModuleAccess(key));
+    });
     console.groupEnd();
   }
 
