@@ -1,33 +1,54 @@
-
-import React, { createContext, useContext } from 'react';
-import { Organization } from '@/services/organizationService';
-import { useOrganization } from '@/hooks/useOrganization';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OrganizationContextType {
-  organization: Organization | null;
-  isLoading: boolean;
-  error: string | null;
+  organization: any | null;
+  loading: boolean;
+  refreshOrganization: () => void;
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
-export const useOrganizationContext = () => {
+export const useOrganization = () => {
   const context = useContext(OrganizationContext);
-  if (context === undefined) {
-    throw new Error('useOrganizationContext must be used within an OrganizationProvider');
+  if (!context) {
+    throw new Error("useOrganization must be used within an OrganizationProvider");
   }
   return context;
 };
 
-interface OrganizationProviderProps {
-  children: React.ReactNode;
-}
+export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [organization, setOrganization] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ children }) => {
-  const { organization, isLoading, error } = useOrganization();
+  const fetchOrganization = async () => {
+    setLoading(true);
+    // Attempt to get org slug from URL
+    const slug = window.location.pathname.split('/')[1] || ""; // crude - parse properly for robustness
+    if (!slug || slug === "") {
+      setOrganization(null);
+      setLoading(false);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("organizations")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    setOrganization(data || null);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchOrganization();
+  }, []);
 
   return (
-    <OrganizationContext.Provider value={{ organization, isLoading, error }}>
+    <OrganizationContext.Provider value={{
+      organization,
+      loading,
+      refreshOrganization: fetchOrganization,
+    }}>
       {children}
     </OrganizationContext.Provider>
   );

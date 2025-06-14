@@ -384,6 +384,7 @@ export type Database = {
           created_by_user_id: string | null
           custom_css: Json | null
           domain: string | null
+          features_config: Json | null
           feedback_header_subtitle: string | null
           feedback_header_title: string | null
           flow_configuration: Json | null
@@ -393,7 +394,7 @@ export type Database = {
           logo_url: string | null
           max_responses: number | null
           name: string
-          plan_type: string | null
+          plan_type: Database["public"]["Enums"]["org_plan_type"] | null
           primary_color: string | null
           secondary_color: string | null
           settings: Json | null
@@ -411,6 +412,7 @@ export type Database = {
           created_by_user_id?: string | null
           custom_css?: Json | null
           domain?: string | null
+          features_config?: Json | null
           feedback_header_subtitle?: string | null
           feedback_header_title?: string | null
           flow_configuration?: Json | null
@@ -420,7 +422,7 @@ export type Database = {
           logo_url?: string | null
           max_responses?: number | null
           name: string
-          plan_type?: string | null
+          plan_type?: Database["public"]["Enums"]["org_plan_type"] | null
           primary_color?: string | null
           secondary_color?: string | null
           settings?: Json | null
@@ -438,6 +440,7 @@ export type Database = {
           created_by_user_id?: string | null
           custom_css?: Json | null
           domain?: string | null
+          features_config?: Json | null
           feedback_header_subtitle?: string | null
           feedback_header_title?: string | null
           flow_configuration?: Json | null
@@ -447,7 +450,7 @@ export type Database = {
           logo_url?: string | null
           max_responses?: number | null
           name?: string
-          plan_type?: string | null
+          plan_type?: Database["public"]["Enums"]["org_plan_type"] | null
           primary_color?: string | null
           secondary_color?: string | null
           settings?: Json | null
@@ -891,6 +894,7 @@ export type Database = {
       }
     }
     Enums: {
+      org_plan_type: "starter" | "pro" | "enterprise"
       question_category:
         | "QualityCommunication"
         | "QualityStaff"
@@ -1014,6 +1018,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      org_plan_type: ["starter", "pro", "enterprise"],
       question_category: [
         "QualityCommunication",
         "QualityStaff",

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarRating } from './StarRating';
@@ -8,6 +7,7 @@ import { MultipleChoice } from './MultipleChoice';
 import { OpenText } from './OpenText';
 import { QuestionConfig } from '../FeedbackForm';
 import { useDynamicBranding } from '@/hooks/useDynamicBranding';
+import { useFeatureGate } from '@/hooks/useFeatureGate';
 
 interface QuestionRendererProps {
   question: QuestionConfig;
@@ -21,6 +21,19 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   onChange
 }) => {
   const { colors } = useDynamicBranding();
+  const { allowedQuestionTypes, plan } = useFeatureGate();
+
+  if (!allowedQuestionTypes().includes(question.type)) {
+    // Hide or disable unsupported question types for current plan
+    return (
+      <div className="mb-8">
+        <div className="bg-yellow-50 border-l-4 border-yellow-600 p-4 rounded text-yellow-800">
+          <strong>Feature unavailable:</strong> The <span className="font-mono">{question.type}</span> question type is not available for your plan (<b>{plan}</b>). 
+          <br />Upgrade your plan to access this feature.
+        </div>
+      </div>
+    );
+  }
 
   const headerStyle = {
     background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`
