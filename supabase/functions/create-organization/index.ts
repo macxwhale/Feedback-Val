@@ -18,6 +18,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
   try {
+    // Extract user's access token from Authorization header, if present
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const accessToken = authHeader.replace("Bearer ", "");
+      supabase.auth.setAuth(accessToken);
+    }
+
     const body = await req.json();
     let { email, orgName, userId } = body;
 

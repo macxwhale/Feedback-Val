@@ -10,9 +10,16 @@ interface CreateOrgInput {
 
 export async function createOrganization({ email, orgName, userId }: CreateOrgInput) {
   try {
-    // Use Supabase client's .functions.invoke to call the edge function
+    // Get the user's session (access token)
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+
+    // Use Supabase client's .functions.invoke to call the edge function, passing auth header
     const { data, error } = await supabase.functions.invoke("create-organization", {
       body: { email, orgName, userId },
+      ...(accessToken && {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }),
     });
 
     if (error) {
