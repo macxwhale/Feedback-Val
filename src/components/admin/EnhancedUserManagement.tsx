@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { SearchAndFilters } from './dashboard/SearchAndFilters';
@@ -106,6 +105,7 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
     );
   }
 
+  // Ensure no menu/sidebar/tab labels are rendered here.
   return (
     <div className="space-y-6 mt-8">
       <UserManagementHeader
