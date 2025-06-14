@@ -33,10 +33,9 @@ export const EnhancedProgressBar: React.FC<EnhancedProgressBarProps> = ({
 
   return (
     <div 
-      className="mb-8 p-4 rounded-lg border"
+      className="mb-8 p-4 rounded-lg border bg-white/50"
       style={{ 
-        backgroundColor: `${colors.primary}08`,
-        borderColor: `${colors.primary}30`
+        borderColor: `${colors.primary}20`
       }}
       role="progressbar" 
       aria-valuenow={currentQuestionIndex + 1} 

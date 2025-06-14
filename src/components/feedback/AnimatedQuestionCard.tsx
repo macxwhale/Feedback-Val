@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
+import { useDynamicBranding } from '@/hooks/useDynamicBranding';
 
 interface AnimatedQuestionCardProps {
   children: React.ReactNode;
@@ -18,6 +19,16 @@ export const AnimatedQuestionCard: React.FC<AnimatedQuestionCardProps> = ({
   isAnswered,
   className = ''
 }) => {
+  const { colors } = useDynamicBranding();
+
+  const headerStyle = {
+    background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`,
+  };
+
+  const answeredHeaderStyle = {
+    background: `linear-gradient(to right, #10B981, #059669)`,
+  };
+
   return (
     <Card className={`
       mb-8 shadow-lg border-0 
@@ -27,11 +38,13 @@ export const AnimatedQuestionCard: React.FC<AnimatedQuestionCardProps> = ({
       ${isAnswered ? 'ring-2 ring-green-400 ring-opacity-50' : ''}
       ${className}
     `}>
-      <CardHeader className={`
-        bg-gradient-to-r from-[#f97316] to-[#fb923c] text-white rounded-t-lg 
-        relative overflow-hidden
-        ${isAnswered ? 'bg-gradient-to-r from-green-500 to-green-600' : ''}
-      `}>
+      <CardHeader 
+        className={`
+          text-white rounded-t-lg 
+          relative overflow-hidden
+        `}
+        style={isAnswered ? answeredHeaderStyle : headerStyle}
+      >
         <div className="flex items-start justify-between relative z-10">
           <div className="flex-1">
             <CardTitle className="text-xl pr-4 animate-fade-in">

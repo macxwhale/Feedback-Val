@@ -68,48 +68,50 @@ export const FeedbackContent: React.FC<FeedbackContentProps> = ({
           completedQuestions={completedQuestions}
         />
 
-        {!isMobile && (
-          <>
-            <SaveContinueOptions
-              onSave={onSaveProgress}
-              onPause={onPauseAndExit}
-              hasUnsavedChanges={hasUnsavedChanges}
+        <div className="lg:grid lg:grid-cols-3 lg:gap-12 mt-8">
+          <main className="lg:col-span-2">
+            <EnhancedQuestionRenderer
+              question={currentQuestion}
+              value={responses[currentQuestion?.id]}
+              onChange={(value) => onQuestionResponse(currentQuestion.id, value)}
+              validation={getValidationResult(currentQuestion?.id)}
             />
+            <div className="mt-8">
+              <NavigationButtons
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                canGoNext={canGoNext}
+                onPrevious={onPrevious}
+                onNext={onNext}
+              />
+            </div>
+          </main>
 
-            <ProgressInsights
-              currentIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-              completedQuestions={completedQuestions}
-              estimatedTimeRemaining={estimatedTimeRemaining}
-              averageResponseTime={averageResponseTime}
-            />
-          </>
-        )}
-
-        <EnhancedQuestionRenderer
-          question={currentQuestion}
-          value={responses[currentQuestion?.id]}
-          onChange={(value) => onQuestionResponse(currentQuestion.id, value)}
-          validation={getValidationResult(currentQuestion?.id)}
-        />
-
-        {!isMobile && (
-          <SmartSuggestions
-            currentQuestion={currentQuestion}
-            responses={responses}
-            onSuggestionClick={(value) => onQuestionResponse(currentQuestion.id, value)}
-          />
-        )}
-
-        <NavigationButtons
-          currentQuestionIndex={currentQuestionIndex}
-          totalQuestions={questions.length}
-          canGoNext={canGoNext}
-          onPrevious={onPrevious}
-          onNext={onNext}
-        />
-
-        {!isMobile && <DataUsageInfo />}
+          {!isMobile && (
+            <aside className="lg:col-span-1">
+              <div className="space-y-8 sticky top-8">
+                <SaveContinueOptions
+                  onSave={onSaveProgress}
+                  onPause={onPauseAndExit}
+                  hasUnsavedChanges={hasUnsavedChanges}
+                />
+                <ProgressInsights
+                  currentIndex={currentQuestionIndex}
+                  totalQuestions={questions.length}
+                  completedQuestions={completedQuestions}
+                  estimatedTimeRemaining={estimatedTimeRemaining}
+                  averageResponseTime={averageResponseTime}
+                />
+                <SmartSuggestions
+                  currentQuestion={currentQuestion}
+                  responses={responses}
+                  onSuggestionClick={(value) => onQuestionResponse(currentQuestion.id, value)}
+                />
+                <DataUsageInfo />
+              </div>
+            </aside>
+          )}
+        </div>
       </div>
 
       {!isMobile && (
