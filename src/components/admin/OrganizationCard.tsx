@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Organization } from '@/services/organizationService';
 import { Building2, Calendar, Users, Settings, UserPlus } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { EditOrganizationModal } from './EditOrganizationModal';
 
 interface OrganizationCardProps {
   org: Organization;
@@ -21,6 +21,8 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   onUpdatePlan
 }) => {
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editedOrg, setEditedOrg] = useState(org);
 
   const getPlanColor = (plan: string) => {
     switch (plan) {
@@ -32,92 +34,105 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   };
 
   return (
-    <Card className={`transition-all ${org.is_active ? 'border-green-200' : 'border-red-200 opacity-75'}`}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-              {org.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
-                <h3 className="text-lg font-semibold">{org.name}</h3>
-                <Badge variant={org.is_active ? 'default' : 'secondary'}>
-                  {org.is_active ? 'Active' : 'Inactive'}
-                </Badge>
-                <Badge className={getPlanColor(org.plan_type || 'free')}>
-                  {(org.plan_type || 'free').toUpperCase()}
-                </Badge>
+    <>
+      <Card className={`transition-all ${editedOrg.is_active ? 'border-green-200' : 'border-red-200 opacity-75'}`}>
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                {editedOrg.name.charAt(0).toUpperCase()}
               </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                <div className="flex items-center space-x-2">
-                  <Building2 className="w-4 h-4" />
-                  <span>Slug: {org.slug}</span>
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <h3 className="text-lg font-semibold">{editedOrg.name}</h3>
+                  <Badge variant={editedOrg.is_active ? 'default' : 'secondary'}>
+                    {editedOrg.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                  <Badge className={getPlanColor(editedOrg.plan_type || 'free')}>
+                    {(editedOrg.plan_type || 'free').toUpperCase()}
+                  </Badge>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>Created: {new Date(org.created_at).toLocaleDateString()}</span>
-                </div>
-                {org.domain && (
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
                   <div className="flex items-center space-x-2">
                     <Building2 className="w-4 h-4" />
-                    <span>Domain: {org.domain}</span>
+                    <span>Slug: {editedOrg.slug}</span>
                   </div>
-                )}
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4" />
-                  <span>Max Responses: {org.max_responses || 100}</span>
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>Created: {new Date(editedOrg.created_at).toLocaleDateString()}</span>
+                  </div>
+                  {editedOrg.domain && (
+                    <div className="flex items-center space-x-2">
+                      <Building2 className="w-4 h-4" />
+                      <span>Domain: {editedOrg.domain}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4" />
+                    <span>Max Responses: {editedOrg.max_responses || 100}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <div className="flex space-x-2">
-              <Button
-                variant={org.is_active ? "destructive" : "default"}
-                size="sm"
-                onClick={() => onToggleActive(org.id, org.is_active)}
+            <div className="flex flex-col space-y-2">
+              <div className="flex space-x-2">
+                <Button
+                  variant={editedOrg.is_active ? "destructive" : "default"}
+                  size="sm"
+                  onClick={() => onToggleActive(editedOrg.id, editedOrg.is_active)}
+                >
+                  {editedOrg.is_active ? 'Deactivate' : 'Activate'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditOpen(true)}
+                >
+                  Edit
+                </Button>
+                <Dialog open={showUserManagement} onOpenChange={setShowUserManagement}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <UserPlus className="w-4 h-4 mr-1" />
+                      Users
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>User Management - {editedOrg.name}</DialogTitle>
+                    </DialogHeader>
+                    <UserManagement 
+                      organizationId={editedOrg.id} 
+                      organizationName={editedOrg.name}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <Select
+                value={editedOrg.plan_type || 'free'}
+                onValueChange={(value) => onUpdatePlan(editedOrg.id, value)}
               >
-                {org.is_active ? 'Deactivate' : 'Activate'}
-              </Button>
-              
-              <Dialog open={showUserManagement} onOpenChange={setShowUserManagement}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <UserPlus className="w-4 h-4 mr-1" />
-                    Users
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>User Management - {org.name}</DialogTitle>
-                  </DialogHeader>
-                  <UserManagement 
-                    organizationId={org.id} 
-                    organizationName={org.name}
-                  />
-                </DialogContent>
-              </Dialog>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-
-            <Select
-              value={org.plan_type || 'free'}
-              onValueChange={(value) => onUpdatePlan(org.id, value)}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="pro">Pro</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      {editOpen && (
+        <EditOrganizationModal
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          organization={editedOrg}
+          onSave={updated => setEditedOrg(updated)}
+        />
+      )}
+    </>
   );
 };
