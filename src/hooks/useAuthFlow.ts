@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +8,6 @@ import { createOrganization } from "@/utils/createOrganization";
 export function useAuthFlow() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [orgName, setOrgName] = useState("");
   const [loading, setLoading] = useState(false);
   const [orgLoading, setOrgLoading] = useState(false);
   const [error, setError] = useState("");
@@ -75,31 +73,7 @@ export function useAuthFlow() {
       title: "Account created!",
       description: "Please check your email to verify your account. After verification, you'll be prompted to create your organization.",
     });
-
-    setTimeout(async () => {
-      setOrgLoading(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user?.id) throw new Error("User not found after sign up.");
-
-        const org = await createOrganization({ email, orgName, userId: user.id });
-        toast({
-          title: "Organization Created",
-          description: `Welcome to ${org.name || orgName}!`,
-        });
-        navigate(`/admin/${org.slug}`);
-      } catch (err: any) {
-        setError(err.message);
-        toast({
-          title: "Error creating organization",
-          description: err.message || "Please retry.",
-          variant: "destructive",
-        });
-      } finally {
-        setOrgLoading(false);
-        setLoading(false);
-      }
-    }, 800);
+    setLoading(false);
   };
 
   return {
@@ -107,8 +81,6 @@ export function useAuthFlow() {
     setEmail,
     password,
     setPassword,
-    orgName,
-    setOrgName,
     loading,
     orgLoading,
     error,

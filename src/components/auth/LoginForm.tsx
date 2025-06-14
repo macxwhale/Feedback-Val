@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { useAuthFlow } from "@/hooks/useAuthFlow";
 
 export const LoginForm: React.FC = () => {
   const {
-    email, setEmail, password, setPassword, orgName, setOrgName,
+    email, setEmail, password, setPassword,
     loading, orgLoading, error, handleSignIn, handleSignUp
   } = useAuthFlow();
 
@@ -95,16 +94,6 @@ export const LoginForm: React.FC = () => {
                       placeholder="Create a password"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="org-name">Organization Name</Label>
-                    <Input
-                      id="org-name"
-                      type="text"
-                      value={orgName}
-                      onChange={e => setOrgName(e.target.value)}
-                      placeholder="e.g. My Company"
-                    />
-                  </div>
                   {error && (
                     <Alert>
                       <AlertDescription>{error}</AlertDescription>
@@ -113,6 +102,9 @@ export const LoginForm: React.FC = () => {
                   <Button type="submit" className="w-full" disabled={loading || orgLoading}>
                     {(loading || orgLoading) ? "Creating account..." : "Sign Up"}
                   </Button>
+                  <div className="text-xs text-center text-gray-500 mt-3">
+                    After verifying your email, you will create your organization in the next step.
+                  </div>
                 </form>
               </TabsContent>
             </Tabs>
