@@ -14,10 +14,12 @@ export const ModernHeader: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="relative">
-              <Activity className="w-8 h-8 text-sunset-500" />
+              <Activity className="w-8 h-8 text-sunset-500" aria-label="Pulsify pulse icon" />
               <div className="absolute inset-0 w-8 h-8 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
             </div>
-            <span className="text-2xl font-space font-bold text-warm-gray-900 dark:text-dark-warm-900">Pulsify</span>
+            <span className="text-2xl font-space font-bold text-warm-gray-900 dark:text-dark-warm-900">
+              Pulsify
+            </span>
           </div>
 
           {/* Navigation */}

@@ -17,16 +17,17 @@ export const FinalCTA: React.FC = () => {
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        
         <div className="flex items-center justify-center space-x-3 mb-12">
           <div className="relative">
-            <Activity className="w-8 h-8 text-white animate-pulse-gentle" />
+            <Activity className="w-8 h-8 text-white animate-pulse-gentle" aria-label="Pulsify pulse icon" />
             <div className="absolute inset-0 w-8 h-8 bg-white rounded-full opacity-20 animate-ping"></div>
           </div>
-          <span className="text-white/90 text-lg font-space font-medium">Join 2,000+ happy customers</span>
+          <span className="text-white/90 text-lg font-space font-medium">
+            Join 2,000+ happy customers
+          </span>
         </div>
 
-        <h2 className="text-5xl lg:text-7xl font-space font-black text-white mb-10 leading-tight">
+        <h2 className="text-5xl lg:text-7xl font-space font-black text-white mb-10 leading-tight" aria-label="Ready to transform your customer feedback?">
           Ready to{' '}
           <span className="relative">
             transform
@@ -40,7 +41,6 @@ export const FinalCTA: React.FC = () => {
           Join thousands of businesses using Pulsify to make{' '}
           <span className="font-bold">better decisions</span>
         </p>
-        
       </div>
     </section>
   );

@@ -19,25 +19,29 @@ export const BrandedHeader: React.FC<BrandedHeaderProps> = ({
     background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`
   };
 
+  // Update default logo alt text and site name if fallback is triggered
   return (
     <div className="p-8 text-white text-center" style={headerStyle}>
       {assets.logoUrl && (
         <img 
           src={assets.logoUrl}
-          alt={assets.logoAlt}
+          alt={assets.logoAlt && assets.logoAlt !== "Pulselify Logo"
+            ? assets.logoAlt.replace(/Pulselify/gi, 'Pulsify')
+            : "Pulsify Logo"}
           className="h-20 mx-auto mb-6 drop-shadow-lg object-contain"
           onError={(e) => {
-            // Fallback to default logo if custom logo fails to load
-            (e.target as HTMLImageElement).src = '/lovable-uploads/367347fe-02da-4338-b8ba-91138293d303.png';
-            (e.target as HTMLImageElement).alt = 'Default Logo';
+            (e.target as HTMLImageElement).src = '/lovable-uploads/pulse-favicon-64.png';
+            (e.target as HTMLImageElement).alt = 'Pulsify Logo';
           }}
         />
       )}
       <h1 className="text-4xl font-bold mb-3">
-        {title}
+        {title === "Pulselify" ? "Pulsify" : title}
       </h1>
       <p className="text-xl text-blue-100">
-        {subtitle}
+        {subtitle === "Turn Customer Feedback Into Growth"
+          ? "Real Insights. Real Impact."
+          : subtitle}
       </p>
       {showSecureIndicator && (
         <div className="flex items-center justify-center mt-4">

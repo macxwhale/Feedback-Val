@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Activity, Mail, MapPin, Phone } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -17,13 +16,16 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-5">
             <div className="flex items-center space-x-3 mb-6">
               <div className="relative">
-                <Activity className="w-8 h-8 text-sunset-500" />
+                <Activity className="w-8 h-8 text-sunset-500" aria-label="Pulsify pulse icon" />
                 <div className="absolute inset-0 w-8 h-8 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
               </div>
               <span className="text-2xl font-space font-bold text-white dark:text-dark-warm-900">Pulsify</span>
             </div>
             
-            <p className="text-lg text-warm-gray-300 dark:text-dark-warm-600 leading-relaxed mb-6 max-w-md font-medium">
+            <p className="text-lg text-warm-gray-300 dark:text-dark-warm-600 leading-relaxed mb-2 max-w-md font-medium">
+              Real Insights. Real Impact.
+            </p>
+            <p className="text-base text-warm-gray-400 dark:text-dark-warm-500 leading-relaxed mb-6 max-w-md font-medium">
               Transform customer feedback into meaningful growth with AI-powered insights that drive real business results.
             </p>
             
