@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { processResponsesByType } from '@/services/responseDataProcessor';
@@ -56,7 +57,8 @@ export const useAnalyticsTableData = (organizationId: string) => {
           response_value,
           question_category,
           session_id,
-          created_at
+          created_at,
+          score
         `)
         .eq('organization_id', organizationId);
 
