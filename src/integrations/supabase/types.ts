@@ -956,6 +956,10 @@ export type Database = {
         Args: { org_slug: string }
         Returns: Json
       }
+      get_organization_members: {
+        Args: { p_org_id: string }
+        Returns: Database["public"]["CompositeTypes"]["member_with_inviter"][]
+      }
       get_organization_stats: {
         Args: { org_id: string }
         Returns: Json
@@ -1008,7 +1012,16 @@ export type Database = {
         | "Comments"
     }
     CompositeTypes: {
-      [_ in never]: never
+      member_with_inviter: {
+        id: string | null
+        user_id: string | null
+        email: string | null
+        role: string | null
+        status: string | null
+        created_at: string | null
+        accepted_at: string | null
+        invited_by: Json | null
+      }
     }
   }
 }

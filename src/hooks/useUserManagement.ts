@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -31,27 +30,16 @@ export const useUserManagement = (organizationId: string) => {
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['organization-members', organizationId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('organization_users')
-        .select(`
-          id,
-          user_id,
-          email,
-          role,
-          status,
-          created_at,
-          accepted_at,
-          invited_by_user_id
-        `)
-        .eq('organization_id', organizationId)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_organization_members', {
+        p_org_id: organizationId,
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching organization members:", error);
+        throw error;
+      }
       
-      return (data || []).map(item => ({
-        ...item,
-        invited_by: null
-      })) as Member[];
+      return (data || []) as Member[];
     },
     enabled: !!organizationId,
   });
