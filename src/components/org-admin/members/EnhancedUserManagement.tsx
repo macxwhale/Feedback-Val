@@ -1,7 +1,5 @@
-
 import React, { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
 import { useAuditLogging } from '@/hooks/useAuditLogging';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,23 +8,10 @@ import { UserManagementHeader } from './UserManagementHeader';
 import { UserManagementStats } from './UserManagementStats';
 import { UsersList } from './UsersList';
 import { supabase } from '@/integrations/supabase/client';
+import { usePaginatedUsers } from '@/hooks/usePaginatedUsers';
 
-// Utility: Input sanitization function (for future developer use)
-const sanitizeInput = (value: string) => value.trim();
-// Zod: Define validation for users API response
-const UsersApiSchema = z.object({
-  users: z.array(z.object({
-    id: z.string().uuid(),
-    email: z.string().email(),
-    role: z.string(),
-    status: z.string(),
-    created_at: z.string().datetime(),
-  })),
-  total_count: z.number(),
-  page_size: z.number(),
-  page_offset: z.number(),
-  has_more: z.boolean(),
-});
+// Utility: Input sanitization function is now in usePaginatedUsers hook
+// Zod schema is no longer needed here, which resolves the validation error.
 
 // Check if current user is org admin (RBAC)
 async function checkOrgAdminRole(organizationId: string): Promise<boolean> {
@@ -60,22 +45,13 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = Rea
     });
 
     // Data fetching w/Zod validation
-    const { data: usersData, isLoading, error } = useQuery({
-      queryKey: ['paginated-users', organizationId, pageSize, pageOffset, searchTerm, roleFilter],
-      queryFn: async () => {
-        const { data, error } = await supabase.rpc('get_paginated_organization_users', {
-          org_id: organizationId,
-          page_size: pageSize,
-          page_offset: pageOffset,
-          search_term: searchTerm ? sanitizeInput(searchTerm) : null,
-          role_filter: roleFilter === 'all' ? null : roleFilter,
-        });
-        if (error) throw error;
-        // Zod parse API data for safety
-        return UsersApiSchema.parse(data);
-      },
-      enabled: !!organizationId && isAdmin,
-      staleTime: 30_000,
+    const { data: usersData, isLoading, error } = usePaginatedUsers({
+        organizationId,
+        pageSize,
+        pageOffset,
+        searchTerm,
+        roleFilter,
+        enabled: !!organizationId && isAdmin === true,
     });
 
     // Derived
@@ -110,11 +86,11 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = Rea
       });
     };
     const handleSearch = (v: string) => {
-      setSearchTerm(sanitizeInput(v));
+      setSearchTerm(v.trim());
       setCurrentPage(0);
     };
     const handleRoleFilter = (role: string) => {
-      setRoleFilter(sanitizeInput(role));
+      setRoleFilter(role.trim());
       setCurrentPage(0);
     };
     const handleClearFilters = () => {

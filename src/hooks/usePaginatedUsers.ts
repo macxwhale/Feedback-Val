@@ -8,6 +8,7 @@ interface PaginatedUsersParams {
   pageOffset?: number;
   searchTerm?: string;
   roleFilter?: string;
+  enabled?: boolean;
 }
 
 interface PaginatedUsersResult {
@@ -18,12 +19,15 @@ interface PaginatedUsersResult {
   has_more: boolean;
 }
 
+const sanitizeInput = (value: string) => value.trim();
+
 export const usePaginatedUsers = ({
   organizationId,
   pageSize = 20,
   pageOffset = 0,
   searchTerm,
-  roleFilter
+  roleFilter,
+  enabled = true,
 }: PaginatedUsersParams) => {
   return useQuery({
     queryKey: ['paginated-users', organizationId, pageSize, pageOffset, searchTerm, roleFilter],
@@ -32,8 +36,8 @@ export const usePaginatedUsers = ({
         org_id: organizationId,
         page_size: pageSize,
         page_offset: pageOffset,
-        search_term: searchTerm || null,
-        role_filter: roleFilter || null
+        search_term: searchTerm ? sanitizeInput(searchTerm) : null,
+        role_filter: roleFilter === 'all' ? null : (roleFilter || null)
       });
 
       if (error) throw error;
@@ -41,7 +45,7 @@ export const usePaginatedUsers = ({
       // Properly cast the Json response to our interface
       return data as unknown as PaginatedUsersResult;
     },
-    enabled: !!organizationId,
+    enabled: !!organizationId && enabled,
     staleTime: 30000,
   });
 };
