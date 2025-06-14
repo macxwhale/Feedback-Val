@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { 
   FileText, 
   MessageSquare, 
-  Star, 
   CheckCircle,
   TrendingUp,
   TrendingDown
@@ -14,7 +13,6 @@ import {
 interface SummaryData {
   total_questions: number;
   total_responses: number;
-  overall_avg_score: number;
   overall_completion_rate: number;
 }
 
@@ -41,14 +39,6 @@ export const AnalyticsSummaryCards: React.FC<AnalyticsSummaryCardsProps> = ({ su
       trend: '+12%'
     },
     {
-      title: 'Average Score',
-      value: `${summary.overall_avg_score}/5`,
-      icon: Star,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
-      trend: summary.overall_avg_score >= 4 ? '+5%' : '-3%'
-    },
-    {
       title: 'Completion Rate',
       value: `${summary.overall_completion_rate}%`,
       icon: CheckCircle,
@@ -59,7 +49,7 @@ export const AnalyticsSummaryCards: React.FC<AnalyticsSummaryCardsProps> = ({ su
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {cards.map((card, index) => (
         <Card key={index} className="border-l-4 border-l-blue-500">
           <CardContent className="p-6">

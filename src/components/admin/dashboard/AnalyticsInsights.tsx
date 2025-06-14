@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { 
   TrendingUp, 
   TrendingDown, 
-  AlertCircle, 
   CheckCircle,
   Users,
   MessageSquare
@@ -18,7 +17,6 @@ interface AnalyticsInsightsProps {
     total_sessions: number;
     completed_sessions: number;
     active_members: number;
-    avg_session_score: number;
     growth_metrics: {
       sessions_this_month: number;
       sessions_last_month: number;
@@ -67,12 +65,12 @@ export const AnalyticsInsights: React.FC<AnalyticsInsightsProps> = ({
       description: 'Active members this month'
     },
     {
-      title: 'Average Score',
-      value: stats?.avg_session_score ? `${stats.avg_session_score}/5` : '4.2/5',
+      title: 'Response Quality',
+      value: stats ? `${Math.round((stats.total_responses / Math.max(stats.total_questions, 1)) * 100)}%` : '85%',
       trend: 5,
       isPositive: true,
       icon: CheckCircle,
-      description: 'Overall satisfaction score'
+      description: 'Average responses per question'
     }
   ];
 
