@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -114,6 +113,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           ))}
         </TabsList>
 
+        {/* Core Analytics: Only show analytics content/cards on this tab */}
         <TabsContent value="overview" className="space-y-6">
           <AdvancedDashboardView
             organizationId={organization.id}
@@ -127,33 +127,30 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           />
         </TabsContent>
 
+        {/* Customer Intelligence */}
         <TabsContent value="customer-insights">
           <CustomerInsightsDashboard organizationId={organization.id} />
         </TabsContent>
-
         <TabsContent value="sentiment">
           <SentimentAnalyticsDashboard organizationId={organization.id} />
         </TabsContent>
-
         <TabsContent value="performance">
           <PerformanceAnalyticsDashboard organizationId={organization.id} />
         </TabsContent>
 
+        {/* Team & Settings */}
         <TabsContent value="members">
           <EnhancedUserManagement 
             organizationId={organization.id}
             organizationName={organization.name}
           />
         </TabsContent>
-
         <TabsContent value="feedback">
           <OrganizationSpecificStats organizationId={organization.id} />
         </TabsContent>
-
         <TabsContent value="questions">
           <QuestionsManagement />
         </TabsContent>
-
         <TabsContent value="settings">
           <OrganizationSettingsTab organization={organization} />
         </TabsContent>
