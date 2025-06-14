@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -19,6 +20,7 @@ import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import { UpgradePrompt } from './UpgradePrompt';
 import { DashboardTabsDevPanel } from './DashboardTabsDevPanel';
+import { useOrganization as useOrganizationContext } from '@/context/OrganizationContext'; // Added import
 
 // Define and EXPORT the DashboardModuleKey type
 export type DashboardModuleKey =
@@ -61,10 +63,10 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   // ========= Diagnostics for Debugging =========
   const isDev = process.env.NODE_ENV !== 'production';
 
+  // Correct context org acquisition (using hook)
   let orgContext;
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    orgContext = require('@/context/OrganizationContext').useOrganization().organization;
+    orgContext = useOrganizationContext().organization;
   } catch {
     orgContext = undefined;
   }
@@ -86,10 +88,8 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     const tabsToCheck = [
       'analytics', 'customerInsights', 'sentiment', 'performance', 'members', 'feedback', 'questions', 'settings'
     ];
-    const { useFeatureGate } = require('@/hooks/useFeatureGate');
-    const fg = useFeatureGate();
     tabsToCheck.forEach(key => {
-      console.log(`[MODULE DEBUG] Tab: ${key} | plan: ${cOrg.plan_type} | hasModuleAccess(${key}):`, fg.hasModuleAccess(key));
+      console.log(`[MODULE DEBUG] Tab: ${key} | plan: ${cOrg.plan_type} | hasModuleAccess(${key}):`, hasModuleAccess(key as DashboardModuleKey));
     });
     console.groupEnd();
   }
@@ -215,3 +215,4 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     </div>
   );
 };
+
