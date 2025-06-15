@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -100,7 +99,6 @@ export const Pricing: React.FC = () => {
   ];
 
   const getPrice = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === "Custom") return "Custom";
     return isYearly ? plan.yearlyPrice : plan.monthlyPrice;
   };
 
