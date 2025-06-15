@@ -77,21 +77,23 @@ export const ModernHero: React.FC = () => {
               </span>
             </Button>
           </div>
-
-          {/* Enhanced social proof */}
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 pt-6 text-sm text-warm-gray-500 dark:text-dark-warm-500">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="font-medium">No credit card required</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-              <span className="font-medium">14-day free trial</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-              <span className="font-medium">Setup in under 5 minutes</span>
-            </div>
+        </div>
+      </div>
+      
+      {/* Enhanced social proof */}
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-warm-gray-500 dark:text-dark-warm-500">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="font-medium">No credit card required</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <span className="font-medium">14-day free trial</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <span className="font-medium">Setup in under 5 minutes</span>
           </div>
         </div>
       </div>
