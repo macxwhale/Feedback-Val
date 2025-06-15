@@ -129,6 +129,98 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          hashed_key: string
+          id: string
+          key_name: string
+          key_prefix: string
+          last_used_at: string | null
+          organization_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          hashed_key: string
+          id?: string
+          key_name: string
+          key_prefix: string
+          last_used_at?: string | null
+          organization_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          hashed_key?: string
+          id?: string
+          key_name?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          organization_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_request_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          endpoint: string
+          id: number
+          ip_address: unknown | null
+          organization_id: string
+          status_code: number
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          endpoint: string
+          id?: number
+          ip_address?: unknown | null
+          organization_id: string
+          status_code: number
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          endpoint?: string
+          id?: number
+          ip_address?: unknown | null
+          organization_id?: string
+          status_code?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_request_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_request_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_responses: {
         Row: {
           created_at: string
@@ -1065,6 +1157,14 @@ export type Database = {
         Args: { invitation_token: string }
         Returns: Json
       }
+      create_api_key: {
+        Args: {
+          p_organization_id: string
+          p_key_name: string
+          p_expires_at?: string
+        }
+        Returns: string
+      }
       get_current_user_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1115,6 +1215,14 @@ export type Database = {
       safe_delete_question: {
         Args: { question_uuid: string }
         Returns: boolean
+      }
+      validate_api_key: {
+        Args: { p_api_key: string }
+        Returns: {
+          is_valid: boolean
+          org_id: string
+          key_id: string
+        }[]
       }
     }
     Enums: {

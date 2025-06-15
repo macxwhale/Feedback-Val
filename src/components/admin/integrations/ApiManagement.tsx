@@ -1,168 +1,200 @@
 
-import React, { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOrganization } from '@/hooks/useOrganization';
+import { getApiKeys, createApiKey, updateApiKeyStatus } from '@/services/apiKeysService';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { useOrganization } from '@/context/OrganizationContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Copy } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { KeyRound, PlusCircle, Copy, Check, Power, PowerOff, Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
-export const ApiManagement: React.FC = () => {
-  const { organization, loading: orgLoading, refreshOrganization } = useOrganization();
-  const queryClient = useQueryClient();
-
-  const [enabled, setEnabled] = useState(false);
-  const [senderId, setSenderId] = useState('');
-  const [username, setUsername] = useState('');
-  const [apiKey, setApiKey] = useState('');
-
-  useEffect(() => {
-    console.log("ApiManagement: organization data from context:", organization);
-    if (organization) {
-      setEnabled(organization.sms_enabled || false);
-      setSenderId(organization.sms_sender_id || '');
-      setUsername(organization.sms_settings?.username || '');
-      // API key is not pre-filled for security
-      setApiKey('');
-    }
-  }, [organization]);
-  
-  const { mutate: updateSettings, isPending: isSaving } = useMutation({
-    mutationFn: async (variables: { enabled: boolean; senderId: string; username: string; apiKey: string; }) => {
-      const { data, error } = await supabase.functions.invoke('update-sms-settings', {
-        body: {
-          orgId: organization.id,
-          ...variables
-        },
-      });
-
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: () => {
-      toast.success('SMS settings saved successfully!');
-      if (refreshOrganization) {
-        refreshOrganization();
-      }
-      if (organization?.slug) {
-        queryClient.invalidateQueries({ queryKey: ['organization', organization.slug] });
-      }
-    },
-    onError: (error) => {
-      toast.error(`Failed to save settings: ${error.message}`);
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!organization) {
-      toast.error('Cannot save settings: Organization data is not available.');
-      console.error('ApiManagement: handleSubmit called without organization data.');
-      return;
-    }
-    const settingsToUpdate = { enabled, senderId, username, apiKey };
-    console.log("ApiManagement: Submitting SMS settings:", settingsToUpdate);
-    updateSettings(settingsToUpdate);
+const CopyableKey = ({ apiKey }: { apiKey: string }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(apiKey);
+    setCopied(true);
+    toast({ title: 'API Key Copied!', description: 'The key has been copied to your clipboard.' });
+    setTimeout(() => setCopied(false), 2000);
   };
-  
-  const webhookUrl = organization?.webhook_secret 
-    ? `https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/handle-sms-webhook/${organization.webhook_secret}`
-    : '';
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(webhookUrl);
-    toast.success('Webhook URL copied to clipboard!');
-  };
-
-  if (orgLoading) {
-    return <div>Loading SMS settings...</div>;
-  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>SMS Integration (Africa's Talking)</CardTitle>
-        <CardDescription>Configure two-way SMS feedback for your organization.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
-            <Label htmlFor="sms-enabled" className="flex flex-col space-y-1">
-              <span>Enable SMS Feedback</span>
-              <span className="font-normal leading-snug text-muted-foreground">
-                Allow users to provide feedback via SMS.
-              </span>
-            </Label>
-            <Switch
-              id="sms-enabled"
-              checked={enabled}
-              onCheckedChange={setEnabled}
-              disabled={isSaving}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="senderId">Sender ID / Shortcode</Label>
-            <Input
-              id="senderId"
-              value={senderId}
-              onChange={(e) => setSenderId(e.target.value)}
-              placeholder="e.g., YourBrand or 24567"
-              disabled={isSaving}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="username">Africa's Talking Username</Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g., sandbox or your username"
-              disabled={isSaving}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">Africa's Talking API Key</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={organization?.sms_settings ? '•••••••••••••••• (already set)' : 'Enter new API key'}
-              disabled={isSaving}
-            />
-             <p className="text-sm text-muted-foreground">
-              Leave blank to keep the existing key.
-            </p>
-          </div>
-
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save Settings'}
-          </Button>
-        </form>
-
-        <Alert className="mt-8">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>Your SMS Webhook URL</AlertTitle>
-          <AlertDescription>
-            <p className="mb-2">Configure this URL in your Africa's Talking account to receive incoming SMS.</p>
-            <div className="flex items-center space-x-2 bg-muted p-2 rounded-md">
-              <Input readOnly value={webhookUrl} className="flex-grow bg-transparent border-none focus:ring-0" />
-              <Button variant="ghost" size="icon" onClick={copyToClipboard} disabled={!webhookUrl}>
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-2 p-3 bg-secondary rounded-md">
+      <code className="text-sm font-mono break-all">{apiKey}</code>
+      <Button variant="ghost" size="icon" onClick={handleCopy}>
+        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+      </Button>
+    </div>
   );
+};
+
+
+export const ApiManagement: React.FC = () => {
+    const { organization } = useOrganization();
+    const queryClient = useQueryClient();
+    const [newKeyName, setNewKeyName] = useState('');
+    const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+
+    const queryKey = ['apiKeys', organization?.id];
+
+    const { data: apiKeys, isLoading } = useQuery({
+        queryKey,
+        queryFn: () => getApiKeys(organization!.id),
+        enabled: !!organization,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (keyName: string) => createApiKey(organization!.id, keyName),
+        onSuccess: (newKey) => {
+            toast({ title: "API Key Created", description: "Make sure to copy your key. You won't see it again." });
+            setGeneratedKey(newKey);
+            setNewKeyName('');
+            queryClient.invalidateQueries({ queryKey });
+        },
+        onError: (error) => {
+            toast({ title: "Error", description: error.message, variant: 'destructive' });
+        }
+    });
+
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ keyId, status }: { keyId: string; status: 'active' | 'inactive' }) => updateApiKeyStatus(keyId, status),
+        onSuccess: () => {
+            toast({ title: "Status Updated" });
+            queryClient.invalidateQueries({ queryKey });
+        },
+        onError: (error) => {
+            toast({ title: "Error", description: error.message, variant: 'destructive' });
+        }
+    });
+
+    const handleCreateKey = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (newKeyName.trim() && organization) {
+        createMutation.mutate(newKeyName.trim());
+      }
+    }
+
+    return (
+        <Card className="col-span-1 lg:col-span-2">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><KeyRound /> API Keys</CardTitle>
+                <CardDescription>Manage API keys for programmatic access to your organization's data.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleCreateKey} className="flex items-center gap-2 mb-6">
+                    <Input 
+                        placeholder="New key name (e.g., 'SMS Integration')"
+                        value={newKeyName}
+                        onChange={(e) => setNewKeyName(e.target.value)}
+                        disabled={createMutation.isPending}
+                    />
+                    <Button type="submit" disabled={!newKeyName.trim() || createMutation.isPending}>
+                        {createMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                        Create Key
+                    </Button>
+                </form>
+
+                <div className="border rounded-md">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Key Prefix</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Last Used</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                Array.from({ length: 3 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell colSpan={6}><Skeleton className="h-8 w-full" /></TableCell>
+                                    </TableRow>
+                                ))
+                            ) : apiKeys && apiKeys.length > 0 ? (
+                                apiKeys.map(key => (
+                                    <TableRow key={key.id}>
+                                        <TableCell className="font-medium">{key.key_name}</TableCell>
+                                        <TableCell><code>{key.key_prefix}...</code></TableCell>
+                                        <TableCell>
+                                            <Badge variant={key.status === 'active' ? 'default' : 'secondary'}>
+                                                {key.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>{key.last_used_at ? `${formatDistanceToNow(new Date(key.last_used_at))} ago` : 'Never'}</TableCell>
+                                        <TableCell>{format(new Date(key.created_at), 'MMM d, yyyy')}</TableCell>
+                                        <TableCell className="text-right">
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" disabled={updateStatusMutation.isPending}>
+                                                        {key.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This will {key.status === 'active' ? 'deactivate' : 'activate'} the API key. 
+                                                            {key.status === 'active' ? ' Applications using it will lose access.' : ' Applications will regain access.'}
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => updateStatusMutation.mutate({ keyId: key.id, status: key.status === 'active' ? 'inactive' : 'active' })}>
+                                                            Continue
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                        No API keys created yet.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <Dialog open={!!generatedKey} onOpenChange={(open) => !open && setGeneratedKey(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>API Key Created Successfully</DialogTitle>
+                            <DialogDescription>
+                                Please copy this key and store it securely. You will not be able to see it again.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <CopyableKey apiKey={generatedKey || ''} />
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button>Close</Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </CardContent>
+        </Card>
+    );
 };
