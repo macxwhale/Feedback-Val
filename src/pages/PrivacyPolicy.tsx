@@ -7,7 +7,7 @@ const PrivacyPolicy: React.FC = () => {
   return (
     <div className="bg-white dark:bg-background">
       <ModernHeader />
-      <main className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-4xl mx-auto pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-extrabold text-warm-gray-900 dark:text-dark-warm-900 mb-8">Privacy Policy</h1>
         <div className="prose dark:prose-invert max-w-none text-warm-gray-600 dark:text-dark-warm-600 space-y-4">
           <p>Last updated: June 15, 2025</p>
