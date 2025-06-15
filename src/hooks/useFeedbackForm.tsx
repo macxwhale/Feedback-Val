@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
 import { fetchQuestions } from '@/services/questionsService';
@@ -18,6 +17,7 @@ export const useFeedbackForm = () => {
   const [finalResponses, setFinalResponses] = useState<FeedbackResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
   
   const { organization, isLoading: orgLoading } = useOrganization();
   const { toast } = useToast();
@@ -58,13 +58,14 @@ export const useFeedbackForm = () => {
 
       try {
         setIsLoading(true);
+        setQuestionsError(null);
         
         const data = await fetchQuestions(organization?.slug);
         console.log('useFeedbackForm - Questions loaded:', data);
         setQuestions(data);
         
         questionsLoaded.current = true;
-        lastOrgId.current = currentOrgId;
+        lastOrgId.current = organization?.id || 'fallback';
         
         responseTimeService.startSession(sessionId.current);
 
@@ -79,6 +80,7 @@ export const useFeedbackForm = () => {
         }
       } catch (error) {
         console.error('useFeedbackForm - Error loading questions:', error);
+        setQuestionsError("We couldn't load the survey questions. Please check your connection and try again.");
       } finally {
         setIsLoading(false);
       }
@@ -153,6 +155,7 @@ export const useFeedbackForm = () => {
     setFinalResponses([]);
     setCompletedQuestions([]);
     clearSavedData();
+    setQuestionsError(null);
     
     questionsLoaded.current = false;
     lastOrgId.current = null;
@@ -165,6 +168,7 @@ export const useFeedbackForm = () => {
     isComplete,
     finalResponses,
     isLoading: isLoading || isSubmitting,
+    questionsError,
     completedQuestions,
     handleResponse: handleQuestionResponse,
     isCurrentQuestionAnswered,

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { WelcomeScreen } from './feedback/WelcomeScreen';
 import { EnhancedLoading } from './feedback/EnhancedLoading';
@@ -47,6 +46,7 @@ const FeedbackForm = () => {
     isComplete,
     finalResponses,
     isLoading,
+    questionsError,
     completedQuestions,
     handleResponse,
     isCurrentQuestionAnswered,
@@ -97,11 +97,22 @@ const FeedbackForm = () => {
   }
 
   if (orgError || !organization) {
-    console.log('FeedbackForm - Showing error boundary');
+    console.log('FeedbackForm - Showing error boundary for org');
     return (
       <FeedbackErrorBoundary 
         orgLoading={orgLoading}
         orgError={orgError}
+        organization={organization}
+      />
+    );
+  }
+
+  if (questionsError) {
+    console.log('FeedbackForm - Showing error boundary for questions');
+    return (
+      <FeedbackErrorBoundary 
+        orgLoading={false}
+        orgError={questionsError}
         organization={organization}
       />
     );

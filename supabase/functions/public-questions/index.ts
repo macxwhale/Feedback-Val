@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 function createErrorResponse(message: string, status: number = 400) {
@@ -24,8 +24,16 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const organizationSlug = url.searchParams.get('organizationSlug');
+    let organizationSlug: string | null = null;
+
+    // Support both GET (for direct testing) and POST (from client)
+    if (req.method === 'POST') {
+      const body = await req.json();
+      organizationSlug = body.organizationSlug;
+    } else {
+      const url = new URL(req.url);
+      organizationSlug = url.searchParams.get('organizationSlug');
+    }
 
     if (!organizationSlug) {
       return createErrorResponse('organizationSlug is required', 400);

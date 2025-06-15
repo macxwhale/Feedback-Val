@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 const FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/questions-crud';
-const PUBLIC_QUESTIONS_FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/public-questions';
+// PUBLIC_QUESTIONS_FUNCTION_URL is no longer needed
 
 interface QuestionFormData {
   question_text: string;
@@ -126,15 +127,15 @@ export const fetchQuestions = async (organizationSlug?: string) => {
     return [];
   }
   try {
-    const response = await fetch(`${PUBLIC_QUESTIONS_FUNCTION_URL}?organizationSlug=${organizationSlug}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const { data, error } = await supabase.functions.invoke('public-questions', {
+      body: { organizationSlug },
     });
+
+    if (error) {
+      throw error;
+    }
     
-    const questions = await handleResponse(response);
-    return questions.map(transformQuestion);
+    return data.map(transformQuestion);
   } catch (error) {
     console.error('Error fetching questions for form:', error);
     throw error;
