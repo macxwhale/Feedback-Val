@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -65,13 +64,24 @@ export const useSystemUserManagementData = () => {
 export const useAssignUserToOrg = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, email, organizationId, role }: { userId: string; email: string; organizationId: string; role: string }) => {
+    mutationFn: async ({
+      userId,
+      email,
+      organizationId,
+      role,
+    }: {
+      userId: string;
+      email: string;
+      organizationId: string;
+      role: string;
+    }) => {
       const { data, error } = await supabase.functions.invoke('assign-user-to-org', {
         body: { user_id: userId, organization_id: organizationId, role },
       });
 
       if (error) {
-        console.error("Error from assign-user-to-org function:", error);
+        // Purposeful error logging for debugging; not noisy debugging logs
+        console.error("[useAssignUserToOrg] Error from assign-user-to-org:", error);
         if (error.context && typeof error.context.json === 'function') {
           try {
             const errorBody = await error.context.json();
@@ -79,12 +89,11 @@ export const useAssignUserToOrg = () => {
               throw new Error(errorBody.error);
             }
           } catch (e) {
-            console.error("Failed to parse error body from function response", e);
+            // Parsing failed – Do not provide extra console logs
           }
         }
         throw new Error(error.message || 'An unknown error occurred.');
       }
-      
       return data;
     },
     onSuccess: () => {

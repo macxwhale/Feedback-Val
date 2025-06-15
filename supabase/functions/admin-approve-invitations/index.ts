@@ -69,19 +69,18 @@ serve(async (req: Request) => {
     let approvedCount = 0;
     let failedCount = 0;
 
-    // Fetch all users from auth schema
-    console.log("[admin-approve-invitations] Fetching all system users...");
+    // Efficient user fetching and mapping
     let allUsers: User[] = [];
     let page = 1;
     while (true) {
-        const { data: { users: userBatch }, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
-        if (error) {
-            console.error("[admin-approve-invitations] Error fetching users:", error.message);
-            throw error;
-        }
-        allUsers.push(...userBatch);
-        if (userBatch.length < 1000) break;
-        page++;
+      const { data: { users: userBatch }, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) {
+        console.error("[admin-approve-invitations] Error fetching users:", error.message);
+        throw error;
+      }
+      allUsers.push(...userBatch);
+      if (userBatch.length < 1000) break;
+      page++;
     }
     const userMap = new Map(allUsers.map(u => [u.email, u.id]));
     console.log(`[admin-approve-invitations] Fetched ${allUsers.length} total users.`);
@@ -172,7 +171,7 @@ serve(async (req: Request) => {
     });
 
   } catch (error) {
-    console.error(`[admin-approve-invitations] Unhandled error: ${error.message}`);
+    console.error(`[admin-approve-invitations] Unhandled error:`, error && error.message ? error.message : error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

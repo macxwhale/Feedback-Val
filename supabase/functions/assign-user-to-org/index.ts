@@ -13,7 +13,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Create a client with user's context to check auth and admin status
+    // No development console.logs except on error/important state
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -22,10 +22,10 @@ serve(async (req: Request) => {
     
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
-        return new Response(JSON.stringify({ error: 'Authentication required.' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 401,
-        });
+      return new Response(JSON.stringify({ error: 'Authentication required.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
     }
 
     const { data: isAdmin, error: isAdminError } = await supabaseClient.rpc('get_current_user_admin_status');
@@ -37,7 +37,6 @@ serve(async (req: Request) => {
       });
     }
     
-    // Create admin client to perform privileged database operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -52,7 +51,6 @@ serve(async (req: Request) => {
       });
     }
     
-    // Since a user can only belong to one org, this action is an UPDATE to move them.
     const { data: updatedMembership, error: updateError } = await supabaseAdmin
       .from('organization_users')
       .update({
@@ -65,16 +63,15 @@ serve(async (req: Request) => {
       .single();
 
     if (updateError) {
-      // If user is not found, PgrstError code is 'PGRST116' (No rows found)
       if (updateError.code === 'PGRST116') {
         return new Response(JSON.stringify({ error: `User with ID ${user_id} not found in any organization.` }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 404,
         });
       }
+      console.error(`[assign-user-to-org] Unhandled update error: ${updateError.message}`);
       throw updateError;
     }
-
 
     return new Response(JSON.stringify({ success: true, membership: updatedMembership }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -82,7 +79,8 @@ serve(async (req: Request) => {
     });
 
   } catch (error) {
-    console.error(`[assign-user-to-org] Unhandled error: ${error.message}`, error);
+    // Production error logging
+    console.error(`[assign-user-to-org] Unhandled error:`, error && error.message ? error.message : error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
