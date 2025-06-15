@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,8 +32,8 @@ export const Pricing: React.FC = () => {
   const plans = [
     {
       name: "Starter",
-      monthlyPrice: 29,
-      yearlyPrice: 290,
+      monthlyPrice: 7,
+      yearlyPrice: 70,
       period: isYearly ? "/year" : "/month",
       description: "Perfect for small teams getting started with feedback.",
       features: [
@@ -47,8 +48,8 @@ export const Pricing: React.FC = () => {
     },
     {
       name: "Growth", 
-      monthlyPrice: 59,
-      yearlyPrice: 590,
+      monthlyPrice: 27,
+      yearlyPrice: 270,
       period: isYearly ? "/year" : "/month",
       description: "For growing businesses who need to scale their feedback operations.",
       features: [
@@ -64,8 +65,8 @@ export const Pricing: React.FC = () => {
     },
     {
       name: "Pro",
-      monthlyPrice: 129,
-      yearlyPrice: 1290,
+      monthlyPrice: 97,
+      yearlyPrice: 970,
       period: isYearly ? "/year" : "/month",
       description: "For established businesses that require advanced control and integrations.",
       features: [
@@ -81,9 +82,9 @@ export const Pricing: React.FC = () => {
     },
     {
       name: "Enterprise",
-      monthlyPrice: "Custom",
-      yearlyPrice: "Custom",
-      period: "",
+      monthlyPrice: 247,
+      yearlyPrice: 2470,
+      period: isYearly ? "/year" : "/month",
       description: "Tailored solutions for large organizations with complex needs.", 
       features: [
         "Unlimited team members",
@@ -93,7 +94,7 @@ export const Pricing: React.FC = () => {
         "On-premise deployment",
       ],
       popular: false,
-      cta: "Contact Sales",
+      cta: "Start Free Trial",
       gradient: "from-warm-gray-100 to-warm-gray-50",
     },
   ];
