@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
@@ -47,17 +46,6 @@ export const ModernHeader: React.FC = () => {
               Pulsify
             </span>
           </Link>
-
-          {/* CTA Button */}
-          <div className="flex items-center space-x-4">
-            <Button 
-              onClick={() => navigate('/auth')}
-              size="lg"
-              className="bg-gradient-to-r from-sunset-500 to-coral-500 hover:from-sunset-600 hover:to-coral-600 text-white font-semibold shadow-lg shadow-sunset-500/25 px-8 py-3"
-            >
-              Get Started
-            </Button>
-          </div>
         </div>
       </div>
     </header>
