@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,67 +20,69 @@ import { ThemeManager } from "@/components/ThemeManager";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ThemeManager />
-        <AuthProvider>
-          <OrganizationProvider>
-            <Routes>
-              {/* Landing page */}
-              <Route path="/" element={<Landing />} />
-              
-              {/* System admin routes */}
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Organization user authentication */}
-              <Route path="/auth" element={<LoginPage />} />
-              
-              {/* Organization creation */}
-              <Route 
-                path="/create-organization" 
-                element={
-                  <ProtectedRoute>
-                    <CreateOrganizationPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Organization admin routes */}
-              <Route 
-                path="/admin/:slug" 
-                element={
-                  <ProtectedRoute requireOrgAdmin>
-                    <Admin />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Organization feedback routes */}
-              <Route path="/:orgSlug" element={<Index />} />
-              
-              {/* Legacy org routes for compatibility */}
-              <Route path="/org/:slug" element={<Index />} />
-              
-              {/* Catch-all route - MUST be last */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </OrganizationProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ThemeManager />
+          <AuthProvider>
+            <OrganizationProvider>
+              <Routes>
+                {/* Landing page */}
+                <Route path="/" element={<Landing />} />
+                
+                {/* System admin routes */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Organization user authentication */}
+                <Route path="/auth" element={<LoginPage />} />
+                
+                {/* Organization creation */}
+                <Route 
+                  path="/create-organization" 
+                  element={
+                    <ProtectedRoute>
+                      <CreateOrganizationPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Organization admin routes */}
+                <Route 
+                  path="/admin/:slug" 
+                  element={
+                    <ProtectedRoute requireOrgAdmin>
+                      <Admin />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Organization feedback routes */}
+                <Route path="/:orgSlug" element={<Index />} />
+                
+                {/* Legacy org routes for compatibility */}
+                <Route path="/org/:slug" element={<Index />} />
+                
+                {/* Catch-all route - MUST be last */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </OrganizationProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
