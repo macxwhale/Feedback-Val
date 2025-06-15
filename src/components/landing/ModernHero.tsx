@@ -60,6 +60,11 @@ export const ModernHero: React.FC = () => {
             </div>
           </div>
 
+          {/* Enhanced value proposition */}
+          <p className="text-xl lg:text-2xl text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed max-w-4xl mx-auto font-medium">
+            Our AI-powered platform unifies and analyzes customer feedback, delivering actionable insights to help you build better products and prevent customer churn.
+          </p>
+
           {/* Updated CTA button */}
           <div className="flex justify-center pt-8">
             <Button 
