@@ -60,11 +60,6 @@ export const ModernHero: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced value proposition */}
-          <p className="text-xl lg:text-2xl text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed max-w-4xl mx-auto font-medium">
-            Our AI-powered platform unifies and analyzes customer feedback, delivering actionable insights to help you build better products and prevent customer churn.
-          </p>
-
           {/* Updated CTA button */}
           <div className="flex justify-center pt-8">
             <Button 
@@ -77,9 +72,6 @@ export const ModernHero: React.FC = () => {
               </span>
             </Button>
           </div>
-          <p className="mt-8 text-lg text-warm-gray-600 dark:text-dark-warm-600 font-medium">
-            Join 2,000+ businesses already improving their customer experience.
-          </p>
 
           {/* Enhanced social proof */}
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 pt-6 text-sm text-warm-gray-500 dark:text-dark-warm-500">
