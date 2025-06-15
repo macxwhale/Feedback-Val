@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface SystemUser {
   id: string;
@@ -57,6 +58,24 @@ export const useAssignUserToOrg = () => {
       const { data, error } = await supabase.functions.invoke('assign-user-to-org', {
         body: { user_id: userId, organization_id: organizationId, role, email },
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-user-management'] });
+    },
+  });
+};
+
+export const useApproveAllInvitations = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<{ approvedCount: number; failedCount: number }> => {
+      const { data, error } = await supabase.functions.invoke('admin-approve-invitations');
 
       if (error) {
         throw new Error(error.message);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSystemUserManagementData, useAssignUserToOrg, SystemUser } from '@/hooks/useSystemUsers';
+import { useSystemUserManagementData, useAssignUserToOrg, SystemUser, useApproveAllInvitations } from '@/hooks/useSystemUsers';
 import { SystemUsersTable } from './SystemUsersTable';
 import { SystemInvitationsTable } from './SystemInvitationsTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,18 @@ import { Terminal } from "lucide-react";
 import { AssignUserToOrgModal } from './AssignUserToOrgModal';
 import { Organization } from '@/services/organizationService.types';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface SystemUserManagementProps {
   organizations: Organization[];
@@ -20,6 +32,7 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
   const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
 
   const assignUserMutation = useAssignUserToOrg();
+  const approveAllMutation = useApproveAllInvitations();
 
   const handleOpenModal = (user: SystemUser) => {
     setSelectedUser(user);
@@ -44,6 +57,20 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
         },
       }
     );
+  };
+
+  const handleApproveAll = () => {
+    approveAllMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        toast.success(`Approval process complete. ${data.approvedCount} invitations approved.`);
+        if (data.failedCount > 0) {
+          toast.info(`${data.failedCount} invitations could not be approved (e.g. user not registered).`);
+        }
+      },
+      onError: (error: any) => {
+        toast.error(`Failed to approve invitations: ${error.message}`);
+      }
+    });
   };
 
   if (isLoading) {
@@ -73,9 +100,35 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
       </Card>
       
       <Card>
-        <CardHeader>
-          <CardTitle>All Pending Invitations</CardTitle>
-          <CardDescription>A list of all pending invitations across all organizations.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>All Pending Invitations</CardTitle>
+            <CardDescription>A list of all pending invitations across all organizations.</CardDescription>
+          </div>
+          {data?.invitations && data.invitations.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={approveAllMutation.isPending}>
+                  {approveAllMutation.isPending ? 'Approving...' : 'Approve All Pending'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will attempt to approve all pending invitations for which a user account already exists.
+                    Users will be added to the respective organizations. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleApproveAll} disabled={approveAllMutation.isPending}>
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </CardHeader>
         <CardContent>
           <SystemInvitationsTable invitations={data?.invitations || []} />
