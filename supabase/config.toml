@@ -48,7 +48,7 @@ verify_jwt = false
 # verify_jwt = true
 
 [functions.api-questions]
-# verify_jwt = true
+verify_jwt = false
 
 [functions.api-feedback]
-# verify_jwt = true
+verify_jwt = false
