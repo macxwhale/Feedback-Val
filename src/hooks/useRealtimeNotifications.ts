@@ -84,5 +84,22 @@ export const useRealtimeNotifications = (organizationId: string) => {
     }
   };
 
-  return { notifications, isLoading, markAsRead };
+  const removeNotification = async (notificationId: string) => {
+    const previousNotifications = queryClient.getQueryData(['notifications', organizationId]);
+    queryClient.setQueryData(
+      ['notifications', organizationId],
+      (oldData: Notification[] | undefined) => oldData?.filter((n) => n.id !== notificationId) || []
+    );
+
+    const { error } = await supabase.from('notifications').delete().eq('id', notificationId);
+
+    if (error) {
+      console.error('Error removing notification:', error);
+      sonnerToast.error('Failed to remove notification.');
+      queryClient.setQueryData(['notifications', organizationId], previousNotifications);
+    }
+  };
+
+
+  return { notifications, isLoading, markAsRead, removeNotification };
 };

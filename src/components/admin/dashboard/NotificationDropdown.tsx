@@ -9,10 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { Bell, CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { useRealtimeNotifications, Notification } from '@/hooks/useRealtimeNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface NotificationDropdownProps {
   organizationId: string;
@@ -21,7 +22,7 @@ interface NotificationDropdownProps {
 export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   organizationId
 }) => {
-  const { notifications, isLoading, markAsRead } = useRealtimeNotifications(organizationId);
+  const { notifications, isLoading, markAsRead, removeNotification } = useRealtimeNotifications(organizationId);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -62,38 +63,54 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             You're all caught up!
           </div>
         ) : (
-          notifications.slice(0, 10).map((notification) => (
-            <DropdownMenuItem key={notification.id} className="p-0" onSelect={(e) => e.preventDefault()}>
-              <div className={`w-full p-3 ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1">
-                    {getIcon(notification.type)}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{notification.title}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{notification.message}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                      </p>
+          <ScrollArea className="h-[400px]">
+            {notifications.map((notification) => (
+              <DropdownMenuItem key={notification.id} className="p-0" onSelect={(e) => e.preventDefault()}>
+                <div className={`w-full p-3 ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3 flex-1">
+                      {getIcon(notification.type)}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{notification.title}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{notification.message}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center shrink-0 pl-2 space-x-1">
+                      {!notification.is_read && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Mark as read"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notification.id);
+                          }}
+                          className="h-7 w-7 p-0"
+                        >
+                          <CheckCircle className="w-4 h-4 text-gray-500 hover:text-green-600" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Dismiss"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeNotification(notification.id);
+                        }}
+                        className="h-7 w-7 p-0"
+                      >
+                        <X className="w-4 h-4 text-gray-500 hover:text-red-600" />
+                      </Button>
                     </div>
                   </div>
-                  {!notification.is_read && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      title="Mark as read"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markAsRead(notification.id);
-                      }}
-                      className="h-7 w-7 p-0"
-                    >
-                      <CheckCircle className="w-4 h-4 text-gray-500 hover:text-green-600" />
-                    </Button>
-                  )}
                 </div>
-              </div>
-            </DropdownMenuItem>
-          ))
+              </DropdownMenuItem>
+            ))}
+          </ScrollArea>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
