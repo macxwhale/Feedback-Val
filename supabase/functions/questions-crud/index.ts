@@ -1,6 +1,6 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +25,27 @@ interface QuestionData {
     stepSize?: number;
   };
 }
+
+const questionSchema = z.object({
+  question_text: z.string().min(1),
+  question_type: z.string().min(1),
+  category: z.string().min(1),
+  order_index: z.number().int().min(0),
+  help_text: z.string().optional(),
+  placeholder_text: z.string().optional(),
+  is_required: z.boolean().optional(),
+  options: z.array(z.object({
+    text: z.string(),
+    value: z.string().optional()
+  })).optional(),
+  scaleConfig: z.object({
+    minValue: z.number(),
+    maxValue: z.number(),
+    minLabel: z.string().optional(),
+    maxLabel: z.string().optional(),
+    stepSize: z.number().optional()
+  }).optional()
+});
 
 function createErrorResponse(message: string, status: number = 400) {
   console.error('API Error:', message);
@@ -99,7 +120,13 @@ serve(async (req) => {
       }
 
       case 'POST': {
-        const body: QuestionData = await req.json();
+        const rawBody = await req.json();
+        // Zod validation
+        const parseResult = questionSchema.safeParse(rawBody);
+        if (!parseResult.success) {
+          return createErrorResponse('Invalid input: ' + parseResult.error.message, 422);
+        }
+        const body = parseResult.data;
         
         if (!body.question_text?.trim()) {
           return createErrorResponse('Question text is required');
@@ -192,45 +219,50 @@ serve(async (req) => {
       }
 
       case 'PUT': {
-        const body: QuestionData & { id: string } = await req.json();
-        const { id, options, scaleConfig, ...updates } = body;
+        const rawBody = await req.json();
+        const schemaWithId = questionSchema.extend({ id: z.string().uuid() });
+        const parseResult = schemaWithId.safeParse(rawBody);
+        if (!parseResult.success) {
+          return createErrorResponse('Invalid input: ' + parseResult.error.message, 422);
+        }
+        const body = parseResult.data;
         
-        if (!id) {
+        if (!body.id) {
           return createErrorResponse('Question ID is required');
         }
 
         // Get type_id and category_id if updating those fields
         let typeId, categoryId;
         
-        if (updates.question_type) {
+        if (body.question_type) {
           const { data: questionType, error: typeError } = await supabase
             .from('question_types')
             .select('id')
-            .eq('name', updates.question_type)
+            .eq('name', body.question_type)
             .single();
 
           if (typeError || !questionType) {
-            return createErrorResponse(`Invalid question type: ${updates.question_type}`);
+            return createErrorResponse(`Invalid question type: ${body.question_type}`);
           }
           typeId = questionType.id;
         }
 
-        if (updates.category) {
+        if (body.category) {
           const { data: questionCategory, error: categoryError } = await supabase
             .from('question_categories')
             .select('id')
-            .eq('name', updates.category)
+            .eq('name', body.category)
             .single();
 
           if (categoryError || !questionCategory) {
-            return createErrorResponse(`Invalid question category: ${updates.category}`);
+            return createErrorResponse(`Invalid question category: ${body.category}`);
           }
           categoryId = questionCategory.id;
         }
 
         // Prepare update data with foreign keys
         const updateData = {
-          ...updates,
+          ...body,
           ...(typeId && { type_id: typeId }),
           ...(categoryId && { category_id: categoryId })
         };
@@ -239,7 +271,7 @@ serve(async (req) => {
         const { data: question, error: updateError } = await supabase
           .from('questions')
           .update(updateData)
-          .eq('id', id)
+          .eq('id', body.id)
           .eq('organization_id', organizationId)
           .select()
           .single();
@@ -250,12 +282,12 @@ serve(async (req) => {
         }
 
         // Update options
-        if (options !== undefined) {
-          await supabase.from('question_options').delete().eq('question_id', id);
+        if (body.options !== undefined) {
+          await supabase.from('question_options').delete().eq('question_id', body.id);
           
-          if (options.length > 0) {
-            const optionsData = options.map((option, index) => ({
-              question_id: id,
+          if (body.options.length > 0) {
+            const optionsData = body.options.map((option, index) => ({
+              question_id: body.id,
               option_text: option.text,
               option_value: option.value || option.text,
               display_order: index + 1
@@ -266,15 +298,15 @@ serve(async (req) => {
         }
 
         // Update scale config
-        if (scaleConfig) {
-          await supabase.from('question_scale_config').delete().eq('question_id', id);
+        if (body.scaleConfig) {
+          await supabase.from('question_scale_config').delete().eq('question_id', body.id);
           await supabase.from('question_scale_config').insert({
-            question_id: id,
-            min_value: scaleConfig.minValue,
-            max_value: scaleConfig.maxValue,
-            min_label: scaleConfig.minLabel,
-            max_label: scaleConfig.maxLabel,
-            step_size: scaleConfig.stepSize || 1
+            question_id: body.id,
+            min_value: body.scaleConfig.minValue,
+            max_value: body.scaleConfig.maxValue,
+            min_label: body.scaleConfig.minLabel,
+            max_label: body.scaleConfig.maxLabel,
+            step_size: body.scaleConfig.stepSize || 1
           });
         }
 
