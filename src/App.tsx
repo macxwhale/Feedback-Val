@@ -17,6 +17,8 @@ import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { ThemeManager } from "@/components/ThemeManager";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,10 @@ function App() {
               <Routes>
                 {/* Landing page */}
                 <Route path="/" element={<Landing />} />
+
+                {/* Static pages */}
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 
                 {/* System admin routes */}
                 <Route path="/admin/login" element={<AdminLoginPage />} />

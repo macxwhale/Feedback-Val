@@ -25,7 +25,7 @@ export const useOrganization = () => {
       const slugFromParams = params.orgSlug || params.slug;
 
       // Define special top-level routes that shouldn't be treated as organization slugs.
-      const specialRoutes = ['admin', 'auth', 'login', 'create-organization'];
+      const specialRoutes = ['admin', 'auth', 'login', 'create-organization', 'terms-of-service', 'privacy-policy'];
 
       if (slugFromParams && specialRoutes.includes(slugFromParams)) {
         console.log(`useOrganization - Path matched special route "${slugFromParams}", skipping org detection.`);

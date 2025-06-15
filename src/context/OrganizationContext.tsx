@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +37,7 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       slug = pathParts[1];
     } 
     // Handles /:orgSlug for feedback, but ignores other top-level routes
-    else if (pathParts.length > 0 && !['admin', 'auth', 'create-organization', 'login'].includes(pathParts[0])) {
+    else if (pathParts.length > 0 && !['admin', 'auth', 'create-organization', 'login', 'terms-of-service', 'privacy-policy'].includes(pathParts[0])) {
       slug = pathParts[0];
     }
 
