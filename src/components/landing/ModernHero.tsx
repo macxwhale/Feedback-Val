@@ -10,7 +10,7 @@ export const ModernHero: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-screen bg-white dark:bg-dark-warm-50 overflow-hidden">
+    <section className="relative min-h-screen bg-white dark:bg-dark-warm-50 overflow-hidden flex flex-col">
       {/* Fluid Background */}
       <FluidBackground />
       <FluidBackground variant="dark" />
@@ -18,8 +18,8 @@ export const ModernHero: React.FC = () => {
       {/* Floating Metrics */}
       <FloatingMetrics />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-        <div className="text-center space-y-12 animate-fade-in">
+      <div className="relative w-full flex-grow flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32">
+        <div className="text-center space-y-12 animate-fade-in w-full">
           {/* Trust indicator */}
           <div className="flex items-center justify-center space-x-2 text-warm-gray-600 dark:text-dark-warm-600">
             <div className="flex -space-x-1">
@@ -81,7 +81,7 @@ export const ModernHero: React.FC = () => {
       </div>
       
       {/* Enhanced social proof */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+      <div className="relative w-full flex justify-center pb-8 px-4">
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-warm-gray-500 dark:text-dark-warm-500">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
