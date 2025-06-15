@@ -1,4 +1,3 @@
-
 export interface Organization {
   id: string;
   name: string;
@@ -25,6 +24,10 @@ export interface Organization {
   features_config?: any; // <-- ADDED
   created_at: string;
   updated_at: string;
+  sms_enabled?: boolean;
+  sms_sender_id?: string | null;
+  sms_settings?: { username?: string } | null;
+  webhook_secret?: string;
 }
 
 export interface OrganizationAsset {
@@ -66,4 +69,3 @@ export interface CreateOrganizationData {
   settings?: any;
   features_config?: any;
 }
-

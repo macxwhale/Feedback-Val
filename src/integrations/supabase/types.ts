@@ -512,11 +512,15 @@ export type Database = {
           secondary_color: string | null
           settings: Json | null
           slug: string
+          sms_enabled: boolean
+          sms_sender_id: string | null
+          sms_settings: Json | null
           thank_you_message: string | null
           thank_you_title: string | null
           trial_ends_at: string | null
           updated_at: string
           updated_by_user_id: string | null
+          webhook_secret: string
           welcome_screen_description: string | null
           welcome_screen_title: string | null
         }
@@ -541,11 +545,15 @@ export type Database = {
           secondary_color?: string | null
           settings?: Json | null
           slug: string
+          sms_enabled?: boolean
+          sms_sender_id?: string | null
+          sms_settings?: Json | null
           thank_you_message?: string | null
           thank_you_title?: string | null
           trial_ends_at?: string | null
           updated_at?: string
           updated_by_user_id?: string | null
+          webhook_secret?: string
           welcome_screen_description?: string | null
           welcome_screen_title?: string | null
         }
@@ -570,11 +578,15 @@ export type Database = {
           secondary_color?: string | null
           settings?: Json | null
           slug?: string
+          sms_enabled?: boolean
+          sms_sender_id?: string | null
+          sms_settings?: Json | null
           thank_you_message?: string | null
           thank_you_title?: string | null
           trial_ends_at?: string | null
           updated_at?: string
           updated_by_user_id?: string | null
+          webhook_secret?: string
           welcome_screen_description?: string | null
           welcome_screen_title?: string | null
         }
