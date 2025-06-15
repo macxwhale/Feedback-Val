@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Activity } from 'lucide-react';
 
 export const ModernHeader: React.FC = () => {
@@ -12,7 +12,7 @@ export const ModernHeader: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="relative">
               <Activity className="w-8 h-8 text-sunset-500" aria-label="Pulsify pulse icon" />
               <div className="absolute inset-0 w-8 h-8 bg-sunset-500 rounded-full opacity-20 animate-ping"></div>
@@ -20,22 +20,7 @@ export const ModernHeader: React.FC = () => {
             <span className="text-2xl font-space font-bold text-warm-gray-900 dark:text-dark-warm-900">
               Pulsify
             </span>
-          </div>
-
-          {/* Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <nav className="flex items-center space-x-6">
-              <a href="#features" className="text-warm-gray-600 dark:text-dark-warm-600 hover:text-warm-gray-900 dark:hover:text-dark-warm-900 font-medium transition-colors">
-                Features
-              </a>
-              <a href="#pricing" className="text-warm-gray-600 dark:text-dark-warm-600 hover:text-warm-gray-900 dark:hover:text-dark-warm-900 font-medium transition-colors">
-                Pricing
-              </a>
-              <a href="#contact" className="text-warm-gray-600 dark:text-dark-warm-600 hover:text-warm-gray-900 dark:hover:text-dark-warm-900 font-medium transition-colors">
-                Contact
-              </a>
-            </nav>
-          </div>
+          </Link>
 
           {/* CTA Button */}
           <div className="flex items-center space-x-4">
