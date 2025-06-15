@@ -15,6 +15,7 @@ export interface SystemUser {
     name: string;
     slug: string;
   };
+  organization_user_created_at?: string | null;
 }
 
 export interface SystemInvitation {
@@ -55,7 +56,17 @@ export const useSystemUserManagementData = () => {
         }
         throw new Error(`Failed to fetch system user data: ${error.message}`);
       }
-      return data;
+
+      // Patch: Ensure organization_user_created_at is present for all users for Table rendering
+      const patchedData = {
+        ...data,
+        users: (data?.users || []).map((user: any) => ({
+          ...user,
+          organization_user_created_at: user.organization_user_created_at ?? user.created_at ?? null,
+        })),
+      };
+
+      return patchedData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
