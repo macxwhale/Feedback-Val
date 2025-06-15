@@ -37,8 +37,13 @@ export const Footer: React.FC = () => {
               <span className="text-2xl font-space font-bold text-white">Pulsify</span>
             </div>
             <p className="text-base text-warm-gray-400 max-w-xs">
-              AI-powered insights to drive real business results.
+              Real Insights. Real Impact.
             </p>
+            <div className="text-base text-warm-gray-400 mt-4 space-y-1">
+              <p>info@pulsify.bunisystems.com</p>
+              <p>+254207862379</p>
+              <p>Nairobi, Kenya</p>
+            </div>
           </div>
         </div>
 
