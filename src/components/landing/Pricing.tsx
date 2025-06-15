@@ -192,57 +192,61 @@ export const Pricing: React.FC = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16 items-stretch">
           {plans.map((plan, index) => (
-            <Card key={index} className={`border-0 shadow-xl shadow-warm-gray-900/5 dark:shadow-dark-warm-50/20 relative transition-all duration-500 rounded-3xl overflow-hidden group ${
-              plan.popular 
-                ? 'ring-4 ring-sunset-500 shadow-2xl shadow-sunset-500/20 scale-105 z-10' 
-                : 'hover:shadow-2xl hover:shadow-warm-gray-900/10 dark:hover:shadow-dark-warm-50/30 hover:scale-105'
-            } bg-gradient-to-br ${plan.gradient} dark:from-dark-warm-100 dark:to-dark-warm-200`}>
-              
+            <Card
+              key={index}
+              className={`flex flex-col border-0 shadow-lg relative transition-all duration-300 rounded-3xl group ${
+                plan.popular
+                  ? 'bg-white dark:bg-dark-warm-100 shadow-2xl shadow-sunset-500/20 ring-2 ring-sunset-500 z-10'
+                  : 'bg-white/60 dark:bg-dark-warm-100/60 backdrop-blur-md border border-warm-gray-200/50 dark:border-dark-warm-300/50 hover:bg-white dark:hover:bg-dark-warm-100 hover:shadow-xl hover:scale-[1.02]'
+              }`}
+            >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
-                  <Badge className="bg-gradient-to-r from-sunset-500 to-coral-500 text-white px-8 py-3 text-lg font-space font-bold shadow-lg rounded-full">
+                  <Badge className="bg-gradient-to-r from-sunset-500 to-coral-500 text-white px-6 py-2 text-base font-space font-bold shadow-lg rounded-full">
                     Most Popular
                   </Badge>
                 </div>
               )}
               
               <CardHeader className="text-center pb-8 pt-12">
-                <CardTitle className="text-2xl lg:text-3xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900 mb-4">
+                <CardTitle className="text-3xl font-space font-extrabold text-warm-gray-900 dark:text-dark-warm-900 mb-2">
                   {plan.name}
                 </CardTitle>
                 
-                <div className="mt-8 mb-6">
-                  <span className="text-5xl lg:text-6xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900">
+                <div className="mt-6 mb-4">
+                  <span className="text-5xl font-space font-black text-warm-gray-900 dark:text-dark-warm-900">
                     ${getPrice(plan)}
                   </span>
                   {plan.period && (
-                    <span className="text-warm-gray-600 dark:text-dark-warm-600 text-xl font-medium">
+                    <span className="text-warm-gray-500 dark:text-dark-warm-500 text-lg font-medium">
                       {plan.period}
                     </span>
                   )}
                 </div>
                 
-                <CardDescription className="mt-6 text-warm-gray-600 dark:text-dark-warm-600 text-lg font-medium leading-relaxed">
+                <CardDescription className="text-warm-gray-600 dark:text-dark-warm-600 text-base leading-relaxed px-4">
                   {plan.description}
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="space-y-8 px-8 pb-12">
-                <ul className="space-y-6">
+              <CardContent className="flex flex-col flex-grow px-8 pb-8">
+                <ul className="space-y-4 flex-grow">
                   {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <CheckCircle className="h-6 w-6 text-green-500 mr-4 flex-shrink-0" />
-                      <span className="text-warm-gray-600 dark:text-dark-warm-600 font-medium text-lg">
+                    <li key={featureIndex} className="flex items-start">
+                      <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-warm-gray-700 dark:text-dark-warm-600 font-medium text-base">
                         {feature}
                       </span>
                     </li>
                   ))}
                 </ul>
                 
-                <Button 
-                  className="w-full"
+                <Button
+                  className="w-full mt-10"
+                  variant={plan.popular ? 'default' : 'outline'}
+                  size="lg"
                   onClick={() => navigate('/auth')}
                 >
                   <span className="flex items-center justify-center">
