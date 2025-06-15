@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     question: "Can I integrate Pulsify with other tools?",
-    answer: "Absolutely. Pulsify offers integrations with popular tools like Slack, Zapier, and more. Our Professional and Enterprise plans also include API access for custom integrations."
+    answer: "Our Professional and Enterprise plans also include API access for custom integrations."
   },
   {
     question: "How is my data secured?",
