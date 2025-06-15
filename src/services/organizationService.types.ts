@@ -26,7 +26,7 @@ export interface Organization {
   updated_at: string;
   sms_enabled?: boolean;
   sms_sender_id?: string | null;
-  sms_settings?: { username?: string } | null;
+  sms_settings?: any;
   webhook_secret?: string;
 }
 
