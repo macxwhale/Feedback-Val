@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
@@ -124,7 +123,7 @@ export const ApiManagement: React.FC = () => {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={organization?.sms_settings?.apiKey ? '•••••••••••••••• (already set)' : 'Enter new API key'}
+              placeholder={organization?.sms_settings ? '•••••••••••••••• (already set)' : 'Enter new API key'}
               disabled={isSaving}
             />
              <p className="text-sm text-muted-foreground">

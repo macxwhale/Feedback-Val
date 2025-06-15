@@ -35,8 +35,27 @@ serve(async (req) => {
       });
     }
 
-    // NOTE: Storing credentials in plaintext. Encryption should be added for production.
-    const sms_settings = (username && apiKey) ? { username, apiKey } : null;
+    // Fetch current settings to preserve API key if needed
+    const { data: currentOrg, error: fetchError } = await supabase
+      .from('organizations')
+      .select('sms_settings')
+      .eq('id', orgId)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching current organization settings:', fetchError);
+      throw fetchError;
+    }
+
+    const existingSettings = currentOrg?.sms_settings || {};
+    let finalApiKey = apiKey;
+
+    // If the user sends an empty API key, use the existing one
+    if (!apiKey && existingSettings.apiKey) {
+      finalApiKey = existingSettings.apiKey;
+    }
+    
+    const sms_settings = (username && finalApiKey) ? { username, apiKey: finalApiKey } : null;
 
     const { data, error } = await supabase
       .from('organizations')
