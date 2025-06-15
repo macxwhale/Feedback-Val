@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllOrganizations, updateOrganization, createOrganization } from '@/services/organizationService';
@@ -83,7 +84,7 @@ export const AdminDashboard: React.FC = () => {
           />
         )}
         
-        {activeTab === 'users' && <SystemUserManagement />}
+        {activeTab === 'users' && <SystemUserManagement organizations={organizations || []} />}
 
         {activeTab === 'stats' && <AdminStats />}
         

@@ -1,5 +1,4 @@
-
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SystemUser {
@@ -48,5 +47,25 @@ export const useSystemUserManagementData = () => {
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useAssignUserToOrg = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, email, organizationId, role }: { userId: string; email: string; organizationId: string; role: string }) => {
+      const { data, error } = await supabase.functions.invoke('assign-user-to-org', {
+        body: { user_id: userId, organization_id: organizationId, role, email },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-user-management'] });
+    },
   });
 };
