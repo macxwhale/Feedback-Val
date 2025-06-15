@@ -54,18 +54,18 @@ serve(async (req: Request) => {
     
     const { data: existingMembership, error: checkError } = await supabaseAdmin
       .from('organization_users')
-      .select('id')
+      .select('id, organizations ( name )')
       .eq('user_id', user_id)
-      .eq('organization_id', organization_id)
       .maybeSingle();
 
     if (checkError) throw checkError;
 
     if (existingMembership) {
-        return new Response(JSON.stringify({ error: 'User is already a member of this organization.' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 409, // Conflict
-        });
+      const orgName = existingMembership.organizations?.name || 'another organization';
+      return new Response(JSON.stringify({ error: `User is already a member of ${orgName}. A user can only belong to one organization.` }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 409, // Conflict
+      });
     }
 
     const { data: newMembership, error: insertError } = await supabaseAdmin

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -97,12 +96,12 @@ serve(async (req: Request) => {
             continue; // User does not exist, cannot approve.
         }
 
-        // Check if user is already a member
+        // Check if user is already a member of ANY organization
         const { data: existingMembership, error: checkError } = await supabaseAdmin
             .from('organization_users')
-            .select('id', { count: 'exact' })
+            .select('id, organization_id')
             .eq('user_id', userId)
-            .eq('organization_id', invitation.organization_id);
+            .maybeSingle();
 
         if (checkError) {
             console.error(`Error checking membership for ${invitation.email}:`, checkError.message);
@@ -110,14 +109,24 @@ serve(async (req: Request) => {
             continue;
         }
 
-        if (existingMembership && existingMembership.length > 0) {
-            // User is already a member. Silently mark invitation as accepted.
-             console.log(`[admin-approve-invitations] User ${invitation.email} is already a member. Marking invitation as accepted.`);
-             await supabaseAdmin
-                .from('user_invitations')
-                .update({ status: 'accepted', updated_at: new Date().toISOString() })
-                .eq('id', invitation.id);
-            approvedCount++;
+        if (existingMembership) {
+            if (existingMembership.organization_id === invitation.organization_id) {
+                // User is already a member of this specific organization. Silently accept the invitation.
+                console.log(`[admin-approve-invitations] User ${invitation.email} is already a member of this org. Marking invitation as accepted.`);
+                await supabaseAdmin
+                    .from('user_invitations')
+                    .update({ status: 'accepted', updated_at: new Date().toISOString() })
+                    .eq('id', invitation.id);
+                approvedCount++;
+            } else {
+                // User is a member of a different organization. We cannot approve this.
+                console.log(`[admin-approve-invitations] User ${invitation.email} is a member of another org. Cancelling invitation.`);
+                await supabaseAdmin
+                    .from('user_invitations')
+                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                    .eq('id', invitation.id);
+                failedCount++;
+            }
             continue;
         }
 
@@ -170,4 +179,3 @@ serve(async (req: Request) => {
     });
   }
 });
-
