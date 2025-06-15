@@ -17,6 +17,7 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Create a Supabase client with the user's auth token to check permissions
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -24,27 +25,27 @@ serve(async (req: Request) => {
     )
 
     // Check if user is a super admin
-    console.log('system-user-management: Checking admin status...');
     const { data: isAdmin, error: isAdminError } = await supabaseClient.rpc('get_current_user_admin_status');
-    
-    console.log('system-user-management: isAdmin check result:', JSON.stringify({ isAdmin, isAdminError: isAdminError ? { message: isAdminError.message, code: isAdminError.code } : null }));
 
     if (isAdminError) {
-      console.error('system-user-management: isAdminError:', isAdminError);
       throw isAdminError;
     }
 
     if (!isAdmin) {
-      console.warn('system-user-management: User is not a system admin.');
       return new Response(JSON.stringify({ error: 'You must be a system admin to access this resource.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       })
     }
     
-    console.log('system-user-management: User is admin. Fetching data...');
-    // Fetch all users
-    const { data: users, error: usersError } = await supabaseClient
+    // Once admin status is verified, create a Supabase admin client to perform privileged operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    
+    // Fetch all users using the admin client to bypass RLS
+    const { data: users, error: usersError } = await supabaseAdmin
       .from('organization_users')
       .select(`
         id,
@@ -61,13 +62,11 @@ serve(async (req: Request) => {
       .order('created_at', { ascending: false });
 
     if (usersError) {
-      console.error('system-user-management: usersError:', usersError);
       throw usersError;
     }
-    console.log('system-user-management: Fetched users count:', users?.length || 0);
 
-    // Fetch all pending invitations
-    const { data: invitations, error: invitationsError } = await supabaseClient
+    // Fetch all pending invitations using the admin client
+    const { data: invitations, error: invitationsError } = await supabaseAdmin
       .from('user_invitations')
       .select(`
         id,
@@ -84,18 +83,14 @@ serve(async (req: Request) => {
       .order('created_at', { ascending: false });
 
     if (invitationsError) {
-      console.error('system-user-management: invitationsError:', invitationsError);
       throw invitationsError;
     }
-    console.log('system-user-management: Fetched invitations count:', invitations?.length || 0);
-
 
     return new Response(JSON.stringify({ users, invitations }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error('system-user-management: Caught error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

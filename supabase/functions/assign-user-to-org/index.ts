@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -12,6 +13,7 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Create a client with user's context to check auth and admin status
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -35,6 +37,12 @@ serve(async (req: Request) => {
       });
     }
     
+    // Create admin client to perform privileged database operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     const { user_id, organization_id, role, email } = await req.json();
 
     if (!user_id || !organization_id || !role || !email) {
@@ -44,7 +52,7 @@ serve(async (req: Request) => {
       });
     }
     
-    const { data: existingMembership, error: checkError } = await supabaseClient
+    const { data: existingMembership, error: checkError } = await supabaseAdmin
       .from('organization_users')
       .select('id')
       .eq('user_id', user_id)
@@ -60,7 +68,7 @@ serve(async (req: Request) => {
         });
     }
 
-    const { data: newMembership, error: insertError } = await supabaseClient
+    const { data: newMembership, error: insertError } = await supabaseAdmin
       .from('organization_users')
       .insert({
         user_id,
