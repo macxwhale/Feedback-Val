@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal, Copy } from 'lucide-react';
 
 export const ApiManagement: React.FC = () => {
-  const { organization, loading: orgLoading } = useOrganization();
+  const { organization, loading: orgLoading, refreshOrganization } = useOrganization();
   const queryClient = useQueryClient();
 
   const [enabled, setEnabled] = useState(false);
@@ -47,7 +47,12 @@ export const ApiManagement: React.FC = () => {
     },
     onSuccess: () => {
       toast.success('SMS settings saved successfully!');
-      queryClient.invalidateQueries({ queryKey: ['organization', organization.slug] });
+      if (refreshOrganization) {
+        refreshOrganization();
+      }
+      if (organization?.slug) {
+        queryClient.invalidateQueries({ queryKey: ['organization', organization.slug] });
+      }
     },
     onError: (error) => {
       toast.error(`Failed to save settings: ${error.message}`);
