@@ -1,91 +1,38 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Bell, 
-  AlertCircle, 
+  AlertTriangle, 
   CheckCircle, 
   Info,
   X
 } from 'lucide-react';
-
-interface Notification {
-  id: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  title: string;
-  message: string;
-  timestamp: string;
-  isRead: boolean;
-}
+import { useRealtimeNotifications, Notification } from '@/hooks/useRealtimeNotifications';
+import { formatDistanceToNow } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface NotificationCenterProps {
-  notifications?: Notification[];
+  organizationId: string;
 }
 
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({
-  notifications = []
+  organizationId
 }) => {
-  const [localNotifications, setLocalNotifications] = useState<Notification[]>(
-    notifications.length > 0 ? notifications : [
-      {
-        id: '1',
-        type: 'info',
-        title: 'New Feedback Session',
-        message: '5 new feedback sessions completed today',
-        timestamp: '2 minutes ago',
-        isRead: false
-      },
-      {
-        id: '2',
-        type: 'success',
-        title: 'User Invitation Accepted',
-        message: 'john.doe@example.com has joined your organization',
-        timestamp: '1 hour ago',
-        isRead: false
-      },
-      {
-        id: '3',
-        type: 'warning',
-        title: 'Low Response Rate',
-        message: 'Response rate has dropped below 80% this week',
-        timestamp: '3 hours ago',
-        isRead: true
-      }
-    ]
-  );
+  const { notifications, isLoading, markAsRead, removeNotification } = useRealtimeNotifications(organizationId);
 
-  const unreadCount = localNotifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'info': return Info;
-      case 'warning': return AlertCircle;
-      case 'success': return CheckCircle;
-      case 'error': return AlertCircle;
-      default: return Info;
+      case 'info': return <Info className="w-5 h-5 mt-0.5 text-blue-600" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 mt-0.5 text-yellow-600" />;
+      case 'success': return <CheckCircle className="w-5 h-5 mt-0.5 text-green-600" />;
+      case 'error': return <AlertTriangle className="w-5 h-5 mt-0.5 text-red-600" />;
+      default: return <Info className="w-5 h-5 mt-0.5" />;
     }
-  };
-
-  const getVariant = (type: Notification['type']) => {
-    switch (type) {
-      case 'info': return 'secondary';
-      case 'warning': return 'destructive';
-      case 'success': return 'default';
-      case 'error': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
-  const markAsRead = (id: string) => {
-    setLocalNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-    );
-  };
-
-  const removeNotification = (id: string) => {
-    setLocalNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
@@ -105,56 +52,56 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {localNotifications.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>No notifications</p>
+              <p>No new notifications</p>
+              <p className="text-sm text-gray-400">You're all caught up!</p>
             </div>
           ) : (
-            localNotifications.map((notification) => {
-              const Icon = getIcon(notification.type);
+            notifications.map((notification) => {
               return (
                 <div
                   key={notification.id}
-                  className={`p-3 border rounded-lg transition-opacity ${
-                    notification.isRead ? 'opacity-60' : ''
+                  className={`p-3 border rounded-lg transition-colors flex items-start justify-between ${
+                    !notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <Icon className={`w-5 h-5 mt-0.5 ${
-                        notification.type === 'warning' || notification.type === 'error' 
-                          ? 'text-red-600' 
-                          : notification.type === 'success'
-                          ? 'text-green-600'
-                          : 'text-blue-600'
-                      }`} />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{notification.title}</p>
-                        <p className="text-sm text-gray-600">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">{notification.timestamp}</p>
-                      </div>
+                  <div className="flex items-start space-x-3 flex-1">
+                    {getIcon(notification.type)}
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{notification.title}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                      </p>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      {!notification.isRead && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => markAsRead(notification.id)}
-                          className="h-6 w-6 p-0"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </Button>
-                      )}
+                  </div>
+                  <div className="flex items-center space-x-1 shrink-0 pl-2">
+                    {!notification.is_read && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeNotification(notification.id)}
-                        className="h-6 w-6 p-0"
+                        title="Mark as read"
+                        onClick={() => markAsRead(notification.id)}
+                        className="h-7 w-7 p-0"
                       >
-                        <X className="w-4 h-4" />
+                        <CheckCircle className="w-4 h-4 text-gray-500 hover:text-green-600" />
                       </Button>
-                    </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="Dismiss"
+                      onClick={() => removeNotification(notification.id)}
+                      className="h-7 w-7 p-0"
+                    >
+                      <X className="w-4 h-4 text-gray-500 hover:text-red-600" />
+                    </Button>
                   </div>
                 </div>
               );
