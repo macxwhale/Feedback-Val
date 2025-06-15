@@ -1,4 +1,5 @@
-import React, { Suspense } from 'react';
+
+import React from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { EnhancedUserManagement } from '../EnhancedUserManagement';
 import { OrganizationSpecificStats } from '../OrganizationSpecificStats';
@@ -8,14 +9,15 @@ import { AdvancedDashboardView } from './AdvancedDashboardView';
 import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
 import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
 import { PerformanceAnalyticsDashboard } from './PerformanceAnalyticsDashboard';
-import { AdvancedDashboardTab } from './tabs/AdvancedDashboardTab';
-import { CustomerInsightsTab } from './tabs/CustomerInsightsTab';
-import { FeedbackTab } from './tabs/FeedbackTab';
-import { IntegrationsTab } from './tabs/IntegrationsTab';
-import { PerformanceTab } from './tabs/PerformanceTab';
-import { QuestionsTab } from './tabs/QuestionsTab';
-import { SentimentTab } from './tabs/SentimentTab';
-import { SettingsTab } from './tabs/SettingsTab';
+// --- Remove all named tab imports below here ---
+// import { AdvancedDashboardTab } from './tabs/AdvancedDashboardTab';
+// import { CustomerInsightsTab } from './tabs/CustomerInsightsTab';
+// import { FeedbackTab } from './tabs/FeedbackTab';
+// import { IntegrationsTab } from './tabs/IntegrationsTab';
+// import { PerformanceTab } from './tabs/PerformanceTab';
+// import { QuestionsTab } from './tabs/QuestionsTab';
+// import { SentimentTab } from './tabs/SentimentTab';
+// import { SettingsTab } from './tabs/SettingsTab';
 const MembersTab = React.lazy(() => import('@/components/org-admin/dashboard/MembersTab'));
 const InboxTab = React.lazy(() => import('@/components/admin/dashboard/tabs/InboxTab'));
 
@@ -46,6 +48,7 @@ interface DashboardTabsProps {
   };
 }
 
+// Use React.lazy for all tab content components
 const AdvancedDashboardTab = React.lazy(() => import('./tabs/AdvancedDashboardTab'));
 const CustomerInsightsTab = React.lazy(() => import('./tabs/CustomerInsightsTab'));
 const SentimentTab = React.lazy(() => import('./tabs/SentimentTab'));
