@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -43,6 +42,11 @@ serve(async (req) => {
     return createErrorResponse('Missing or invalid Authorization header', 401);
   }
   const apiKey = authHeader.replace('Bearer ', '');
+
+  const keyParts = apiKey.split('_');
+  const prefix = keyParts.slice(0, -1).join('_');
+  const secretLength = keyParts.length > 1 ? keyParts[keyParts.length - 1].length : 0;
+  console.log(`[api-questions] Received API key for validation. Prefix: ${prefix}, Secret length: ${secretLength}`);
 
   const { data: validationData, error: validationError } = await supabase.rpc('validate_api_key', {
     p_api_key: apiKey
