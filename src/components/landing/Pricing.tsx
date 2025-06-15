@@ -34,56 +34,68 @@ export const Pricing: React.FC = () => {
       monthlyPrice: 29,
       yearlyPrice: 290,
       period: isYearly ? "/year" : "/month",
-      description: "Perfect for small businesses starting their feedback journey",
+      description: "Perfect for small teams getting started with feedback.",
       features: [
-        "Up to 1,000 responses/month",
-        "Basic analytics & reporting", 
-        "Email support",
-        "Standard templates",
-        "Basic integrations"
+        "Up to 5 team members",
+        "1,000 responses/month",
+        "Standard Analytics",
+        "Email Support",
       ],
       popular: false,
       cta: "Start Free Trial",
-      gradient: "from-warm-gray-100 to-warm-gray-50"
+      gradient: "from-warm-gray-100 to-warm-gray-50",
     },
     {
-      name: "Professional", 
-      monthlyPrice: 89,
-      yearlyPrice: 890,
+      name: "Growth", 
+      monthlyPrice: 59,
+      yearlyPrice: 590,
       period: isYearly ? "/year" : "/month",
-      description: "Advanced features for growing businesses needing deeper insights",
+      description: "For growing businesses who need to scale their feedback operations.",
       features: [
-        "Up to 10,000 responses/month",
-        "Advanced AI analytics",
-        "Priority support",
-        "Custom branding",
-        "Team collaboration",
-        "API access",
-        "Advanced integrations"
+        "Up to 15 team members",
+        "5,000 responses/month",
+        "AI-Powered Insights",
+        "Priority Support",
+        "Custom Branding",
       ],
       popular: true,
       cta: "Start Free Trial",
-      gradient: "from-sunset-50 to-coral-50"
+      gradient: "from-sunset-50 to-coral-50",
+    },
+    {
+      name: "Pro",
+      monthlyPrice: 129,
+      yearlyPrice: 1290,
+      period: isYearly ? "/year" : "/month",
+      description: "For established businesses that require advanced control and integrations.",
+      features: [
+        "Up to 30 team members",
+        "20,000 responses/month",
+        "API Access",
+        "Advanced Integrations",
+        "Team Collaboration Tools",
+      ],
+      popular: false,
+      cta: "Start Free Trial",
+      gradient: "from-golden-50 to-sunset-50",
     },
     {
       name: "Enterprise",
       monthlyPrice: "Custom",
       yearlyPrice: "Custom",
       period: "",
-      description: "Tailored solutions for large organizations with complex needs", 
+      description: "Tailored solutions for large organizations with complex needs.", 
       features: [
-        "Unlimited responses",
-        "White-label solution",
-        "Dedicated success manager",
-        "Custom integrations",
-        "SLA guarantee",
-        "Advanced security",
-        "On-premise deployment"
+        "Unlimited team members",
+        "Custom response limits",
+        "Dedicated Success Manager",
+        "SLA & Advanced Security",
+        "On-premise deployment",
       ],
       popular: false,
       cta: "Contact Sales",
-      gradient: "from-golden-50 to-sunset-50"
-    }
+      gradient: "from-warm-gray-100 to-warm-gray-50",
+    },
   ];
 
   const getPrice = (plan: typeof plans[0]) => {
@@ -181,7 +193,7 @@ export const Pricing: React.FC = () => {
           </div>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16">
           {plans.map((plan, index) => (
             <Card key={index} className={`border-0 shadow-xl shadow-warm-gray-900/5 dark:shadow-dark-warm-50/20 relative transition-all duration-500 rounded-3xl overflow-hidden group ${
               plan.popular 
@@ -235,7 +247,7 @@ export const Pricing: React.FC = () => {
                   onClick={() => navigate('/auth')}
                 >
                   <span className="flex items-center justify-center">
-                    {plan.cta === 'Start Free Trial' ? 'Start Free' : plan.cta === 'Contact Sales' ? 'Contact Sales' : 'Start Free'}
+                    {plan.cta}
                     <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
