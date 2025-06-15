@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -15,7 +14,6 @@ import { useEnhancedOrganizationStats } from '@/hooks/useEnhancedOrganizationSta
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import { EnhancedLoadingSpinner } from './dashboard/EnhancedLoadingSpinner';
 import { DashboardProvider } from '@/context/DashboardContext';
-import { DashboardFilters } from './dashboard/DashboardFilters';
 
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -112,8 +110,6 @@ export const OrganizationAdminDashboard: React.FC = () => {
                     currentPage={getTabLabel(activeTab)}
                     onNavigate={handleNavigate}
                   />
-
-                  <DashboardFilters organizationId={organization.id} />
 
                   <DashboardTabs
                     activeTab={activeTab}
