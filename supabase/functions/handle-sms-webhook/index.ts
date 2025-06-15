@@ -1,70 +1,11 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-// Helper to format a question for SMS delivery
-const formatQuestionForSms = (question: any): string => {
-  let smsText = question.question_text
-  if (question.question_type === 'multiple-choice' && question.question_options && question.question_options.length > 0) {
-    const optionsText = question.question_options
-      .map((opt: any, index: number) => `${index + 1}. ${opt.option_text}`)
-      .join('\n')
-    smsText += `\n${optionsText}`
-  } else if (['star', 'nps', 'rating'].includes(question.question_type)) {
-    const scale = question.question_scale_config?.[0] || { min_value: 1, max_value: 5 }
-    smsText += `\n(Reply with a number from ${scale.min_value} to ${scale.max_value})`
-  }
-  return smsText
-}
-
-// Helper to complete the survey and store results
-const completeSurvey = async (supabase: SupabaseClient, session: any, questions: any[], organizationId: string, thankYouMessage: string) => {
-    console.log(`Completing survey for session ${session.id}`);
-
-    // Create a feedback session
-    const { data: feedbackSession, error: fbSessionError } = await supabase
-        .from('feedback_sessions')
-        .insert({
-            organization_id: organizationId,
-            status: 'completed',
-            completed_at: new Date().toISOString(),
-            phone_number: session.phone_number,
-            sms_session_id: session.id,
-        })
-        .select('id')
-        .single();
-    if (fbSessionError) throw fbSessionError;
-
-    const responses = session.responses || {};
-    const feedbackResponses = Object.entries(responses).map(([questionId, value]) => {
-        const question = questions.find(q => q.id === questionId);
-        return {
-            question_id: questionId,
-            session_id: feedbackSession.id,
-            organization_id: organizationId,
-            response_value: value,
-            question_category: question?.category || 'Comments',
-        };
-    });
-    
-    if (feedbackResponses.length > 0) {
-        const { error: responseInsertError } = await supabase
-            .from('feedback_responses')
-            .insert(feedbackResponses);
-        if (responseInsertError) throw responseInsertError;
-    }
-
-    // Mark SMS session as completed
-    await supabase.from('sms_sessions').update({ status: 'completed' }).eq('id', session.id);
-
-    return new Response(`END ${thankYouMessage}`, { headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
-}
-
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import {
+  corsHeaders,
+  handleNewSession,
+  handleOngoingSession,
+} from './helpers.ts'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -124,7 +65,7 @@ serve(async (req) => {
     }
 
     // 4. Find active SMS session or create a new one
-    let { data: session, error: sessionError } = await supabase
+    const { data: session, error: sessionError } = await supabase
       .from('sms_sessions')
       .select('*')
       .eq('phone_number', from)
@@ -134,75 +75,19 @@ serve(async (req) => {
       .limit(1)
       .single()
 
-    // --- START NEW SESSION ---
+    if (sessionError && sessionError.code !== 'PGRST116') { // pgrst116 is "No rows found"
+        throw sessionError;
+    }
+      
     if (!session) {
       if (text.toUpperCase() === 'STOP') {
         return new Response('END You have been unsubscribed.', { headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
       }
-
-      const { data: newSession, error: createSessionError } = await supabase
-        .from('sms_sessions')
-        .insert({
-          phone_number: from,
-          organization_id: organizationId,
-          status: 'in_progress',
-          current_question_index: 0,
-          responses: {},
-        })
-        .select()
-        .single()
-
-      if (createSessionError) throw createSessionError
-
-      session = newSession
-      const firstQuestion = questions[0]
-      const smsResponse = formatQuestionForSms(firstQuestion)
-
-      console.log(`New session ${session.id} for ${from}. Sending first question.`)
-      return new Response(`CON ${smsResponse}`, { headers: { ...corsHeaders, 'Content-Type': 'text/plain' } })
+      return await handleNewSession(supabase, from, organizationId, questions);
+    } else {
+      const thankYouMessage = org.thank_you_message || 'Thank you for your feedback!';
+      return await handleOngoingSession(supabase, session, text, questions, organizationId, thankYouMessage);
     }
-
-    // --- PROCESS ONGOING SESSION ---
-    if (text.toUpperCase() === 'STOP') {
-        await supabase.from('sms_sessions').update({ status: 'completed' }).eq('id', session.id);
-        return new Response('END You have stopped the survey. Thank you.', { headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
-    }
-    
-    const currentQuestionIndex = session.current_question_index
-    const currentQuestion = questions[currentQuestionIndex]
-
-    if (!currentQuestion) {
-      return completeSurvey(supabase, session, questions, organizationId, org.thank_you_message || 'Thank you for your feedback!');
-    }
-
-    const updatedResponses = session.responses || {}
-    updatedResponses[currentQuestion.id] = text
-
-    const nextQuestionIndex = currentQuestionIndex + 1
-
-    const { data: updatedSession, error: updateError } = await supabase
-      .from('sms_sessions')
-      .update({
-        current_question_index: nextQuestionIndex,
-        responses: updatedResponses,
-        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      })
-      .eq('id', session.id)
-      .select()
-      .single();
-    
-    if (updateError) throw updateError;
-    session = updatedSession;
-
-    if (nextQuestionIndex >= questions.length) {
-      return completeSurvey(supabase, session, questions, organizationId, org.thank_you_message || 'Thank you for your feedback!');
-    }
-
-    const nextQuestion = questions[nextQuestionIndex]
-    const smsResponse = formatQuestionForSms(nextQuestion)
-
-    console.log(`Session ${session.id} for ${from}. Sending question ${nextQuestionIndex + 1}.`)
-    return new Response(`CON ${smsResponse}`, { headers: { ...corsHeaders, 'Content-Type': 'text/plain' } })
 
   } catch (error) {
     console.error('Fatal error in handle-sms-webhook:', error.message, error.stack)
