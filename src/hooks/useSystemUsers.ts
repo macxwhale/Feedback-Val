@@ -61,6 +61,13 @@ export const useSystemUserManagementData = () => {
   });
 };
 
+export interface AssignUserToOrgInput {
+  userId: string;
+  email: string;
+  organizationId: string;
+  role: string;
+}
+
 export const useAssignUserToOrg = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -69,28 +76,20 @@ export const useAssignUserToOrg = () => {
       email,
       organizationId,
       role,
-    }: {
-      userId: string;
-      email: string;
-      organizationId: string;
-      role: string;
-    }) => {
+    }: AssignUserToOrgInput) => {
       const { data, error } = await supabase.functions.invoke('assign-user-to-org', {
         body: { user_id: userId, organization_id: organizationId, role },
       });
 
       if (error) {
-        // Purposeful error logging for debugging; not noisy debugging logs
-        console.error("[useAssignUserToOrg] Error from assign-user-to-org:", error);
+        // Only show important errors for debugging; otherwise, keep logs clean.
         if (error.context && typeof error.context.json === 'function') {
           try {
             const errorBody = await error.context.json();
             if (errorBody.error) {
               throw new Error(errorBody.error);
             }
-          } catch (e) {
-            // Parsing failed – Do not provide extra console logs
-          }
+          } catch {}
         }
         throw new Error(error.message || 'An unknown error occurred.');
       }
@@ -115,13 +114,10 @@ export const useApproveAllInvitations = () => {
             if (errorBody.error) {
               throw new Error(errorBody.error);
             }
-          } catch (e) {
-            // Ignore JSON parsing errors, fall back to default
-          }
+          } catch {}
         }
         throw new Error(error.message);
       }
-      
       return data;
     },
     onSuccess: () => {

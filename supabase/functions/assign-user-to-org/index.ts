@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -13,7 +12,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    // No development console.logs except on error/important state
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -79,7 +77,6 @@ serve(async (req: Request) => {
     });
 
   } catch (error) {
-    // Production error logging
     console.error(`[assign-user-to-org] Unhandled error:`, error && error.message ? error.message : error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
