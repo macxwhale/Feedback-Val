@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Users, BarChart3, Settings } from 'lucide-react';
+import { Users, BarChart3, Settings, ShieldCheck } from 'lucide-react';
 
 interface AdminTabsProps {
   activeTab: string;
@@ -10,6 +10,7 @@ interface AdminTabsProps {
 export const AdminTabs: React.FC<AdminTabsProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: 'organizations', label: 'Organizations', icon: Users },
+    { id: 'users', label: 'User Management', icon: ShieldCheck },
     { id: 'stats', label: 'System Statistics', icon: BarChart3 },
     { id: 'config', label: 'System Configuration', icon: Settings },
   ];

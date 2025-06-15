@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllOrganizations, updateOrganization, createOrganization } from '@/services/organizationService';
@@ -11,6 +10,7 @@ import { CreateOrganizationModal } from './CreateOrganizationModal';
 import { OrganizationsList } from './OrganizationsList';
 import { AdminTabs } from './AdminTabs';
 import { toast } from 'sonner';
+import { SystemUserManagement } from './system/SystemUserManagement';
 
 export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('organizations');
@@ -83,6 +83,8 @@ export const AdminDashboard: React.FC = () => {
           />
         )}
         
+        {activeTab === 'users' && <SystemUserManagement />}
+
         {activeTab === 'stats' && <AdminStats />}
         
         {activeTab === 'config' && (
