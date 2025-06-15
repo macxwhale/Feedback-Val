@@ -7,3 +7,5 @@ interface SentimentTabProps {
 }
 export const SentimentTab: React.FC<SentimentTabProps> = ({ organizationId }) =>
   <SentimentAnalyticsDashboard organizationId={organizationId} />;
+
+export default SentimentTab;

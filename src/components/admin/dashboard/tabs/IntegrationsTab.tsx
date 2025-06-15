@@ -31,3 +31,5 @@ export const IntegrationsTab: React.FC = () => {
     </div>
   );
 };
+
+export default IntegrationsTab;

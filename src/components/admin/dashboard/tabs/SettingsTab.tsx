@@ -7,3 +7,5 @@ interface SettingsTabProps {
 }
 export const SettingsTab: React.FC<SettingsTabProps> = ({ organization }) =>
   <OrganizationSettingsTab organization={organization} />;
+
+export default SettingsTab;

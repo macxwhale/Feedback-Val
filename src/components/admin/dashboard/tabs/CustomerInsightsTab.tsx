@@ -7,3 +7,5 @@ interface CustomerInsightsTabProps {
 }
 export const CustomerInsightsTab: React.FC<CustomerInsightsTabProps> = ({ organizationId }) =>
   <CustomerInsightsDashboard organizationId={organizationId} />;
+
+export default CustomerInsightsTab;

@@ -7,3 +7,5 @@ interface FeedbackTabProps {
 }
 export const FeedbackTab: React.FC<FeedbackTabProps> = ({ organizationId }) =>
   <OrganizationSpecificStats organizationId={organizationId} />;
+
+export default FeedbackTab;

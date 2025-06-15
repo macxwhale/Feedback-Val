@@ -37,3 +37,5 @@ export const AdvancedDashboardTab: React.FC<AdvancedDashboardTabProps> = ({
     handleQuickActions={handleQuickActions}
   />
 );
+
+export default AdvancedDashboardTab;

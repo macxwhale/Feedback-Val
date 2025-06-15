@@ -7,3 +7,5 @@ interface PerformanceTabProps {
 }
 export const PerformanceTab: React.FC<PerformanceTabProps> = ({ organizationId }) =>
   <PerformanceAnalyticsDashboard organizationId={organizationId} />;
+
+export default PerformanceTab;
