@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -48,36 +49,59 @@ serve(async (req: Request) => {
         status: 400,
       });
     }
-    
-    const { data: updatedMembership, error: updateError } = await supabaseAdmin
-      .from('organization_users')
-      .update({
-        organization_id,
-        role,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user_id)
-      .select()
-      .single();
 
-    if (updateError) {
-      if (updateError.code === 'PGRST116') {
-        return new Response(JSON.stringify({ error: `User with ID ${user_id} not found in any organization.` }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 404,
-        });
-      }
-      console.error(`[assign-user-to-org] Unhandled update error: ${updateError.message}`);
-      throw updateError;
+    // Check if user is already assigned to this organization
+    const { data: existingMembership, error: checkError } = await supabaseAdmin
+      .from('organization_users')
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('organization_id', organization_id)
+      .maybeSingle();
+
+    if (checkError) {
+      throw checkError;
     }
 
-    return new Response(JSON.stringify({ success: true, membership: updatedMembership }), {
+    let membership;
+    if (!existingMembership) {
+      // Insert a new membership
+      const { data: inserted, error: insertError } = await supabaseAdmin
+        .from('organization_users')
+        .insert({
+          user_id,
+          organization_id,
+          email: null, // this should be filled by another sync or on invite-accept,
+          role,
+          status: 'active',
+          invited_by_user_id: user.id, // who assigned the user
+          accepted_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      membership = inserted;
+    } else {
+      // Update existing membership's role and status to active
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from('organization_users')
+        .update({
+          role,
+          status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingMembership.id)
+        .select()
+        .single();
+      if (updateError) throw updateError;
+      membership = updated;
+    }
+
+    return new Response(JSON.stringify({ success: true, membership }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error(`[assign-user-to-org] Unhandled error:`, error && error.message ? error.message : error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

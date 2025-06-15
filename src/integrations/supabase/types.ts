@@ -127,7 +127,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       api_keys: {
         Row: {
@@ -354,6 +362,13 @@ export type Database = {
             referencedRelation: "sms_sessions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "feedback_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       notifications: {
@@ -397,6 +412,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -577,11 +599,25 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "organization_users_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "organization_users_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1066,6 +1102,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "user_invitations_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "user_invitations_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -1115,6 +1158,35 @@ export type Database = {
       }
     }
     Views: {
+      all_users_with_org: {
+        Row: {
+          accepted_at: string | null
+          email: string | null
+          invited_by_user_id: string | null
+          organization_id: string | null
+          organization_user_created_at: string | null
+          organization_user_id: string | null
+          role: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_users_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "all_users_with_org"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "organization_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_responses_with_context: {
         Row: {
           created_at: string | null

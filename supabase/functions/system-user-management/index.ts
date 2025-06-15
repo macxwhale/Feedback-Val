@@ -8,7 +8,7 @@ const corsHeaders = {
 }
 
 // This function can only be called by authenticated super-admins.
-// It returns a list of all users and pending invitations across all organizations.
+// It returns a list of all users (from auth.users, via the all_users_with_org view) and pending invitations across all organizations.
 
 serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -26,11 +26,7 @@ serve(async (req: Request) => {
 
     // Check if user is a super admin
     const { data: isAdmin, error: isAdminError } = await supabaseClient.rpc('get_current_user_admin_status');
-
-    if (isAdminError) {
-      throw isAdminError;
-    }
-
+    if (isAdminError) throw isAdminError;
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'You must be a system admin to access this resource.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -44,22 +40,11 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    // Fetch all users using the admin client to bypass RLS
+    // Fetch all users from the all_users_with_org view
     const { data: users, error: usersError } = await supabaseAdmin
-      .from('organization_users')
-      .select(`
-        id,
-        user_id,
-        email,
-        role,
-        status,
-        created_at,
-        accepted_at,
-        organization_id,
-        invited_by_user_id,
-        organizations (name, slug)
-      `)
-      .order('created_at', { ascending: false });
+      .from('all_users_with_org')
+      .select('*')
+      .order('user_id', { ascending: false });
 
     if (usersError) {
       throw usersError;
