@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -40,15 +39,35 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    // Fetch all users from the all_users_with_org view
-    const { data: users, error: usersError } = await supabaseAdmin
+    // Fetch all users with org info, also join orgs for name/slug
+    const { data: usersRaw, error: usersError } = await supabaseAdmin
       .from('all_users_with_org')
-      .select('*')
+      .select(`
+        user_id,
+        email,
+        organization_user_id,
+        organization_id,
+        role,
+        status,
+        organization_user_created_at,
+        accepted_at,
+        invited_by_user_id,
+        organizations (
+          name,
+          slug
+        )
+      `)
       .order('user_id', { ascending: false });
 
     if (usersError) {
       throw usersError;
     }
+
+    // Map organization-less users to a default structure for .organizations
+    const users = (usersRaw || []).map((user: any) => ({
+      ...user,
+      organizations: user.organizations || (user.organization_id ? { name: '', slug: '' } : null),
+    }));
 
     // Fetch all pending invitations using the admin client
     const { data: invitations, error: invitationsError } = await supabaseAdmin
@@ -62,7 +81,10 @@ serve(async (req: Request) => {
         expires_at,
         organization_id,
         invited_by_user_id,
-        organizations (name, slug)
+        organizations (
+          name,
+          slug
+        )
       `)
       .eq('status', 'pending')
       .order('created_at', { ascending: false });

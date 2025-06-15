@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -31,25 +30,45 @@ export const SystemUsersTable: React.FC<SystemUsersTableProps> = ({ users, onAss
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.email}</TableCell>
-            <TableCell>
-              <Link to={`/admin/${user.organizations.slug}`} className="text-blue-600 hover:underline">
-                {user.organizations.name}
-              </Link>
-            </TableCell>
-            <TableCell><Badge variant="secondary">{user.role}</Badge></TableCell>
-            <TableCell><Badge variant={user.status === 'active' ? 'default' : 'outline'}>{user.status}</Badge></TableCell>
-            <TableCell>{format(new Date(user.created_at), 'PPP')}</TableCell>
-            <TableCell className="text-right">
-              <Button variant="ghost" size="sm" onClick={() => onAssignUser(user)}>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Assign to Org
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+        {users.map((user) => {
+          // gracefully handle missing organizations (e.g., for unassigned users)
+          const hasOrg = user.organizations && user.organizations.name && user.organizations.slug;
+          return (
+            <TableRow key={user.id || user.user_id}>
+              <TableCell className="font-medium">{user.email}</TableCell>
+              <TableCell>
+                {hasOrg ? (
+                  <Link to={`/admin/${user.organizations.slug}`} className="text-blue-600 hover:underline">
+                    {user.organizations.name}
+                  </Link>
+                ) : (
+                  <span className="text-gray-400 italic">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {user.role ? <Badge variant="secondary">{user.role}</Badge>
+                : <span className="text-gray-400 italic">—</span>}
+              </TableCell>
+              <TableCell>
+                {user.status ? <Badge variant={user.status === 'active' ? 'default' : 'outline'}>{user.status}</Badge>
+                : <span className="text-gray-400 italic">—</span>}
+              </TableCell>
+              <TableCell>
+                {user.organization_user_created_at ? (
+                  format(new Date(user.organization_user_created_at), 'PPP')
+                ) : (
+                  <span className="text-gray-400 italic">—</span>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button variant="ghost" size="sm" onClick={() => onAssignUser(user)}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Assign to Org
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
