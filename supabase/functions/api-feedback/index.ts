@@ -28,6 +28,76 @@ const generateRandomScore = (): number => {
   return Math.floor(Math.random() * 5) + 1;
 };
 
+function validateResponse(question: any, value: any): string | null {
+  if (question.required && (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0))) {
+    return `Response is required for question: "${question.question}"`;
+  }
+
+  if (!question.required && (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0))) {
+    return null;
+  }
+
+  switch (question.type) {
+    case 'star':
+    case 'nps':
+    case 'slider':
+    case 'likert':
+    case 'emoji':
+      if (typeof value !== 'number' || (question.scale && (value < question.scale.min || value > question.scale.max))) {
+        return `Invalid value for question "${question.question}". Expected a number between ${question.scale.min} and ${question.scale.max}, but got ${value}.`;
+      }
+      break;
+    
+    case 'ranking':
+      if (!Array.isArray(value) || !value.every(item => typeof item === 'string' && question.options.includes(item))) {
+        return `Invalid value for ranking question "${question.question}". Expected an array of strings from the provided options.`;
+      }
+      if (value.length !== question.options.length) {
+        return `Invalid value for ranking question "${question.question}". All options must be ranked.`;
+      }
+      break;
+
+    case 'matrix':
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return `Invalid value for matrix question "${question.question}". Expected an object.`;
+      }
+      for (const subQuestion of question.options) {
+        if (value[subQuestion] === undefined) {
+          if (question.required) {
+            return `Missing response for sub-question "${subQuestion}" in matrix question "${question.question}".`;
+          }
+        } else if (typeof value[subQuestion] !== 'number') {
+          return `Invalid value for sub-question "${subQuestion}" in matrix question "${question.question}". Expected a number.`;
+        }
+      }
+      break;
+    
+    case 'single-choice':
+      if (typeof value !== 'string' || !question.options.includes(value)) {
+        return `Invalid value for single-choice question "${question.question}". Expected one of the provided options.`;
+      }
+      break;
+
+    case 'multi-choice':
+      if (!Array.isArray(value) || !value.every(item => typeof item === 'string' && question.options.includes(item))) {
+        return `Invalid value for multi-choice question "${question.question}". Expected an array of strings from the provided options.`;
+      }
+      break;
+
+    case 'text':
+      if (typeof value !== 'string') {
+        return `Invalid value for text question "${question.question}". Expected a string.`;
+      }
+      break;
+
+    default:
+      console.warn(`Unknown question type "${question.type}" for question "${question.question}". Skipping validation.`);
+      break;
+  }
+
+  return null;
+}
+
 serve(async (req) => {
   const requestUrl = new URL(req.url);
   const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0] || '';
@@ -72,7 +142,23 @@ serve(async (req) => {
 
     if (!responses || !questions || !Array.isArray(questions) || typeof responses !== 'object') {
       await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 400, ipAddress);
-      return createErrorResponse('Invalid request body. "responses" and "questions" are required.', 400);
+      return createErrorResponse('Invalid request body. "responses" (object) and "questions" (array) are required.', 400);
+    }
+
+    for (const questionId of Object.keys(responses)) {
+      const value = responses[questionId];
+      const question = questions.find((q: any) => q.id === questionId);
+
+      if (!question) {
+        await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 400, ipAddress);
+        return createErrorResponse(`Question with ID "${questionId}" was not found in the provided questions list.`, 400);
+      }
+
+      const validationError = validateResponse(question, value);
+      if (validationError) {
+        await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 400, ipAddress);
+        return createErrorResponse(validationError, 400);
+      }
     }
     
     const { data: session, error: sessionError } = await supabase
@@ -95,26 +181,30 @@ serve(async (req) => {
       throw sessionError;
     }
 
-    const responseData = Object.entries(responses).map(([questionId, value]: [string, any]) => {
-      const question = questions.find((q: any) => q.id === questionId);
-      return {
-        question_id: questionId,
-        session_id: session.id,
-        organization_id: organizationId,
-        response_value: value,
-        question_category: question?.category || 'Comments',
-        score: generateRandomScore()
-      };
+    const responseData = Object.entries(responses)
+      .filter(([, value]) => value !== null && value !== undefined && value !== '')
+      .map(([questionId, value]: [string, any]) => {
+        const question = questions.find((q: any) => q.id === questionId);
+        return {
+          question_id: questionId,
+          session_id: session.id,
+          organization_id: organizationId,
+          response_value: value,
+          question_category: question?.category || 'Comments',
+          score: generateRandomScore()
+        };
     });
 
-    const { error: responsesError } = await supabase
-      .from('feedback_responses')
-      .insert(responseData);
+    if (responseData.length > 0) {
+      const { error: responsesError } = await supabase
+        .from('feedback_responses')
+        .insert(responseData);
 
-    if (responsesError) {
-      await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 500, ipAddress);
-      console.error('Error storing responses:', responsesError);
-      throw responsesError;
+      if (responsesError) {
+        await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 500, ipAddress);
+        console.error('Error storing responses:', responsesError);
+        throw responsesError;
+      }
     }
 
     await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 201, ipAddress);
@@ -128,6 +218,9 @@ serve(async (req) => {
       await logRequest(supabase, apiKeyId, organizationId, requestUrl.pathname, 500, ipAddress);
     }
     console.error('Unexpected error in api-feedback function:', error);
+    if (error instanceof SyntaxError) {
+        return createErrorResponse('Invalid JSON in request body', 400);
+    }
     return createErrorResponse('Internal server error', 500);
   }
 });

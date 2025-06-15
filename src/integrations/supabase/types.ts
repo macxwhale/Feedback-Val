@@ -1235,6 +1235,7 @@ export type Database = {
         | "LikeliRecommend"
         | "DidWeMakeEasy"
         | "Comments"
+        | "Satisfaction"
     }
     CompositeTypes: {
       member_with_inviter: {
@@ -1368,6 +1369,7 @@ export const Constants = {
         "LikeliRecommend",
         "DidWeMakeEasy",
         "Comments",
+        "Satisfaction",
       ],
     },
   },
