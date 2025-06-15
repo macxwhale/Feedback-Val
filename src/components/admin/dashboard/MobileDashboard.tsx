@@ -17,6 +17,7 @@ import {
 import { StatsCards } from './StatsCards';
 import { NotificationCenter } from './NotificationCenter';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { useOrganization } from '@/context/OrganizationContext';
 
 interface MobileDashboardProps {
   organizationName: string;
@@ -40,6 +41,7 @@ export const MobileDashboard: React.FC<MobileDashboardProps> = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isMobile } = useMobileDetection();
+  const { organization } = useOrganization();
 
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: TrendingUp },
@@ -135,7 +137,7 @@ export const MobileDashboard: React.FC<MobileDashboardProps> = ({
             <Button variant="ghost" size="icon">
               <Search className="w-5 h-5" />
             </Button>
-            <NotificationCenter />
+            {organization && <NotificationCenter organizationId={organization.id} />}
             <Button size="icon" className="bg-primary">
               <Plus className="w-4 h-4" />
             </Button>
