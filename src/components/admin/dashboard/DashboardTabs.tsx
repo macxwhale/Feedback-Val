@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { EnhancedUserManagement } from '../EnhancedUserManagement';
@@ -47,6 +46,15 @@ interface DashboardTabsProps {
   };
 }
 
+const AdvancedDashboardTab = React.lazy(() => import('./tabs/AdvancedDashboardTab'));
+const CustomerInsightsTab = React.lazy(() => import('./tabs/CustomerInsightsTab'));
+const SentimentTab = React.lazy(() => import('./tabs/SentimentTab'));
+const PerformanceTab = React.lazy(() => import('./tabs/PerformanceTab'));
+const FeedbackTab = React.lazy(() => import('./tabs/FeedbackTab'));
+const IntegrationsTab = React.lazy(() => import('./tabs/IntegrationsTab'));
+const QuestionsTab = React.lazy(() => import('./tabs/QuestionsTab'));
+const SettingsTab = React.lazy(() => import('./tabs/SettingsTab'));
+
 export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   activeTab,
   setActiveTab,
@@ -62,46 +70,62 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
         {/* Removed hidden horizontal TabsList menu */}
 
         <TabsContent value="overview" className="space-y-6">
-          <AdvancedDashboardTab
-            organization={organization}
-            stats={stats}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isLiveActivity={isLiveActivity}
-            setIsLiveActivity={setIsLiveActivity}
-            handleQuickActions={handleQuickActions}
-          />
+          <React.Suspense fallback={<div>Loading advanced dashboard…</div>}>
+            <AdvancedDashboardTab
+              organization={organization}
+              stats={stats}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              isLiveActivity={isLiveActivity}
+              setIsLiveActivity={setIsLiveActivity}
+              handleQuickActions={handleQuickActions}
+            />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="customer-insights">
-          <CustomerInsightsTab organizationId={organization.id} />
+          <React.Suspense fallback={<div>Loading customer insights…</div>}>
+            <CustomerInsightsTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="sentiment">
-          <SentimentTab organizationId={organization.id} />
+          <React.Suspense fallback={<div>Loading sentiment…</div>}>
+            <SentimentTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="performance">
-          <PerformanceTab organizationId={organization.id} />
+          <React.Suspense fallback={<div>Loading performance…</div>}>
+            <PerformanceTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="members">
-          <Suspense fallback={<div>Loading members…</div>}>
+          <React.Suspense fallback={<div>Loading members…</div>}>
             <MembersTab organization={organization} />
-          </Suspense>
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="feedback">
-          <FeedbackTab organizationId={organization.id} />
+          <React.Suspense fallback={<div>Loading feedback…</div>}>
+            <FeedbackTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="inbox">
-          <Suspense fallback={<div>Loading inbox…</div>}>
+          <React.Suspense fallback={<div>Loading inbox…</div>}>
             <InboxTab organizationId={organization.id} />
-          </Suspense>
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="questions">
-          <QuestionsTab />
+          <React.Suspense fallback={<div>Loading questions…</div>}>
+            <QuestionsTab />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="settings">
-          <SettingsTab organization={organization} />
+          <React.Suspense fallback={<div>Loading settings…</div>}>
+            <SettingsTab organization={organization} />
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="integrations">
-          <IntegrationsTab />
+          <React.Suspense fallback={<div>Loading integrations…</div>}>
+            <IntegrationsTab />
+          </React.Suspense>
         </TabsContent>
       </Tabs>
     </div>
