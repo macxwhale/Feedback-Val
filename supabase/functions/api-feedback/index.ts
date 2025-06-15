@@ -1,102 +1,10 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-async function logRequest(supabase: any, apiKeyId: string, organizationId: string, endpoint: string, statusCode: number, ipAddress: string) {
-  await supabase.from('api_request_logs').insert({
-    api_key_id: apiKeyId,
-    organization_id: organizationId,
-    endpoint: endpoint,
-    status_code: statusCode,
-    ip_address: ipAddress,
-  });
-}
-
-function createErrorResponse(message: string, status = 400) {
-  console.error('API Error:', message);
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
-}
-
-const generateRandomScore = (): number => {
-  return Math.floor(Math.random() * 5) + 1;
-};
-
-function validateResponse(question: any, value: any): string | null {
-  if (question.required && (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0))) {
-    return `Response is required for question: "${question.question}"`;
-  }
-
-  if (!question.required && (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0))) {
-    return null;
-  }
-
-  switch (question.type) {
-    case 'star':
-    case 'nps':
-    case 'slider':
-    case 'likert':
-    case 'emoji':
-      if (typeof value !== 'number' || (question.scale && (value < question.scale.min || value > question.scale.max))) {
-        return `Invalid value for question "${question.question}". Expected a number between ${question.scale.min} and ${question.scale.max}, but got ${value}.`;
-      }
-      break;
-    
-    case 'ranking':
-      if (!Array.isArray(value) || !value.every(item => typeof item === 'string' && question.options.includes(item))) {
-        return `Invalid value for ranking question "${question.question}". Expected an array of strings from the provided options.`;
-      }
-      if (value.length !== question.options.length) {
-        return `Invalid value for ranking question "${question.question}". All options must be ranked.`;
-      }
-      break;
-
-    case 'matrix':
-      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-        return `Invalid value for matrix question "${question.question}". Expected an object.`;
-      }
-      for (const subQuestion of question.options) {
-        if (value[subQuestion] === undefined) {
-          if (question.required) {
-            return `Missing response for sub-question "${subQuestion}" in matrix question "${question.question}".`;
-          }
-        } else if (typeof value[subQuestion] !== 'number') {
-          return `Invalid value for sub-question "${subQuestion}" in matrix question "${question.question}". Expected a number.`;
-        }
-      }
-      break;
-    
-    case 'single-choice':
-      if (typeof value !== 'string' || !question.options.includes(value)) {
-        return `Invalid value for single-choice question "${question.question}". Expected one of the provided options.`;
-      }
-      break;
-
-    case 'multi-choice':
-      if (!Array.isArray(value) || !value.every(item => typeof item === 'string' && question.options.includes(item))) {
-        return `Invalid value for multi-choice question "${question.question}". Expected an array of strings from the provided options.`;
-      }
-      break;
-
-    case 'text':
-      if (typeof value !== 'string') {
-        return `Invalid value for text question "${question.question}". Expected a string.`;
-      }
-      break;
-
-    default:
-      console.warn(`Unknown question type "${question.type}" for question "${question.question}". Skipping validation.`);
-      break;
-  }
-
-  return null;
-}
+import { corsHeaders } from './utils/cors.ts';
+import { createErrorResponse, generateRandomScore } from './utils/helpers.ts';
+import { validateResponse } from './utils/validation.ts';
+import { logRequest, validateApiKey } from './utils/db.ts';
 
 serve(async (req) => {
   const requestUrl = new URL(req.url);
@@ -121,21 +29,12 @@ serve(async (req) => {
   }
   const apiKey = authHeader.replace('Bearer ', '');
 
-  const keyParts = apiKey.split('_');
-  const prefix = keyParts.slice(0, -1).join('_');
-  const secretLength = keyParts.length > 1 ? keyParts[keyParts.length - 1].length : 0;
-  console.log(`[api-feedback] Received API key for validation. Prefix: ${prefix}, Secret length: ${secretLength}`);
-
-  const { data: validationData, error: validationError } = await supabase.rpc('validate_api_key', {
-    p_api_key: apiKey
-  }).single();
-  
-  if (validationError || !validationData || !validationData.is_valid) {
-    console.error('API key validation failed:', validationError);
+  const validationResult = await validateApiKey(supabase, apiKey);
+  if (!validationResult) {
     return createErrorResponse('Invalid API Key', 401);
   }
 
-  const { org_id: organizationId, key_id: apiKeyId } = validationData;
+  const { organizationId, apiKeyId } = validationResult;
 
   try {
     const { responses, questions, timingData, metadata } = await req.json();
