@@ -24,20 +24,25 @@ serve(async (req: Request) => {
     )
 
     // Check if user is a super admin
+    console.log('system-user-management: Checking admin status...');
     const { data: isAdmin, error: isAdminError } = await supabaseClient.rpc('get_current_user_admin_status');
     
+    console.log('system-user-management: isAdmin check result:', JSON.stringify({ isAdmin, isAdminError: isAdminError ? { message: isAdminError.message, code: isAdminError.code } : null }));
+
     if (isAdminError) {
       console.error('system-user-management: isAdminError:', isAdminError);
       throw isAdminError;
     }
 
     if (!isAdmin) {
+      console.warn('system-user-management: User is not a system admin.');
       return new Response(JSON.stringify({ error: 'You must be a system admin to access this resource.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       })
     }
     
+    console.log('system-user-management: User is admin. Fetching data...');
     // Fetch all users
     const { data: users, error: usersError } = await supabaseClient
       .from('organization_users')
@@ -59,6 +64,7 @@ serve(async (req: Request) => {
       console.error('system-user-management: usersError:', usersError);
       throw usersError;
     }
+    console.log('system-user-management: Fetched users count:', users?.length || 0);
 
     // Fetch all pending invitations
     const { data: invitations, error: invitationsError } = await supabaseClient
@@ -81,6 +87,7 @@ serve(async (req: Request) => {
       console.error('system-user-management: invitationsError:', invitationsError);
       throw invitationsError;
     }
+    console.log('system-user-management: Fetched invitations count:', invitations?.length || 0);
 
 
     return new Response(JSON.stringify({ users, invitations }), {
