@@ -203,6 +203,8 @@ export type Database = {
           created_at: string
           id: string
           organization_id: string
+          phone_number: string | null
+          sms_session_id: string | null
           started_at: string
           status: string
           timing_metadata: Json | null
@@ -217,6 +219,8 @@ export type Database = {
           created_at?: string
           id?: string
           organization_id: string
+          phone_number?: string | null
+          sms_session_id?: string | null
           started_at?: string
           status?: string
           timing_metadata?: Json | null
@@ -231,6 +235,8 @@ export type Database = {
           created_at?: string
           id?: string
           organization_id?: string
+          phone_number?: string | null
+          sms_session_id?: string | null
           started_at?: string
           status?: string
           timing_metadata?: Json | null
@@ -244,6 +250,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_sessions_sms_session_id_fkey"
+            columns: ["sms_session_id"]
+            isOneToOne: false
+            referencedRelation: "sms_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -811,6 +824,98 @@ export type Database = {
             columns: ["type_id"]
             isOneToOne: false
             referencedRelation: "question_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_conversations: {
+        Row: {
+          africastalking_message_id: string | null
+          content: string
+          created_at: string
+          direction: string
+          id: string
+          sms_session_id: string
+          status: string | null
+        }
+        Insert: {
+          africastalking_message_id?: string | null
+          content: string
+          created_at?: string
+          direction: string
+          id?: string
+          sms_session_id: string
+          status?: string | null
+        }
+        Update: {
+          africastalking_message_id?: string | null
+          content?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          sms_session_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_conversations_sms_session_id_fkey"
+            columns: ["sms_session_id"]
+            isOneToOne: false
+            referencedRelation: "sms_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_sessions: {
+        Row: {
+          created_at: string
+          current_question_index: number
+          expires_at: string
+          feedback_session_id: string | null
+          id: string
+          organization_id: string
+          phone_number: string
+          responses: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_question_index?: number
+          expires_at?: string
+          feedback_session_id?: string | null
+          id?: string
+          organization_id: string
+          phone_number: string
+          responses?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_question_index?: number
+          expires_at?: string
+          feedback_session_id?: string | null
+          id?: string
+          organization_id?: string
+          phone_number?: string
+          responses?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_sessions_feedback_session_id_fkey"
+            columns: ["feedback_session_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sms_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
