@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -43,6 +44,16 @@ export const useSystemUserManagementData = () => {
       const { data, error } = await supabase.functions.invoke('system-user-management');
       
       if (error) {
+        if (error.context && typeof error.context.json === 'function') {
+          try {
+            const errorBody = await error.context.json();
+            if (errorBody.error) {
+              throw new Error(errorBody.error);
+            }
+          } catch (e) {
+            // Ignore JSON parsing errors
+          }
+        }
         throw new Error(`Failed to fetch system user data: ${error.message}`);
       }
       return data;
@@ -60,6 +71,16 @@ export const useAssignUserToOrg = () => {
       });
 
       if (error) {
+        if (error.context && typeof error.context.json === 'function') {
+          try {
+            const errorBody = await error.context.json();
+            if (errorBody.error) {
+              throw new Error(errorBody.error);
+            }
+          } catch (e) {
+            // Ignore JSON parsing errors, fall back to default
+          }
+        }
         throw new Error(error.message);
       }
       
@@ -78,6 +99,16 @@ export const useApproveAllInvitations = () => {
       const { data, error } = await supabase.functions.invoke('admin-approve-invitations');
 
       if (error) {
+        if (error.context && typeof error.context.json === 'function') {
+          try {
+            const errorBody = await error.context.json();
+            if (errorBody.error) {
+              throw new Error(errorBody.error);
+            }
+          } catch (e) {
+            // Ignore JSON parsing errors, fall back to default
+          }
+        }
         throw new Error(error.message);
       }
       
