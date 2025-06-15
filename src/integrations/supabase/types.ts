@@ -294,6 +294,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           id: string
+          metadata: Json | null
           organization_id: string
           phone_number: string | null
           sms_session_id: string | null
@@ -310,6 +311,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          metadata?: Json | null
           organization_id: string
           phone_number?: string | null
           sms_session_id?: string | null
@@ -326,6 +328,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          metadata?: Json | null
           organization_id?: string
           phone_number?: string | null
           sms_session_id?: string | null

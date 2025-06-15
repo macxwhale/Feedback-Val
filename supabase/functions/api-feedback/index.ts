@@ -170,7 +170,7 @@ serve(async (req) => {
         total_response_time_ms: timingData?.totalResponseTime,
         avg_question_time_ms: timingData?.averageQuestionTime,
         timing_metadata: timingData,
-        ...(metadata || {})
+        metadata: metadata || null
       })
       .select()
       .single();
