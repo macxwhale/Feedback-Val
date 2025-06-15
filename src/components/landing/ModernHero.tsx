@@ -45,16 +45,16 @@ export const ModernHero: React.FC = () => {
             {/* Premium typography treatment */}
             <div className="relative">
               <h2 className="text-4xl lg:text-6xl font-space font-bold text-warm-gray-800 dark:text-dark-warm-800 leading-tight max-w-5xl mx-auto">
-                Transform{' '}
+                Turn feedback into{' '}
                 <span className="relative">
                   <span className="bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 bg-clip-text text-transparent">
-                    customer feedback
+                    revenue
                   </span>
                   <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-sunset-500 via-coral-500 to-golden-400 rounded-full animate-scale-in"></div>
                 </span>
-                {' '}into meaningful{' '}
-                <span className="bg-gradient-to-r from-golden-400 via-sunset-500 to-coral-500 bg-clip-text text-transparent font-black">
-                  growth
+                .
+                <span className="block text-2xl lg:text-4xl mt-4 font-medium text-warm-gray-600 dark:text-dark-warm-600">
+                  Get insights 10x faster. Reduce churn by 30%.
                 </span>
               </h2>
             </div>
@@ -62,9 +62,7 @@ export const ModernHero: React.FC = () => {
 
           {/* Enhanced value proposition */}
           <p className="text-xl lg:text-2xl text-warm-gray-600 dark:text-dark-warm-600 leading-relaxed max-w-4xl mx-auto font-medium">
-            Harness the power of AI-driven analytics to turn customer insights into 
-            <span className="text-sunset-600 dark:text-sunset-400 font-semibold"> actionable strategies</span> that 
-            drive real business results.
+            Our AI-powered platform unifies and analyzes customer feedback, delivering actionable insights to help you build better products and prevent customer churn.
           </p>
 
           {/* Updated CTA button */}
@@ -79,9 +77,12 @@ export const ModernHero: React.FC = () => {
               </span>
             </Button>
           </div>
+          <p className="mt-8 text-lg text-warm-gray-600 dark:text-dark-warm-600 font-medium">
+            Join 2,000+ businesses already improving their customer experience.
+          </p>
 
           {/* Enhanced social proof */}
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 pt-12 text-sm text-warm-gray-500 dark:text-dark-warm-500">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 pt-6 text-sm text-warm-gray-500 dark:text-dark-warm-500">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="font-medium">No credit card required</span>

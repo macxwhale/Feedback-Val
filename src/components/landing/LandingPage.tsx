@@ -8,6 +8,9 @@ import { Features } from './Features';
 import { Pricing } from './Pricing';
 import { FinalCTA } from './FinalCTA';
 import { Footer } from './Footer';
+import { TrustBadges } from './TrustBadges';
+import { FAQ } from './FAQ';
+import { LeadMagnet } from './LeadMagnet';
 
 export const LandingPage: React.FC = () => {
   return (
@@ -15,9 +18,12 @@ export const LandingPage: React.FC = () => {
       <ModernHeader />
       <ModernHero />
       <DashboardPreview />
+      <TrustBadges />
       <HowItWorks />
       <Features />
       <Pricing />
+      <FAQ />
+      <LeadMagnet />
       <FinalCTA />
       <Footer />
     </div>
