@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,15 +55,19 @@ export const useAuthState = () => {
   useEffect(() => {
     let mounted = true;
 
+    // `onAuthStateChange` fires immediately with the current session if it exists,
+    // so we can rely on it as the single source of truth and avoid race conditions.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state change:', event, session?.user?.id);
+        console.log('Auth state change in useAuthState:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Per Supabase docs, to avoid potential client deadlocks,
+          // we perform async operations inside a timeout.
           setTimeout(async () => {
             if (mounted) {
               const roles = await checkUserRoles(session.user.id);
@@ -72,9 +75,11 @@ export const useAuthState = () => {
               setIsOrgAdmin(roles.isOrgAdmin);
               setCurrentOrganization(roles.currentOrganization);
               setCurrentOrganizationSlug(roles.currentOrganizationSlug);
+              setLoading(false); // We are done loading only after roles are fetched.
             }
           }, 0);
         } else {
+          // No user session, so we can stop loading.
           setIsAdmin(false);
           setIsOrgAdmin(false);
           setCurrentOrganization(null);
@@ -83,36 +88,6 @@ export const useAuthState = () => {
         }
       }
     );
-
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (!mounted) return;
-        
-        if (error) {
-          console.error('Error getting session:', error);
-        } else {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            const roles = await checkUserRoles(session.user.id);
-            setIsAdmin(roles.isAdmin);
-            setIsOrgAdmin(roles.isOrgAdmin);
-            setCurrentOrganization(roles.currentOrganization);
-            setCurrentOrganizationSlug(roles.currentOrganizationSlug);
-          }
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
 
     return () => {
       mounted = false;
