@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -21,12 +21,16 @@ import {
   Settings,
   TrendingUp,
   Brain,
-  Webhook
+  Webhook,
+  LogOut,
 } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 import { DashboardSidebarMenu } from './DashboardSidebarMenu';
 import { DashboardSidebarQuickStats } from './DashboardSidebarQuickStats';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthWrapper';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardSidebarProps {
   organizationName: string;
@@ -44,6 +48,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   isLoading = false
 }) => {
   const { isMobile } = useMobileDetection();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   // For mobile: Store state of which groups are expanded
   const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({});
@@ -90,13 +101,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   };
 
   return (
-    <Sidebar className="border-r bg-gray-50 dark:bg-sidebar-background rounded-xl shadow-sm transition-colors duration-200">
+    <Sidebar className="border-r bg-gray-50 dark:bg-sidebar-background rounded-xl shadow-sm transition-colors duration-200 flex flex-col">
       <SidebarHeader className="border-b p-4 bg-white dark:bg-sidebar-background rounded-t-xl">
         <h2 className="font-bold text-lg truncate" title={organizationName}>
           {organizationName}
         </h2>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="flex-1">
         <DashboardSidebarMenu
           groupedMenuItems={groupedMenuItems}
           isMobile={isMobile}
@@ -112,6 +123,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <DashboardSidebarQuickStats stats={stats} />
         )}
       </SidebarContent>
+      <div className="p-4 border-t border-gray-200 dark:border-sidebar-border">
+        <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+          <LogOut className="w-4 h-4 mr-2" />
+          Log Out
+        </Button>
+      </div>
     </Sidebar>
   );
 };
