@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -60,6 +61,38 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Architecture Overview
+
+This project is a full-stack web application built using a modern JAMstack architecture.
+
+- **Frontend**: A single-page application (SPA) built with **React** and **Vite**. It handles the user interface and client-side logic.
+- **Backend**: Serverless functions powered by **Supabase Edge Functions** (written in Deno/TypeScript). These handle business logic, database interactions, and secure operations.
+- **Database**: A **PostgreSQL** database managed by **Supabase**, which also provides authentication and storage services.
+- **Styling**: **Tailwind CSS** with **shadcn/ui** for a utility-first CSS framework and a set of pre-built, accessible components.
+- **State Management**: Client state is managed with React hooks. Server state (data fetching, caching, mutations) is handled efficiently by **TanStack React Query**.
+
+## Folder Structure
+
+The project is organized with a clear separation of concerns:
+
+- `src/`: Contains all the frontend source code.
+  - `components/`: Reusable React components, organized by feature area (e.g., `admin`, `auth`, `feedback`).
+  - `hooks/`: Custom React hooks for encapsulating logic, especially data fetching and state management.
+  - `pages/`: Top-level components that correspond to application routes.
+  - `services/`: Modules for interacting with external APIs or centralizing business logic.
+  - `integrations/`: Code for connecting to third-party services, like the Supabase client.
+  - `lib/`: General utility functions.
+- `supabase/`: Contains all backend and database-related code.
+  - `functions/`: Deno-based serverless Edge Functions. Each folder is a separate function.
+  - `migrations/`: SQL files for database schema changes.
+- `public/`: Static assets that are served directly.
+
+## Configuration Notes
+
+- **Supabase Environment Variables**: The Supabase functions rely on environment variables set within the Supabase dashboard (Project Settings > Functions). These include `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. These are not stored in the repository for security reasons.
+- **Frontend Supabase Client**: The Supabase client in `src/integrations/supabase/client.ts` is configured with the public URL and anon key. These are safe to expose in the frontend code.
+- **Styling**: Tailwind CSS configuration is in `tailwind.config.ts`. Customizations to the shadcn/ui theme can be made there.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/78273d06-7aff-45d9-82e6-cf34b3c501aa) and click on Share -> Publish.
@@ -71,3 +104,4 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
