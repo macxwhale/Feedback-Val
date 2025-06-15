@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
@@ -22,6 +23,7 @@ export const ApiManagement: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
 
   useEffect(() => {
+    console.log("ApiManagement: organization data from context:", organization);
     if (organization) {
       setEnabled(organization.sms_enabled || false);
       setSenderId(organization.sms_sender_id || '');
@@ -54,8 +56,14 @@ export const ApiManagement: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!organization) return;
-    updateSettings({ enabled, senderId, username, apiKey });
+    if (!organization) {
+      toast.error('Cannot save settings: Organization data is not available.');
+      console.error('ApiManagement: handleSubmit called without organization data.');
+      return;
+    }
+    const settingsToUpdate = { enabled, senderId, username, apiKey };
+    console.log("ApiManagement: Submitting SMS settings:", settingsToUpdate);
+    updateSettings(settingsToUpdate);
   };
   
   const webhookUrl = organization?.webhook_secret 
