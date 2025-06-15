@@ -52,3 +52,7 @@ verify_jwt = false
 
 [functions.api-feedback]
 verify_jwt = false
+
+[functions.system-user-management]
+verify_jwt = true
+
