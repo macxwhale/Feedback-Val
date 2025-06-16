@@ -18,6 +18,26 @@ interface RemoveUserParams {
   organizationId: string;
 }
 
+interface InviteUserResponse {
+  success: boolean;
+  error?: string;
+  message?: string;
+  type?: 'direct_add' | 'invitation';
+  invitation_id?: string;
+}
+
+interface CancelInvitationResponse {
+  success: boolean;
+  error?: string;
+  message?: string;
+}
+
+interface RemoveUserResponse {
+  success: boolean;
+  error?: string;
+  message?: string;
+}
+
 export const useInviteUser = () => {
   const queryClient = useQueryClient();
   
@@ -30,9 +50,11 @@ export const useInviteUser = () => {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
       
-      return data;
+      const response = data as InviteUserResponse;
+      if (!response.success) throw new Error(response.error);
+      
+      return response;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['organization-members'] });
@@ -60,9 +82,11 @@ export const useCancelInvitation = () => {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
       
-      return data;
+      const response = data as CancelInvitationResponse;
+      if (!response.success) throw new Error(response.error);
+      
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-invitations'] });
@@ -85,9 +109,11 @@ export const useRemoveUser = () => {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
       
-      return data;
+      const response = data as RemoveUserResponse;
+      if (!response.success) throw new Error(response.error);
+      
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-members'] });
