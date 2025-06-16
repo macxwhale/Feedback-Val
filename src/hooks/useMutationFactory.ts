@@ -24,7 +24,7 @@ export const createMutation = <TParams, TResponse>({
 
   return useMutation({
     mutationFn: async (params: TParams) => {
-      const { data, error } = await supabase.rpc(rpcName, paramsMapper(params));
+      const { data, error } = await supabase.rpc(rpcName as any, paramsMapper(params));
 
       if (error) throw error;
       
