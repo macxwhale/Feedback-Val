@@ -3,9 +3,11 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, X, Clock, Shield, User } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Mail, X, Clock } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { RoleBadge } from './RoleBadge';
+import { formatDate, isExpiringSoon } from '@/utils/userManagementUtils';
 
 interface Invitation {
   id: string;
@@ -23,39 +25,60 @@ interface PendingInvitationsProps {
   onCancelInvitation: (invitationId: string) => void;
 }
 
+const ExpiryStatus: React.FC<{ expiresAt: string }> = ({ expiresAt }) => {
+  const expiring = isExpiringSoon(expiresAt);
+  
+  return (
+    <div className="flex items-center space-x-2">
+      <span className={expiring ? 'text-red-600' : ''}>
+        {formatDate(expiresAt)}
+      </span>
+      {expiring && (
+        <Badge variant="destructive" className="flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          Expiring Soon
+        </Badge>
+      )}
+    </div>
+  );
+};
+
+const CancelInvitationButton: React.FC<{ 
+  invitation: Invitation; 
+  onCancel: (id: string) => void; 
+}> = ({ invitation, onCancel }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+        <X className="h-4 w-4" />
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
+        <AlertDialogDescription>
+          Are you sure you want to cancel the invitation for {invitation.email}?
+          They will no longer be able to join using this invitation.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Keep Invitation</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={() => onCancel(invitation.id)}
+          className="bg-red-600 hover:bg-red-700"
+        >
+          Cancel Invitation
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
   invitations,
   loading,
   onCancelInvitation
 }) => {
-  const getRoleBadge = (role: string) => {
-    const variants = {
-      admin: 'default',
-      member: 'secondary',
-    } as const;
-
-    const icons = {
-      admin: Shield,
-      member: User,
-    };
-
-    const Icon = icons[role as keyof typeof icons] || User;
-
-    return (
-      <Badge variant={variants[role as keyof typeof variants] || 'secondary'} className="flex items-center gap-1">
-        <Icon className="w-3 h-3" />
-        {role.charAt(0).toUpperCase() + role.slice(1)}
-      </Badge>
-    );
-  };
-
-  const isExpiringSoon = (expiresAt: string) => {
-    const expiryDate = new Date(expiresAt);
-    const now = new Date();
-    const hoursUntilExpiry = (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return hoursUntilExpiry <= 24;
-  };
-
   if (loading) {
     return (
       <Card>
@@ -104,53 +127,22 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
                   </div>
                 </TableCell>
                 <TableCell>
-                  {getRoleBadge(invitation.role)}
+                  <RoleBadge role={invitation.role} />
                 </TableCell>
                 <TableCell>
-                  {new Date(invitation.created_at).toLocaleDateString()}
+                  {formatDate(invitation.created_at)}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <span className={isExpiringSoon(invitation.expires_at) ? 'text-red-600' : ''}>
-                      {new Date(invitation.expires_at).toLocaleDateString()}
-                    </span>
-                    {isExpiringSoon(invitation.expires_at) && (
-                      <Badge variant="destructive" className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        Expiring Soon
-                      </Badge>
-                    )}
-                  </div>
+                  <ExpiryStatus expiresAt={invitation.expires_at} />
                 </TableCell>
                 <TableCell>
                   {invitation.invited_by?.email || '-'}
                 </TableCell>
                 <TableCell>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to cancel the invitation for {invitation.email}?
-                          They will no longer be able to join using this invitation.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Keep Invitation</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => onCancelInvitation(invitation.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Cancel Invitation
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <CancelInvitationButton 
+                    invitation={invitation} 
+                    onCancel={onCancelInvitation} 
+                  />
                 </TableCell>
               </TableRow>
             ))}

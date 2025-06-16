@@ -3,12 +3,13 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MoreHorizontal, Shield, User, Trash2 } from 'lucide-react';
+import { MoreHorizontal, User, Trash2 } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { RoleBadge } from './RoleBadge';
+import { UserAvatar } from './UserAvatar';
+import { formatDate, getStatusBadgeVariant } from '@/utils/userManagementUtils';
 
 interface Member {
   id: string;
@@ -34,29 +35,13 @@ export const MembersList: React.FC<MembersListProps> = ({
   onUpdateRole,
   onRemoveMember
 }) => {
-  const getInitials = (email: string) => {
-    return email.split('@')[0].slice(0, 2).toUpperCase();
+  const handleRoleToggle = (member: Member) => {
+    const newRole = member.role === 'admin' ? 'member' : 'admin';
+    onUpdateRole(member.user_id, newRole);
   };
 
-  const getRoleBadge = (role: string) => {
-    const variants = {
-      admin: 'default',
-      member: 'secondary',
-    } as const;
-
-    const icons = {
-      admin: Shield,
-      member: User,
-    };
-
-    const Icon = icons[role as keyof typeof icons] || User;
-
-    return (
-      <Badge variant={variants[role as keyof typeof variants] || 'secondary'} className="flex items-center gap-1">
-        <Icon className="w-3 h-3" />
-        {role.charAt(0).toUpperCase() + role.slice(1)}
-      </Badge>
-    );
+  const getRoleToggleLabel = (role: string) => {
+    return role === 'admin' ? 'Remove Admin' : 'Make Admin';
   };
 
   if (loading) {
@@ -102,26 +87,24 @@ export const MembersList: React.FC<MembersListProps> = ({
               <TableRow key={member.id}>
                 <TableCell>
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>{getInitials(member.email)}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar email={member.email} />
                     <div>
                       <div className="font-medium">{member.email}</div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  {getRoleBadge(member.role)}
+                  <RoleBadge role={member.role} />
                 </TableCell>
                 <TableCell>
-                  <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
+                  <Badge variant={getStatusBadgeVariant(member.status)}>
                     {member.status}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   {member.accepted_at 
-                    ? new Date(member.accepted_at).toLocaleDateString()
-                    : new Date(member.created_at).toLocaleDateString()
+                    ? formatDate(member.accepted_at)
+                    : formatDate(member.created_at)
                   }
                 </TableCell>
                 <TableCell>
@@ -135,10 +118,8 @@ export const MembersList: React.FC<MembersListProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => onUpdateRole(member.user_id, member.role === 'admin' ? 'member' : 'admin')}
-                      >
-                        {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                      <DropdownMenuItem onClick={() => handleRoleToggle(member)}>
+                        {getRoleToggleLabel(member.role)}
                       </DropdownMenuItem>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

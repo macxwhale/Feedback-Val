@@ -13,34 +13,61 @@ interface InviteUserModalProps {
   trigger?: React.ReactNode;
 }
 
+interface FormState {
+  email: string;
+  role: string;
+}
+
+const INITIAL_FORM_STATE: FormState = {
+  email: '',
+  role: 'member',
+};
+
+const ROLE_OPTIONS = [
+  { value: 'member', label: 'Member' },
+  { value: 'admin', label: 'Admin' },
+];
+
 export const InviteUserModal: React.FC<InviteUserModalProps> = ({ 
   organizationId, 
   trigger 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('member');
+  const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
   
   const inviteUserMutation = useInviteUser();
+
+  const resetForm = () => {
+    setFormState(INITIAL_FORM_STATE);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim()) {
+    if (!formState.email.trim()) {
       return;
     }
 
     inviteUserMutation.mutate(
-      { email: email.trim(), organizationId, role },
+      { 
+        email: formState.email.trim(), 
+        organizationId, 
+        role: formState.role 
+      },
       {
         onSuccess: () => {
-          setEmail('');
-          setRole('member');
+          resetForm();
           setIsOpen(false);
         }
       }
     );
   };
+
+  const updateFormField = (field: keyof FormState, value: string) => {
+    setFormState(prev => ({ ...prev, [field]: value }));
+  };
+
+  const isFormValid = formState.email.trim().length > 0;
 
   const defaultTrigger = (
     <Button>
@@ -65,21 +92,27 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
               id="email"
               type="email"
               placeholder="user@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formState.email}
+              onChange={(e) => updateFormField('email', e.target.value)}
               required
             />
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Select value={role} onValueChange={setRole}>
+            <Select 
+              value={formState.role} 
+              onValueChange={(value) => updateFormField('role', value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="member">Member</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                {ROLE_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -94,7 +127,7 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
             </Button>
             <Button 
               type="submit" 
-              disabled={inviteUserMutation.isPending || !email.trim()}
+              disabled={inviteUserMutation.isPending || !isFormValid}
             >
               {inviteUserMutation.isPending ? 'Inviting...' : 'Send Invitation'}
             </Button>
