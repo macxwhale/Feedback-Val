@@ -1232,6 +1232,10 @@ export type Database = {
         Args: { invitation_token: string }
         Returns: Json
       }
+      cancel_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: Json
+      }
       create_api_key: {
         Args: {
           p_organization_id: string
@@ -1270,6 +1274,10 @@ export type Database = {
         }
         Returns: Json
       }
+      invite_user_to_organization: {
+        Args: { p_email: string; p_organization_id: string; p_role?: string }
+        Returns: Json
+      }
       is_current_user_org_admin: {
         Args: { org_id: string }
         Returns: boolean
@@ -1286,6 +1294,10 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      remove_user_from_organization: {
+        Args: { p_user_id: string; p_organization_id: string }
+        Returns: Json
       }
       safe_delete_question: {
         Args: { question_uuid: string }

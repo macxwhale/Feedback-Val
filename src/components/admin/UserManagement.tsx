@@ -6,6 +6,8 @@ import { useUserManagement } from '@/hooks/useUserManagement';
 import { SimpleUserManagementHeader } from './SimpleUserManagementHeader';
 import { MemberStats } from './MemberStats';
 import { UserManagementTabs } from './UserManagementTabs';
+import { InviteUserModal } from './InviteUserModal';
+import { useRemoveUser, useCancelInvitation } from '@/hooks/useUserInvitation';
 
 interface UserManagementProps {
   organizationId: string;
@@ -22,17 +24,29 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     membersLoading,
     invitationsLoading,
     handleUpdateRole,
-    handleRemoveMember,
-    handleCancelInvitation,
     activeMembers,
     pendingInvitations,
   } = useUserManagement(organizationId);
+
+  const removeUserMutation = useRemoveUser();
+  const cancelInvitationMutation = useCancelInvitation();
+
+  const handleRemoveMember = (userId: string) => {
+    removeUserMutation.mutate({ userId, organizationId });
+  };
+
+  const handleCancelInvitation = (invitationId: string) => {
+    cancelInvitationMutation.mutate({ invitationId });
+  };
 
   const adminsCount = activeMembers.filter(m => m.role === 'admin').length;
 
   return (
     <div className="space-y-6">
-      <SimpleUserManagementHeader organizationName={organizationName} />
+      <div className="flex justify-between items-center">
+        <SimpleUserManagementHeader organizationName={organizationName} />
+        <InviteUserModal organizationId={organizationId} />
+      </div>
 
       <MemberStats
         activeMembersCount={activeMembers.length}
