@@ -51,7 +51,7 @@ export const useInviteUser = () => {
 
       if (error) throw error;
       
-      const response = data as InviteUserResponse;
+      const response = data as unknown as InviteUserResponse;
       if (!response.success) throw new Error(response.error);
       
       return response;
@@ -83,7 +83,7 @@ export const useCancelInvitation = () => {
 
       if (error) throw error;
       
-      const response = data as CancelInvitationResponse;
+      const response = data as unknown as CancelInvitationResponse;
       if (!response.success) throw new Error(response.error);
       
       return response;
@@ -110,7 +110,7 @@ export const useRemoveUser = () => {
 
       if (error) throw error;
       
-      const response = data as RemoveUserResponse;
+      const response = data as unknown as RemoveUserResponse;
       if (!response.success) throw new Error(response.error);
       
       return response;
