@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useSystemUserManagementData, useAssignUserToOrg, SystemUser, useApproveAllInvitations } from '@/hooks/useSystemUsers';
 import { SystemUsersTable } from './SystemUsersTable';
@@ -62,15 +61,10 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
 
   const handleApproveAll = () => {
     approveAllMutation.mutate(undefined, {
-      onSuccess: (result) => {
-        if (result && typeof result === 'object' && 'approvedCount' in result) {
-          const data = result as { approvedCount: number; failedCount: number };
-          toast.success(`Approval process complete. ${data.approvedCount} invitations approved.`);
-          if (data.failedCount > 0) {
-            toast.info(`${data.failedCount} invitations could not be approved (e.g. user not registered).`);
-          }
-        } else {
-          toast.success('Approval process completed.');
+      onSuccess: (data) => {
+        toast.success(`Approval process complete. ${data.approvedCount} invitations approved.`);
+        if (data.failedCount > 0) {
+          toast.info(`${data.failedCount} invitations could not be approved (e.g. user not registered).`);
         }
       },
       onError: (error: any) => {

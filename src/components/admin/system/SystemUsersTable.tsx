@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -32,15 +31,16 @@ export const SystemUsersTable: React.FC<SystemUsersTableProps> = ({ users, onAss
       </TableHeader>
       <TableBody>
         {users.map((user) => {
-          const hasOrg = user.organization_id;
+          // gracefully handle missing organizations (e.g., for unassigned users)
+          const hasOrg = user.organizations && user.organizations.name && user.organizations.slug;
           return (
-            <TableRow key={user.user_id}>
+            <TableRow key={user.id || user.user_id}>
               <TableCell className="font-medium">{user.email}</TableCell>
               <TableCell>
                 {hasOrg ? (
-                  <span className="text-blue-600">
-                    Organization Member
-                  </span>
+                  <Link to={`/admin/${user.organizations.slug}`} className="text-blue-600 hover:underline">
+                    {user.organizations.name}
+                  </Link>
                 ) : (
                   <span className="text-gray-400 italic">—</span>
                 )}

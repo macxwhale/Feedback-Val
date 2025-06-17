@@ -3,6 +3,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 import { SystemInvitation } from '@/hooks/useSystemUsers';
 
 interface SystemInvitationsTableProps {
@@ -30,7 +31,9 @@ export const SystemInvitationsTable: React.FC<SystemInvitationsTableProps> = ({ 
           <TableRow key={invitation.id}>
             <TableCell className="font-medium">{invitation.email}</TableCell>
             <TableCell>
-              <span className="text-blue-600">{invitation.organization_name}</span>
+               <Link to={`/admin/${invitation.organizations.slug}`} className="text-blue-600 hover:underline">
+                {invitation.organizations.name}
+              </Link>
             </TableCell>
             <TableCell><Badge variant="secondary">{invitation.role}</Badge></TableCell>
             <TableCell>{format(new Date(invitation.created_at), 'PPP')}</TableCell>
