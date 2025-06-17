@@ -7,7 +7,7 @@ import { PerformanceTab } from "./tabs/PerformanceTab";
 import { SentimentTab } from "./tabs/SentimentTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import { SystemTab } from "./tabs/SystemTab";
-import { MembersTab } from "../../org-admin/dashboard/MembersTab";
+import MembersTab from "../../org-admin/dashboard/MembersTab";
 import { useAuthState } from "@/hooks/useAuthState";
 
 interface DashboardTabsProps {
@@ -34,11 +34,11 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({ organization }) =>
       </TabsList>
 
       <TabsContent value="feedback" className="mt-6">
-        <FeedbackTab organization={organization} />
+        <FeedbackTab organizationId={organization.id} />
       </TabsContent>
 
       <TabsContent value="questions" className="mt-6">
-        <QuestionsTab organization={organization} />
+        <QuestionsTab organizationId={organization.id} />
       </TabsContent>
 
       <TabsContent value="members" className="mt-6">
@@ -46,11 +46,11 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({ organization }) =>
       </TabsContent>
 
       <TabsContent value="performance" className="mt-6">
-        <PerformanceTab organization={organization} />
+        <PerformanceTab organizationId={organization.id} />
       </TabsContent>
 
       <TabsContent value="sentiment" className="mt-6">
-        <SentimentTab organization={organization} />
+        <SentimentTab organizationId={organization.id} />
       </TabsContent>
 
       <TabsContent value="settings" className="mt-6">
