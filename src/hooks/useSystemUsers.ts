@@ -1,21 +1,18 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export interface SystemUser {
-  id: string;
   user_id: string;
   email: string;
-  role: string;
-  status: string;
-  created_at: string;
-  accepted_at: string | null;
-  organization_id: string;
-  organizations: {
-    name: string;
-    slug: string;
-  };
-  organization_user_created_at?: string | null;
+  organization_user_id?: string;
+  organization_id?: string;
+  role?: string;
+  status?: string;
+  organization_user_created_at?: string;
+  accepted_at?: string;
+  invited_by_user_id?: string;
 }
 
 export interface SystemInvitation {
@@ -23,13 +20,11 @@ export interface SystemInvitation {
   email: string;
   role: string;
   status: string;
+  organization_id: string;
+  organization_name: string;
   created_at: string;
   expires_at: string;
-  organization_id: string;
-  organizations: {
-    name: string;
-    slug: string;
-  };
+  invited_by_user_id: string;
 }
 
 interface SystemUserManagementData {
@@ -41,69 +36,69 @@ export const useSystemUserManagementData = () => {
   return useQuery({
     queryKey: ['system-user-management'],
     queryFn: async (): Promise<SystemUserManagementData> => {
-      const { data, error } = await supabase.functions.invoke('system-user-management');
-      
-      if (error) {
-        if (error.context && typeof error.context.json === 'function') {
-          try {
-            const errorBody = await error.context.json();
-            if (errorBody.error) {
-              throw new Error(errorBody.error);
-            }
-          } catch (e) {
-            // Ignore JSON parsing errors
-          }
-        }
-        throw new Error(`Failed to fetch system user data: ${error.message}`);
-      }
+      // Get all users with their organization assignments
+      const { data: usersData, error: usersError } = await supabase
+        .from('all_users_with_org')
+        .select('*')
+        .order('email');
 
-      // Patch: Ensure organization_user_created_at is present for all users for Table rendering
-      const patchedData = {
-        ...data,
-        users: (data?.users || []).map((user: any) => ({
-          ...user,
-          organization_user_created_at: user.organization_user_created_at ?? user.created_at ?? null,
-        })),
+      if (usersError) throw usersError;
+
+      // Get all pending invitations with organization names
+      const { data: invitationsData, error: invitationsError } = await supabase
+        .from('user_invitations')
+        .select(`
+          *,
+          organizations!inner(name)
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (invitationsError) throw invitationsError;
+
+      const invitations = invitationsData?.map(inv => ({
+        ...inv,
+        organization_name: inv.organizations?.name || 'Unknown Organization'
+      })) || [];
+
+      return {
+        users: usersData || [],
+        invitations: invitations as SystemInvitation[]
       };
-
-      return patchedData;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30000,
   });
 };
 
-export interface AssignUserToOrgInput {
-  userId: string;
-  email: string;
-  organizationId: string;
-  role: string;
-}
-
 export const useAssignUserToOrg = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async ({
       userId,
       email,
       organizationId,
-      role,
-    }: AssignUserToOrgInput) => {
-      const { data, error } = await supabase.functions.invoke('assign-user-to-org', {
-        body: { user_id: userId, organization_id: organizationId, role },
-      });
+      role
+    }: {
+      userId: string;
+      email: string;
+      organizationId: string;
+      role: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('organization_users')
+        .insert({
+          user_id: userId,
+          email: email,
+          organization_id: organizationId,
+          role: role,
+          status: 'active',
+          accepted_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
-      if (error) {
-        // Only show important errors for debugging; otherwise, keep logs clean.
-        if (error.context && typeof error.context.json === 'function') {
-          try {
-            const errorBody = await error.context.json();
-            if (errorBody.error) {
-              throw new Error(errorBody.error);
-            }
-          } catch {}
-        }
-        throw new Error(error.message || 'An unknown error occurred.');
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
@@ -114,22 +109,12 @@ export const useAssignUserToOrg = () => {
 
 export const useApproveAllInvitations = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (): Promise<{ approvedCount: number; failedCount: number }> => {
-      const { data, error } = await supabase.functions.invoke('admin-approve-invitations');
 
-      if (error) {
-        if (error.context && typeof error.context.json === 'function') {
-          try {
-            const errorBody = await error.context.json();
-            if (errorBody.error) {
-              throw new Error(errorBody.error);
-            }
-          } catch {}
-        }
-        throw new Error(error.message);
-      }
-      return data;
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('approve_all_pending_invitations');
+      if (error) throw error;
+      return data || { approvedCount: 0, failedCount: 0 };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-user-management'] });
