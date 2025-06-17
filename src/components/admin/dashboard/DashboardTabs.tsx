@@ -19,7 +19,12 @@ interface DashboardTabsProps {
   stats?: any;
   isLiveActivity?: boolean;
   setIsLiveActivity?: (isLive: boolean) => void;
-  handleQuickActions?: (action: string) => void;
+  handleQuickActions?: {
+    onCreateQuestion: () => void;
+    onViewSettings: () => void;
+    onInviteUser: () => void;
+    onExportData: () => void;
+  };
 }
 
 export const DashboardTabs: React.FC<DashboardTabsProps> = ({ 
@@ -54,7 +59,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="questions" className="mt-6">
-        <QuestionsTab organizationId={organization.id} />
+        <QuestionsTab />
       </TabsContent>
 
       <TabsContent value="members" className="mt-6">
