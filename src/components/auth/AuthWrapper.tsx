@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   isAdmin: boolean;
   isOrgAdmin: boolean;
+  isSuperAdmin: boolean;
   currentOrganization: string | null;
   currentOrganizationSlug: string | null;
   loading: boolean;
@@ -71,6 +72,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider
       value={{
         ...authState,
+        session: null, // Add session property
+        isOrgAdmin: authState.isAdmin, // Add isOrgAdmin property
+        currentOrganization: null, // Add currentOrganization property
+        currentOrganizationSlug: null, // Add currentOrganizationSlug property
         signIn,
         signUp,
         signOut,

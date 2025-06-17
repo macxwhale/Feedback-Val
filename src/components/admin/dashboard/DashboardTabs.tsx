@@ -10,6 +10,8 @@ import { SystemTab } from "./tabs/SystemTab";
 import MembersTab from "../../org-admin/dashboard/MembersTab";
 import { useAuthState } from "@/hooks/useAuthState";
 
+export type DashboardModuleKey = 'feedback' | 'questions' | 'members' | 'performance' | 'sentiment' | 'settings' | 'system';
+
 interface DashboardTabsProps {
   organization: any;
 }
