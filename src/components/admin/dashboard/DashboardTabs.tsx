@@ -14,11 +14,25 @@ export type DashboardModuleKey = 'feedback' | 'questions' | 'members' | 'perform
 
 interface DashboardTabsProps {
   organization: any;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
+  stats?: any;
+  isLiveActivity?: boolean;
+  setIsLiveActivity?: (isLive: boolean) => void;
+  handleQuickActions?: (action: string) => void;
 }
 
-export const DashboardTabs: React.FC<DashboardTabsProps> = ({ organization }) => {
-  const [activeTab, setActiveTab] = useState("feedback");
+export const DashboardTabs: React.FC<DashboardTabsProps> = ({ 
+  organization, 
+  activeTab: externalActiveTab,
+  setActiveTab: externalSetActiveTab 
+}) => {
+  const [internalActiveTab, setInternalActiveTab] = useState("feedback");
   const { isSuperAdmin } = useAuthState();
+
+  // Use external state if provided, otherwise use internal state
+  const activeTab = externalActiveTab || internalActiveTab;
+  const setActiveTab = externalSetActiveTab || setInternalActiveTab;
 
   const tabCount = isSuperAdmin ? 7 : 6;
   const gridCols = isSuperAdmin ? "grid-cols-7" : "grid-cols-6";
