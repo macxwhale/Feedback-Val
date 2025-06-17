@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
 const FUNCTION_URL = 'https://rigurrwjiaucodxuuzeh.supabase.co/functions/v1/questions-crud';
-// PUBLIC_QUESTIONS_FUNCTION_URL is no longer needed
 
 interface QuestionFormData {
   question_text: string;
@@ -35,13 +34,33 @@ const getAuthHeaders = async () => {
   };
 };
 
-// Helper to handle API responses
+// Helper to handle API responses with improved error handling
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+    }
+    
+    // Log detailed error for debugging
+    console.error('API Error Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorData
+    });
+    
+    const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+    throw new Error(errorMessage);
   }
-  return await response.json();
+  
+  try {
+    return await response.json();
+  } catch (error) {
+    console.error('Error parsing response JSON:', error);
+    throw new Error('Invalid response format from server');
+  }
 };
 
 // Transform database question to frontend format
@@ -91,25 +110,29 @@ export const storeFeedbackResponses = async (
     }
 
     // Store individual responses
-    const responseData = Object.entries(responses).map(([questionId, value]) => {
-      const question = questions.find(q => q.id === questionId);
-      return {
-        question_id: questionId,
-        session_id: session.id,
-        organization_id: organizationId,
-        response_value: value,
-        question_category: question?.category || 'Comments',
-        score: generateRandomScore()
-      };
-    });
+    const responseData = Object.entries(responses)
+      .filter(([, value]) => value !== null && value !== undefined && value !== '')
+      .map(([questionId, value]) => {
+        const question = questions.find(q => q.id === questionId);
+        return {
+          question_id: questionId,
+          session_id: session.id,
+          organization_id: organizationId,
+          response_value: value,
+          question_category: question?.category || 'Comments',
+          score: generateRandomScore()
+        };
+      });
 
-    const { error: responsesError } = await supabase
-      .from('feedback_responses')
-      .insert(responseData);
+    if (responseData.length > 0) {
+      const { error: responsesError } = await supabase
+        .from('feedback_responses')
+        .insert(responseData);
 
-    if (responsesError) {
-      console.error('Error storing responses:', responsesError);
-      throw responsesError;
+      if (responsesError) {
+        console.error('Error storing responses:', responsesError);
+        throw responsesError;
+      }
     }
 
     console.log('Feedback responses stored successfully:', responseData.length, 'responses');
@@ -132,6 +155,7 @@ export const fetchQuestions = async (organizationSlug?: string) => {
     });
 
     if (error) {
+      console.error('Error fetching questions for form:', error);
       throw error;
     }
     
@@ -151,7 +175,10 @@ export const questionsService = {
         method: 'GET',
         headers
       });
-      return await handleResponse(response);
+      
+      const data = await handleResponse(response);
+      console.log('Successfully fetched questions:', data?.length || 0);
+      return data;
     } catch (error) {
       console.error('Error fetching questions:', error);
       throw error;
@@ -160,13 +187,17 @@ export const questionsService = {
 
   async createQuestion(question: QuestionFormData) {
     try {
+      console.log('Creating question:', question);
       const headers = await getAuthHeaders();
       const response = await fetch(FUNCTION_URL, {
         method: 'POST',
         headers,
         body: JSON.stringify(question)
       });
-      return await handleResponse(response);
+      
+      const data = await handleResponse(response);
+      console.log('Successfully created question:', data?.id);
+      return data;
     } catch (error) {
       console.error('Error creating question:', error);
       throw error;
@@ -175,13 +206,17 @@ export const questionsService = {
 
   async updateQuestion(id: string, updates: QuestionFormData) {
     try {
+      console.log('Updating question:', id, updates);
       const headers = await getAuthHeaders();
       const response = await fetch(FUNCTION_URL, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ id, ...updates })
       });
-      return await handleResponse(response);
+      
+      const data = await handleResponse(response);
+      console.log('Successfully updated question:', data?.id);
+      return data;
     } catch (error) {
       console.error('Error updating question:', error);
       throw error;
@@ -190,6 +225,8 @@ export const questionsService = {
 
   async deleteQuestion(id: string) {
     try {
+      console.log('Deleting question:', id);
+      
       // Use the safe deletion function
       const { data, error } = await supabase.rpc('safe_delete_question', {
         question_uuid: id
@@ -201,7 +238,9 @@ export const questionsService = {
       }
 
       // data will be true if actually deleted, false if archived
-      return { deleted: data, archived: !data };
+      const result = { deleted: data, archived: !data };
+      console.log('Question deletion result:', result);
+      return result;
     } catch (error) {
       console.error('Error deleting question:', error);
       throw error;
@@ -215,7 +254,12 @@ export const questionsService = {
         .select('*')
         .order('name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching question types:', error);
+        throw error;
+      }
+      
+      console.log('Successfully fetched question types:', data?.length || 0);
       return data || [];
     } catch (error) {
       console.error('Error fetching question types:', error);
@@ -230,7 +274,12 @@ export const questionsService = {
         .select('*')
         .order('name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching question categories:', error);
+        throw error;
+      }
+      
+      console.log('Successfully fetched question categories:', data?.length || 0);
       return data || [];
     } catch (error) {
       console.error('Error fetching question categories:', error);

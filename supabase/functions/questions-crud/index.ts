@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.22.4";
@@ -27,36 +28,127 @@ interface QuestionData {
 }
 
 const questionSchema = z.object({
-  question_text: z.string().min(1),
+  question_text: z.string().min(1).max(2000), // Increased limit for longer questions
   question_type: z.string().min(1),
   category: z.string().min(1),
   order_index: z.number().int().min(0),
-  help_text: z.string().optional(),
-  placeholder_text: z.string().optional(),
+  help_text: z.string().max(1000).optional(),
+  placeholder_text: z.string().max(500).optional(),
   is_required: z.boolean().optional(),
   options: z.array(z.object({
-    text: z.string(),
-    value: z.string().optional()
+    text: z.string().max(500),
+    value: z.string().max(500).optional()
   })).optional(),
   scaleConfig: z.object({
     minValue: z.number(),
     maxValue: z.number(),
-    minLabel: z.string().optional(),
-    maxLabel: z.string().optional(),
+    minLabel: z.string().max(100).optional(),
+    maxLabel: z.string().max(100).optional(),
     stepSize: z.number().optional()
   }).optional()
 });
 
-function createErrorResponse(message: string, status: number = 400) {
-  console.error('API Error:', message);
-  return new Response(JSON.stringify({ error: message }), {
+function createErrorResponse(message: string, status: number = 400, details?: any) {
+  console.error('API Error:', message, details ? JSON.stringify(details) : '');
+  return new Response(JSON.stringify({ error: message, details }), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
 
+async function validateQuestionType(supabase: any, questionType: string) {
+  const { data: questionTypeData, error } = await supabase
+    .from('question_types')
+    .select('id')
+    .eq('name', questionType)
+    .single();
+
+  if (error || !questionTypeData) {
+    throw new Error(`Invalid question type: ${questionType}`);
+  }
+  return questionTypeData.id;
+}
+
+async function validateQuestionCategory(supabase: any, category: string) {
+  const { data: categoryData, error } = await supabase
+    .from('question_categories')
+    .select('id')
+    .eq('name', category)
+    .single();
+
+  if (error || !categoryData) {
+    throw new Error(`Invalid question category: ${category}`);
+  }
+  return categoryData.id;
+}
+
+async function handleQuestionOptions(supabase: any, questionId: string, options?: { text: string; value?: string }[]) {
+  // Delete existing options
+  const { error: deleteError } = await supabase
+    .from('question_options')
+    .delete()
+    .eq('question_id', questionId);
+
+  if (deleteError) {
+    console.error('Error deleting existing options:', deleteError);
+    throw new Error('Failed to update question options');
+  }
+
+  // Insert new options if provided
+  if (options && options.length > 0) {
+    const optionsData = options.map((option, index) => ({
+      question_id: questionId,
+      option_text: option.text,
+      option_value: option.value || option.text,
+      display_order: index + 1
+    }));
+
+    const { error: insertError } = await supabase
+      .from('question_options')
+      .insert(optionsData);
+
+    if (insertError) {
+      console.error('Error inserting new options:', insertError);
+      throw new Error('Failed to save question options');
+    }
+  }
+}
+
+async function handleQuestionScale(supabase: any, questionId: string, scaleConfig?: any) {
+  // Delete existing scale config
+  const { error: deleteError } = await supabase
+    .from('question_scale_config')
+    .delete()
+    .eq('question_id', questionId);
+
+  if (deleteError) {
+    console.error('Error deleting existing scale config:', deleteError);
+    throw new Error('Failed to update scale configuration');
+  }
+
+  // Insert new scale config if provided
+  if (scaleConfig) {
+    const { error: insertError } = await supabase
+      .from('question_scale_config')
+      .insert({
+        question_id: questionId,
+        min_value: scaleConfig.minValue,
+        max_value: scaleConfig.maxValue,
+        min_label: scaleConfig.minLabel,
+        max_label: scaleConfig.maxLabel,
+        step_size: scaleConfig.stepSize || 1
+      });
+
+    if (insertError) {
+      console.error('Error inserting scale config:', insertError);
+      throw new Error('Failed to save scale configuration');
+    }
+  }
+}
+
 serve(async (req) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  const requestId = crypto.randomUUID();
+  console.log(`[${requestId}] ${new Date().toISOString()} - ${req.method} ${req.url}`);
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -94,7 +186,7 @@ serve(async (req) => {
     const organizationId = orgUser.organization_id;
     const { method } = req;
 
-    console.log('Questions CRUD called:', { method, userId: user.id, organizationId });
+    console.log(`[${requestId}] Questions CRUD called:`, { method, userId: user.id, organizationId });
 
     switch (method) {
       case 'GET': {
@@ -109,11 +201,11 @@ serve(async (req) => {
           .order('order_index');
         
         if (error) {
-          console.error('Database error:', error);
-          return createErrorResponse('Failed to fetch questions', 500);
+          console.error(`[${requestId}] Database error:`, error);
+          return createErrorResponse('Failed to fetch questions', 500, error);
         }
 
-        console.log(`Fetched ${data?.length || 0} questions`);
+        console.log(`[${requestId}] Fetched ${data?.length || 0} questions`);
         return new Response(JSON.stringify(data || []), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -121,108 +213,75 @@ serve(async (req) => {
 
       case 'POST': {
         const rawBody = await req.json();
+        console.log(`[${requestId}] POST request body:`, rawBody);
+        
         // Zod validation
         const parseResult = questionSchema.safeParse(rawBody);
         if (!parseResult.success) {
+          console.error(`[${requestId}] Validation error:`, parseResult.error);
           return createErrorResponse('Invalid input: ' + parseResult.error.message, 422);
         }
         const body = parseResult.data;
         
-        if (!body.question_text?.trim()) {
-          return createErrorResponse('Question text is required');
-        }
+        try {
+          // Validate question type and category
+          const typeId = await validateQuestionType(supabase, body.question_type);
+          const categoryId = await validateQuestionCategory(supabase, body.category);
 
-        // Get type_id from question_types table
-        const { data: questionType, error: typeError } = await supabase
-          .from('question_types')
-          .select('id')
-          .eq('name', body.question_type)
-          .single();
-
-        if (typeError || !questionType) {
-          return createErrorResponse(`Invalid question type: ${body.question_type}`);
-        }
-
-        // Get category_id from question_categories table
-        const { data: questionCategory, error: categoryError } = await supabase
-          .from('question_categories')
-          .select('id')
-          .eq('name', body.category)
-          .single();
-
-        if (categoryError || !questionCategory) {
-          return createErrorResponse(`Invalid question category: ${body.category}`);
-        }
-
-        // Insert question with proper foreign keys
-        const { data: question, error: questionError } = await supabase
-          .from('questions')
-          .insert({
-            question_text: body.question_text,
-            question_type: body.question_type,
-            category: body.category,
-            order_index: body.order_index,
-            help_text: body.help_text,
-            placeholder_text: body.placeholder_text,
-            is_required: body.is_required || false,
-            organization_id: organizationId,
-            type_id: questionType.id,
-            category_id: questionCategory.id
-          })
-          .select()
-          .single();
-        
-        if (questionError) {
-          console.error('Question creation error:', questionError);
-          return createErrorResponse('Failed to create question', 500);
-        }
-
-        // Create options if provided
-        if (body.options?.length) {
-          const optionsData = body.options.map((option, index) => ({
-            question_id: question.id,
-            option_text: option.text,
-            option_value: option.value || option.text,
-            display_order: index + 1
-          }));
-
-          const { error: optionsError } = await supabase
-            .from('question_options')
-            .insert(optionsData);
-          
-          if (optionsError) {
-            console.error('Options creation error:', optionsError);
-          }
-        }
-
-        // Create scale config if provided
-        if (body.scaleConfig) {
-          const { error: scaleError } = await supabase
-            .from('question_scale_config')
+          // Insert question with proper foreign keys
+          const { data: question, error: questionError } = await supabase
+            .from('questions')
             .insert({
-              question_id: question.id,
-              min_value: body.scaleConfig.minValue,
-              max_value: body.scaleConfig.maxValue,
-              min_label: body.scaleConfig.minLabel,
-              max_label: body.scaleConfig.maxLabel,
-              step_size: body.scaleConfig.stepSize || 1
-            });
+              question_text: body.question_text,
+              question_type: body.question_type,
+              category: body.category,
+              order_index: body.order_index,
+              help_text: body.help_text,
+              placeholder_text: body.placeholder_text,
+              is_required: body.is_required || false,
+              organization_id: organizationId,
+              type_id: typeId,
+              category_id: categoryId
+            })
+            .select()
+            .single();
           
-          if (scaleError) {
-            console.error('Scale config creation error:', scaleError);
+          if (questionError) {
+            console.error(`[${requestId}] Question creation error:`, questionError);
+            return createErrorResponse('Failed to create question', 500, questionError);
           }
-        }
 
-        return new Response(JSON.stringify(question), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+          console.log(`[${requestId}] Created question:`, question.id);
+
+          // Handle options
+          if (body.options?.length) {
+            await handleQuestionOptions(supabase, question.id, body.options);
+            console.log(`[${requestId}] Added ${body.options.length} options`);
+          }
+
+          // Handle scale config
+          if (body.scaleConfig) {
+            await handleQuestionScale(supabase, question.id, body.scaleConfig);
+            console.log(`[${requestId}] Added scale config`);
+          }
+
+          return new Response(JSON.stringify(question), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } catch (error) {
+          console.error(`[${requestId}] Error in POST operation:`, error);
+          return createErrorResponse(error.message, 500);
+        }
       }
 
       case 'PUT': {
         const rawBody = await req.json();
+        console.log(`[${requestId}] PUT request body:`, rawBody);
+        
         const schemaWithId = questionSchema.extend({ id: z.string().uuid() });
         const parseResult = schemaWithId.safeParse(rawBody);
         if (!parseResult.success) {
+          console.error(`[${requestId}] Validation error:`, parseResult.error);
           return createErrorResponse('Invalid input: ' + parseResult.error.message, 422);
         }
         const body = parseResult.data;
@@ -231,123 +290,102 @@ serve(async (req) => {
           return createErrorResponse('Question ID is required');
         }
 
-        // Get type_id and category_id if updating those fields
-        let typeId, categoryId;
-        
-        if (body.question_type) {
-          const { data: questionType, error: typeError } = await supabase
-            .from('question_types')
-            .select('id')
-            .eq('name', body.question_type)
+        try {
+          // Validate question type and category
+          const typeId = await validateQuestionType(supabase, body.question_type);
+          const categoryId = await validateQuestionCategory(supabase, body.category);
+
+          // Prepare update data - only include fields that exist on the questions table
+          const updateData = {
+            question_text: body.question_text,
+            question_type: body.question_type,
+            category: body.category,
+            order_index: body.order_index,
+            help_text: body.help_text,
+            placeholder_text: body.placeholder_text,
+            is_required: body.is_required || false,
+            type_id: typeId,
+            category_id: categoryId
+          };
+
+          console.log(`[${requestId}] Updating question with data:`, updateData);
+
+          // Update question
+          const { data: question, error: updateError } = await supabase
+            .from('questions')
+            .update(updateData)
+            .eq('id', body.id)
+            .eq('organization_id', organizationId)
+            .select()
             .single();
-
-          if (typeError || !questionType) {
-            return createErrorResponse(`Invalid question type: ${body.question_type}`);
-          }
-          typeId = questionType.id;
-        }
-
-        if (body.category) {
-          const { data: questionCategory, error: categoryError } = await supabase
-            .from('question_categories')
-            .select('id')
-            .eq('name', body.category)
-            .single();
-
-          if (categoryError || !questionCategory) {
-            return createErrorResponse(`Invalid question category: ${body.category}`);
-          }
-          categoryId = questionCategory.id;
-        }
-
-        // Prepare update data with foreign keys
-        const updateData = {
-          ...body,
-          ...(typeId && { type_id: typeId }),
-          ...(categoryId && { category_id: categoryId })
-        };
-
-        // Update question
-        const { data: question, error: updateError } = await supabase
-          .from('questions')
-          .update(updateData)
-          .eq('id', body.id)
-          .eq('organization_id', organizationId)
-          .select()
-          .single();
-        
-        if (updateError) {
-          console.error('Question update error:', updateError);
-          return createErrorResponse('Failed to update question', 500);
-        }
-
-        // Update options
-        if (body.options !== undefined) {
-          await supabase.from('question_options').delete().eq('question_id', body.id);
           
-          if (body.options.length > 0) {
-            const optionsData = body.options.map((option, index) => ({
-              question_id: body.id,
-              option_text: option.text,
-              option_value: option.value || option.text,
-              display_order: index + 1
-            }));
-
-            await supabase.from('question_options').insert(optionsData);
+          if (updateError) {
+            console.error(`[${requestId}] Question update error:`, updateError);
+            return createErrorResponse('Failed to update question', 500, updateError);
           }
-        }
 
-        // Update scale config
-        if (body.scaleConfig) {
-          await supabase.from('question_scale_config').delete().eq('question_id', body.id);
-          await supabase.from('question_scale_config').insert({
-            question_id: body.id,
-            min_value: body.scaleConfig.minValue,
-            max_value: body.scaleConfig.maxValue,
-            min_label: body.scaleConfig.minLabel,
-            max_label: body.scaleConfig.maxLabel,
-            step_size: body.scaleConfig.stepSize || 1
+          console.log(`[${requestId}] Updated question:`, question.id);
+
+          // Handle options update
+          if (body.options !== undefined) {
+            await handleQuestionOptions(supabase, body.id, body.options);
+            console.log(`[${requestId}] Updated options (${body.options?.length || 0} items)`);
+          }
+
+          // Handle scale config update
+          if (body.scaleConfig !== undefined) {
+            await handleQuestionScale(supabase, body.id, body.scaleConfig);
+            console.log(`[${requestId}] Updated scale config`);
+          }
+
+          return new Response(JSON.stringify(question), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
+        } catch (error) {
+          console.error(`[${requestId}] Error in PUT operation:`, error);
+          return createErrorResponse(error.message, 500);
         }
-
-        return new Response(JSON.stringify(question), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
       }
 
       case 'DELETE': {
         const { id } = await req.json();
+        console.log(`[${requestId}] DELETE request for question:`, id);
         
         if (!id) {
           return createErrorResponse('Question ID is required');
         }
 
-        // Delete related data first
-        await supabase.from('question_options').delete().eq('question_id', id);
-        await supabase.from('question_scale_config').delete().eq('question_id', id);
-        
-        // Delete question
-        const { error } = await supabase
-          .from('questions')
-          .delete()
-          .eq('id', id)
-          .eq('organization_id', organizationId);
-        
-        if (error) {
-          console.error('Question deletion error:', error);
+        try {
+          // Use the safe delete function that handles responses
+          const { data: deleteResult, error: deleteError } = await supabase
+            .rpc('safe_delete_question', { question_uuid: id });
+
+          if (deleteError) {
+            console.error(`[${requestId}] Question deletion error:`, deleteError);
+            return createErrorResponse('Failed to delete question', 500, deleteError);
+          }
+
+          const wasDeleted = deleteResult === true;
+          console.log(`[${requestId}] Question ${wasDeleted ? 'deleted' : 'archived'}:`, id);
+
+          return new Response(JSON.stringify({ 
+            success: true, 
+            deleted: wasDeleted,
+            archived: !wasDeleted 
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } catch (error) {
+          console.error(`[${requestId}] Error in DELETE operation:`, error);
           return createErrorResponse('Failed to delete question', 500);
         }
-
-        return new Response(JSON.stringify({ success: true }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
       }
 
       default:
         return createErrorResponse('Method not allowed', 405);
     }
   } catch (error) {
-    console.error('Unexpected error:', error);
-    return createErrorResponse('Internal server error', 500);
+    console.error(`[${requestId}] Unexpected error:`, error);
+    return createErrorResponse('Internal server error', 500, error.message);
   }
 });

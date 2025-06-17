@@ -1319,7 +1319,7 @@ export type Database = {
         | "QualityStaff"
         | "ValueForMoney"
         | "QualityService"
-        | "LikeliRecommend"
+        | "LikelyRecommend"
         | "DidWeMakeEasy"
         | "Comments"
         | "Satisfaction"
@@ -1453,7 +1453,7 @@ export const Constants = {
         "QualityStaff",
         "ValueForMoney",
         "QualityService",
-        "LikeliRecommend",
+        "LikelyRecommend",
         "DidWeMakeEasy",
         "Comments",
         "Satisfaction",
