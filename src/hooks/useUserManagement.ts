@@ -1,7 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import type { EnhancedRole } from '@/utils/enhancedRoleUtils';
 
 interface Member {
   id: string;
@@ -92,7 +92,7 @@ export const useUserManagement = (organizationId: string) => {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: EnhancedRole }) => {
       const { error } = await supabase
         .from('organization_users')
         .update({ 
@@ -172,7 +172,7 @@ export const useUserManagement = (organizationId: string) => {
     }
   });
 
-  const handleUpdateRole = (userId: string, newRole: string) => {
+  const handleUpdateRole = (userId: string, newRole: EnhancedRole) => {
     updateRoleMutation.mutate({ userId, newRole });
   };
 
