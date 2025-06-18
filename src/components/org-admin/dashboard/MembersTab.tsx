@@ -1,6 +1,6 @@
 
 import React from "react";
-import { EnhancedUserManagement } from '../members/EnhancedUserManagement';
+import { EnhancedUserManagement } from '../../admin/EnhancedUserManagement';
 
 interface MembersTabProps {
   organization: any;

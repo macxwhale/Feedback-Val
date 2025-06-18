@@ -1,10 +1,10 @@
 
 import { Shield, User, Settings, BarChart3, Eye, Crown } from 'lucide-react';
 
-// Enhanced role support - this is now the primary system
+// Enhanced role support - this is now the primary and only system
 export type EnhancedRole = 'owner' | 'admin' | 'manager' | 'analyst' | 'member' | 'viewer';
 
-// Enhanced role configuration - primary configuration
+// Enhanced role configuration - primary and only configuration
 export const ENHANCED_USER_ROLE_CONFIG = {
   owner: { variant: 'destructive' as const, icon: Crown, label: 'Owner' },
   admin: { variant: 'default' as const, icon: Shield, label: 'Admin' },
@@ -14,14 +14,8 @@ export const ENHANCED_USER_ROLE_CONFIG = {
   viewer: { variant: 'outline' as const, icon: Eye, label: 'Viewer' },
 } as const;
 
-// Legacy support for backward compatibility - kept minimal
-export const USER_ROLE_CONFIG = {
-  admin: { variant: 'default' as const, icon: Shield, label: 'Admin' },
-  member: { variant: 'secondary' as const, icon: User, label: 'Member' },
-} as const;
-
 export const getRoleBadge = (role: string) => {
-  // Check if it's an enhanced role first (primary system)
+  // Use enhanced role configuration
   const enhancedConfig = ENHANCED_USER_ROLE_CONFIG[role as EnhancedRole];
   if (enhancedConfig) {
     return {
@@ -31,8 +25,8 @@ export const getRoleBadge = (role: string) => {
     };
   }
   
-  // Fallback to legacy config for backward compatibility
-  const config = USER_ROLE_CONFIG[role as keyof typeof USER_ROLE_CONFIG] || USER_ROLE_CONFIG.member;
+  // Default fallback to member
+  const config = ENHANCED_USER_ROLE_CONFIG.member;
   return {
     variant: config.variant,
     icon: config.icon,
