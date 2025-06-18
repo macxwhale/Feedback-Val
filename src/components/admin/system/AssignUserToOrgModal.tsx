@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SystemUser } from '@/hooks/useSystemUsers';
 import { Organization } from '@/services/organizationService.types';
 import { EnhancedRoleSelector } from '../EnhancedRoleSelector';
-import { useAuth } from '@/components/auth/AuthWrapper';
 
 interface AssignUserToOrgModalProps {
   isOpen: boolean;
@@ -24,15 +23,14 @@ export const AssignUserToOrgModal: React.FC<AssignUserToOrgModalProps> = ({
   organizations,
   onClose,
   onSubmit,
-  isSubmitting,
+  isSubmitting
 }) => {
-  const { isAdmin } = useAuth(); // Assuming super admin has highest privileges
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<string>('member');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (user && selectedOrgId && selectedRole) {
+    if (user && selectedOrgId) {
       onSubmit(user.user_id, user.email, selectedOrgId, selectedRole);
     }
   };
@@ -53,22 +51,22 @@ export const AssignUserToOrgModal: React.FC<AssignUserToOrgModalProps> = ({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>User</Label>
+            <Label>User Email</Label>
             <div className="p-2 bg-gray-50 rounded border">
-              <p className="font-medium">{user.email}</p>
+              {user.email}
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="organization">Organization</Label>
-            <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
+            <Select value={selectedOrgId} onValueChange={setSelectedOrgId} required>
               <SelectTrigger>
                 <SelectValue placeholder="Select an organization" />
               </SelectTrigger>
               <SelectContent>
                 {organizations.map((org) => (
                   <SelectItem key={org.id} value={org.id}>
-                    {org.name}
+                    {org.name} (/{org.slug})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -78,7 +76,7 @@ export const AssignUserToOrgModal: React.FC<AssignUserToOrgModalProps> = ({
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
             <EnhancedRoleSelector
-              currentUserRole={isAdmin ? 'owner' : 'admin'} // Super admin can assign any role
+              currentUserRole="owner" // System admin can assign any role
               selectedRole={selectedRole}
               onRoleChange={setSelectedRole}
             />
@@ -88,10 +86,7 @@ export const AssignUserToOrgModal: React.FC<AssignUserToOrgModalProps> = ({
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !selectedOrgId || !selectedRole}
-            >
+            <Button type="submit" disabled={isSubmitting || !selectedOrgId}>
               {isSubmitting ? 'Assigning...' : 'Assign User'}
             </Button>
           </div>

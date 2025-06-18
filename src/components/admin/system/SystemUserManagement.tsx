@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useSystemUserManagementData, useAssignUserToOrg, SystemUser, useApproveAllInvitations } from '@/hooks/useSystemUsers';
 import { SystemUsersTable } from './SystemUsersTable';
@@ -92,7 +93,7 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
       <Card>
         <CardHeader>
           <CardTitle>All Organization Users</CardTitle>
-          <CardDescription>A list of all users across all organizations. You can assign existing users to new organizations from here.</CardDescription>
+          <CardDescription>A comprehensive list of all users across all organizations with their enhanced roles. You can assign existing users to new organizations from here.</CardDescription>
         </CardHeader>
         <CardContent>
           <SystemUsersTable users={data?.users || []} onAssignUser={handleOpenModal} />
@@ -103,7 +104,7 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>All Pending Invitations</CardTitle>
-            <CardDescription>A list of all pending invitations across all organizations.</CardDescription>
+            <CardDescription>A comprehensive list of all pending invitations across all organizations with enhanced role information.</CardDescription>
           </div>
           {data?.invitations && data.invitations.length > 0 && (
             <AlertDialog>
@@ -117,7 +118,7 @@ export const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ orga
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will attempt to approve all pending invitations for which a user account already exists.
-                    Users will be added to the respective organizations. This action cannot be undone.
+                    Users will be added to the respective organizations with their designated enhanced roles. This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

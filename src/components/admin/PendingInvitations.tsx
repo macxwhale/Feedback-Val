@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Mail, X, Clock } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { RoleBadge } from './RoleBadge';
+import { EnhancedRoleBadge } from './EnhancedRoleBadge';
 import { formatDate, isExpiringSoon } from '@/utils/userManagementUtils';
 
 interface Invitation {
   id: string;
   email: string;
   role: string;
+  enhanced_role?: string;
   status: string;
   created_at: string;
   expires_at: string;
@@ -118,34 +119,37 @@ export const PendingInvitations: React.FC<PendingInvitationsProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invitations.map((invitation) => (
-              <TableRow key={invitation.id}>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium">{invitation.email}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <RoleBadge role={invitation.role} />
-                </TableCell>
-                <TableCell>
-                  {formatDate(invitation.created_at)}
-                </TableCell>
-                <TableCell>
-                  <ExpiryStatus expiresAt={invitation.expires_at} />
-                </TableCell>
-                <TableCell>
-                  {invitation.invited_by?.email || '-'}
-                </TableCell>
-                <TableCell>
-                  <CancelInvitationButton 
-                    invitation={invitation} 
-                    onCancel={onCancelInvitation} 
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
+            {invitations.map((invitation) => {
+              const role = invitation.enhanced_role || invitation.role;
+              return (
+                <TableRow key={invitation.id}>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium">{invitation.email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <EnhancedRoleBadge role={role} />
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(invitation.created_at)}
+                  </TableCell>
+                  <TableCell>
+                    <ExpiryStatus expiresAt={invitation.expires_at} />
+                  </TableCell>
+                  <TableCell>
+                    {invitation.invited_by?.email || '-'}
+                  </TableCell>
+                  <TableCell>
+                    <CancelInvitationButton 
+                      invitation={invitation} 
+                      onCancel={onCancelInvitation} 
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>

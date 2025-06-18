@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,7 +8,7 @@ export interface SystemUser {
   user_id: string;
   email: string;
   role: string;
-  enhanced_role: string; // Add enhanced role support
+  enhanced_role?: string;
   status: string;
   created_at: string;
   accepted_at: string | null;
@@ -23,7 +24,7 @@ export interface SystemInvitation {
   id: string;
   email: string;
   role: string;
-  enhanced_role: string; // Add enhanced role support
+  enhanced_role?: string;
   status: string;
   created_at: string;
   expires_at: string;
@@ -59,23 +60,23 @@ export const useSystemUserManagementData = () => {
         throw new Error(`Failed to fetch system user data: ${error.message}`);
       }
 
-      // Patch: Ensure organization_user_created_at is present for all users for Table rendering
-      const patchedData = {
+      // Process data to use enhanced roles consistently
+      const processedData = {
         ...data,
         users: (data?.users || []).map((user: any) => ({
           ...user,
           organization_user_created_at: user.organization_user_created_at ?? user.created_at ?? null,
-          // Use enhanced_role if available, fallback to role
-          role: user.enhanced_role || user.role,
+          // Prioritize enhanced_role, fallback to role for display
+          role: user.enhanced_role || user.role || 'member',
         })),
         invitations: (data?.invitations || []).map((invitation: any) => ({
           ...invitation,
-          // Use enhanced_role if available, fallback to role
-          role: invitation.enhanced_role || invitation.role,
+          // Prioritize enhanced_role, fallback to role for display
+          role: invitation.enhanced_role || invitation.role || 'member',
         })),
       };
 
-      return patchedData;
+      return processedData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -102,7 +103,6 @@ export const useAssignUserToOrg = () => {
       });
 
       if (error) {
-        // Only show important errors for debugging; otherwise, keep logs clean.
         if (error.context && typeof error.context.json === 'function') {
           try {
             const errorBody = await error.context.json();
