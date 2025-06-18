@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -39,7 +40,7 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    // Fetch all users with org info, also join orgs for name/slug
+    // Fetch all users with org info, including enhanced roles
     const { data: usersRaw, error: usersError } = await supabaseAdmin
       .from('all_users_with_org')
       .select(`
@@ -63,19 +64,36 @@ serve(async (req: Request) => {
       throw usersError;
     }
 
-    // Map organization-less users to a default structure for .organizations
+    // Get enhanced roles for users
+    const { data: enhancedRoles, error: rolesError } = await supabaseAdmin
+      .from('organization_users')
+      .select('user_id, organization_id, enhanced_role');
+
+    if (rolesError) {
+      console.warn('Could not fetch enhanced roles:', rolesError);
+    }
+
+    // Create a map for quick lookup of enhanced roles
+    const enhancedRoleMap = new Map();
+    enhancedRoles?.forEach(role => {
+      enhancedRoleMap.set(`${role.user_id}-${role.organization_id}`, role.enhanced_role);
+    });
+
+    // Map organization-less users to a default structure and include enhanced roles
     const users = (usersRaw || []).map((user: any) => ({
       ...user,
+      enhanced_role: enhancedRoleMap.get(`${user.user_id}-${user.organization_id}`) || user.role,
       organizations: user.organizations || (user.organization_id ? { name: '', slug: '' } : null),
     }));
 
-    // Fetch all pending invitations using the admin client
+    // Fetch all pending invitations with enhanced roles
     const { data: invitations, error: invitationsError } = await supabaseAdmin
       .from('user_invitations')
       .select(`
         id,
         email,
         role,
+        enhanced_role,
         status,
         created_at,
         expires_at,

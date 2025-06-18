@@ -7,6 +7,7 @@ export interface SystemUser {
   user_id: string;
   email: string;
   role: string;
+  enhanced_role: string; // Add enhanced role support
   status: string;
   created_at: string;
   accepted_at: string | null;
@@ -22,6 +23,7 @@ export interface SystemInvitation {
   id: string;
   email: string;
   role: string;
+  enhanced_role: string; // Add enhanced role support
   status: string;
   created_at: string;
   expires_at: string;
@@ -63,6 +65,13 @@ export const useSystemUserManagementData = () => {
         users: (data?.users || []).map((user: any) => ({
           ...user,
           organization_user_created_at: user.organization_user_created_at ?? user.created_at ?? null,
+          // Use enhanced_role if available, fallback to role
+          role: user.enhanced_role || user.role,
+        })),
+        invitations: (data?.invitations || []).map((invitation: any) => ({
+          ...invitation,
+          // Use enhanced_role if available, fallback to role
+          role: invitation.enhanced_role || invitation.role,
         })),
       };
 

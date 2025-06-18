@@ -562,6 +562,7 @@ export type Database = {
           accepted_at: string | null
           created_at: string
           email: string
+          enhanced_role: Database["public"]["Enums"]["enhanced_org_role"] | null
           id: string
           invited_at: string | null
           invited_by_user_id: string | null
@@ -575,6 +576,9 @@ export type Database = {
           accepted_at?: string | null
           created_at?: string
           email: string
+          enhanced_role?:
+            | Database["public"]["Enums"]["enhanced_org_role"]
+            | null
           id?: string
           invited_at?: string | null
           invited_by_user_id?: string | null
@@ -588,6 +592,9 @@ export type Database = {
           accepted_at?: string | null
           created_at?: string
           email?: string
+          enhanced_role?:
+            | Database["public"]["Enums"]["enhanced_org_role"]
+            | null
           id?: string
           invited_at?: string | null
           invited_by_user_id?: string | null
@@ -971,6 +978,30 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_key: string
+          permission_value: Json | null
+          role: Database["public"]["Enums"]["enhanced_org_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_key: string
+          permission_value?: Json | null
+          role: Database["public"]["Enums"]["enhanced_org_role"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_key?: string
+          permission_value?: Json | null
+          role?: Database["public"]["Enums"]["enhanced_org_role"]
+        }
+        Relationships: []
+      }
       sms_conversations: {
         Row: {
           africastalking_message_id: string | null
@@ -1067,6 +1098,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          enhanced_role: Database["public"]["Enums"]["enhanced_org_role"] | null
           expires_at: string
           id: string
           invitation_token: string
@@ -1079,6 +1111,9 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          enhanced_role?:
+            | Database["public"]["Enums"]["enhanced_org_role"]
+            | null
           expires_at?: string
           id?: string
           invitation_token?: string
@@ -1091,6 +1126,9 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          enhanced_role?:
+            | Database["public"]["Enums"]["enhanced_org_role"]
+            | null
           expires_at?: string
           id?: string
           invitation_token?: string
@@ -1232,6 +1270,13 @@ export type Database = {
         Args: { invitation_token: string }
         Returns: Json
       }
+      can_manage_user_role: {
+        Args: {
+          manager_role: Database["public"]["Enums"]["enhanced_org_role"]
+          target_role: Database["public"]["Enums"]["enhanced_org_role"]
+        }
+        Returns: boolean
+      }
       cancel_invitation: {
         Args: { p_invitation_id: string }
         Returns: Json
@@ -1274,6 +1319,14 @@ export type Database = {
         }
         Returns: Json
       }
+      get_role_hierarchy_level: {
+        Args: { user_role: Database["public"]["Enums"]["enhanced_org_role"] }
+        Returns: number
+      }
+      get_user_enhanced_role: {
+        Args: { p_user_id: string; p_org_id: string }
+        Returns: Database["public"]["Enums"]["enhanced_org_role"]
+      }
       invite_user_to_organization: {
         Args: { p_email: string; p_organization_id: string; p_role?: string }
         Returns: Json
@@ -1303,6 +1356,10 @@ export type Database = {
         Args: { question_uuid: string }
         Returns: boolean
       }
+      user_has_permission: {
+        Args: { p_user_id: string; p_org_id: string; p_permission_key: string }
+        Returns: Json
+      }
       validate_api_key: {
         Args: { p_api_key: string }
         Returns: {
@@ -1313,6 +1370,13 @@ export type Database = {
       }
     }
     Enums: {
+      enhanced_org_role:
+        | "owner"
+        | "admin"
+        | "manager"
+        | "analyst"
+        | "member"
+        | "viewer"
       org_plan_type: "starter" | "pro" | "enterprise"
       question_category:
         | "QualityCommunication"
@@ -1447,6 +1511,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      enhanced_org_role: [
+        "owner",
+        "admin",
+        "manager",
+        "analyst",
+        "member",
+        "viewer",
+      ],
       org_plan_type: ["starter", "pro", "enterprise"],
       question_category: [
         "QualityCommunication",

@@ -64,14 +64,15 @@ serve(async (req: Request) => {
 
     let membership;
     if (!existingMembership) {
-      // Insert a new membership
+      // Insert a new membership with enhanced role
       const { data: inserted, error: insertError } = await supabaseAdmin
         .from('organization_users')
         .insert({
           user_id,
           organization_id,
           email: null, // this should be filled by another sync or on invite-accept,
-          role,
+          role: role, // Keep legacy role for compatibility
+          enhanced_role: role, // Use enhanced role system
           status: 'active',
           invited_by_user_id: user.id, // who assigned the user
           accepted_at: new Date().toISOString()
@@ -85,7 +86,8 @@ serve(async (req: Request) => {
       const { data: updated, error: updateError } = await supabaseAdmin
         .from('organization_users')
         .update({
-          role,
+          role: role, // Keep legacy role for compatibility
+          enhanced_role: role, // Use enhanced role system
           status: 'active',
           updated_at: new Date().toISOString()
         })
