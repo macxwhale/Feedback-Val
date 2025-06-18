@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { MembersList } from './MembersList';
+import { EnhancedMembersList } from './EnhancedMembersList';
 import { PendingInvitations } from './PendingInvitations';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { SimpleUserManagementHeader } from './SimpleUserManagementHeader';
 import { MemberStats } from './MemberStats';
 import { UserManagementTabs } from './UserManagementTabs';
-import { InviteUserModal } from './InviteUserModal';
+import { EnhancedInviteUserModal } from './EnhancedInviteUserModal';
 import { useRemoveUser, useCancelInvitation } from '@/hooks/useUserInvitation';
 
 interface UserManagementProps {
@@ -39,13 +39,16 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     cancelInvitationMutation.mutate({ invitationId });
   };
 
-  const adminsCount = activeMembers.filter(m => m.role === 'admin').length;
+  const adminsCount = activeMembers.filter(m => {
+    const role = m.enhanced_role || m.role;
+    return ['admin', 'owner'].includes(role);
+  }).length;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <SimpleUserManagementHeader organizationName={organizationName} />
-        <InviteUserModal organizationId={organizationId} />
+        <EnhancedInviteUserModal organizationId={organizationId} />
       </div>
 
       <MemberStats
@@ -62,9 +65,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({
       />
 
       {activeTab === 'members' && (
-        <MembersList
+        <EnhancedMembersList
           members={activeMembers}
           loading={membersLoading}
+          organizationId={organizationId}
           onUpdateRole={handleUpdateRole}
           onRemoveMember={handleRemoveMember}
         />

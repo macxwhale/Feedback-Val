@@ -8,6 +8,7 @@ interface Member {
   user_id: string;
   email: string;
   role: string;
+  enhanced_role?: string;
   status: string;
   created_at: string;
   accepted_at: string | null;
@@ -18,6 +19,7 @@ interface Invitation {
   id: string;
   email: string;
   role: string;
+  enhanced_role?: string;
   status: string;
   created_at: string;
   expires_at: string;
@@ -38,6 +40,7 @@ export const useUserManagement = (organizationId: string) => {
           user_id,
           email,
           role,
+          enhanced_role,
           status,
           created_at,
           accepted_at,
@@ -65,6 +68,7 @@ export const useUserManagement = (organizationId: string) => {
           id,
           email,
           role,
+          enhanced_role,
           status,
           created_at,
           expires_at,
@@ -91,7 +95,11 @@ export const useUserManagement = (organizationId: string) => {
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
       const { error } = await supabase
         .from('organization_users')
-        .update({ role: newRole, updated_at: new Date().toISOString() })
+        .update({ 
+          enhanced_role: newRole,
+          role: newRole, // Keep legacy role in sync for backward compatibility
+          updated_at: new Date().toISOString() 
+        })
         .eq('user_id', userId)
         .eq('organization_id', organizationId);
 
