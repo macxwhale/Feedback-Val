@@ -41,7 +41,15 @@ export const useEnhancedPermissions = (organizationId?: string) => {
         
       const permissionsMap: Record<string, Permission> = {};
       data?.forEach(({ permission_key, permission_value }) => {
-        permissionsMap[permission_key] = permission_value as Permission;
+        // Safely parse the permission_value as Permission interface
+        try {
+          const parsedPermission = permission_value as unknown as Permission;
+          if (parsedPermission && typeof parsedPermission === 'object' && 'allowed' in parsedPermission) {
+            permissionsMap[permission_key] = parsedPermission;
+          }
+        } catch (error) {
+          console.warn(`Failed to parse permission for ${permission_key}:`, error);
+        }
       });
       
       return permissionsMap;
