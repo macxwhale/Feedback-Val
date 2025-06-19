@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -19,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import { ThemeManager } from "@/components/ThemeManager";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import AuthCallback from './pages/AuthCallback';
 
 const queryClient = new QueryClient();
 
@@ -82,6 +82,9 @@ function App() {
                 
                 {/* Catch-all route - MUST be last */}
                 <Route path="*" element={<NotFound />} />
+                
+                {/* Auth callback */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
               </Routes>
             </OrganizationProvider>
           </AuthProvider>

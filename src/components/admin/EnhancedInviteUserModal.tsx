@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { UserPlus } from 'lucide-react';
-import { useInviteUser } from '@/hooks/useUserInvitation';
+import { useEnhancedInviteUser } from '@/hooks/useEnhancedUserInvitation';
 import { EnhancedRoleSelector } from './EnhancedRoleSelector';
 import { useEnhancedPermissions } from '@/hooks/useEnhancedPermissions';
 
@@ -32,7 +32,7 @@ export const EnhancedInviteUserModal: React.FC<EnhancedInviteUserModalProps> = (
   const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
   const { userRole } = useEnhancedPermissions(organizationId);
   
-  const inviteUserMutation = useInviteUser();
+  const inviteUserMutation = useEnhancedInviteUser();
 
   const resetForm = () => {
     setFormState(INITIAL_FORM_STATE);
@@ -49,7 +49,8 @@ export const EnhancedInviteUserModal: React.FC<EnhancedInviteUserModalProps> = (
       { 
         email: formState.email.trim(), 
         organizationId, 
-        role: formState.role 
+        role: formState.role,
+        enhancedRole: formState.role
       },
       {
         onSuccess: () => {
@@ -93,6 +94,9 @@ export const EnhancedInviteUserModal: React.FC<EnhancedInviteUserModalProps> = (
               onChange={(e) => updateFormField('email', e.target.value)}
               required
             />
+            <p className="text-sm text-gray-500">
+              The user will receive an email invitation to join your organization and set up their account.
+            </p>
           </div>
           
           <div className="space-y-2">
@@ -116,7 +120,7 @@ export const EnhancedInviteUserModal: React.FC<EnhancedInviteUserModalProps> = (
               type="submit" 
               disabled={inviteUserMutation.isPending || !isFormValid}
             >
-              {inviteUserMutation.isPending ? 'Inviting...' : 'Send Invitation'}
+              {inviteUserMutation.isPending ? 'Sending Invitation...' : 'Send Invitation'}
             </Button>
           </div>
         </form>

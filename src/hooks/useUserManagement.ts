@@ -1,7 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import type { EnhancedRole } from '@/utils/enhancedRoleUtils';
+import type { EnhancedRole } from '@/utils/userManagementUtils';
 
 interface Member {
   id: string;
