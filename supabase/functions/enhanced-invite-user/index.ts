@@ -9,68 +9,81 @@ const corsHeaders = {
 }
 
 const sendWelcomeEmail = async (email: string, organizationName: string, resetUrl: string) => {
-  const client = new SMTPClient({
-    connection: {
-      hostname: Deno.env.get('ZOHO_SMTP_HOST')!,
-      port: parseInt(Deno.env.get('ZOHO_SMTP_PORT')!),
-      tls: true,
-      auth: {
-        username: Deno.env.get('ZOHO_SMTP_USER')!,
-        password: Deno.env.get('ZOHO_SMTP_PASSWORD')!,
-      },
-    },
-  });
+  console.log('Attempting to send email to:', email);
+  console.log('SMTP Host:', Deno.env.get('ZOHO_SMTP_HOST'));
+  console.log('SMTP Port:', Deno.env.get('ZOHO_SMTP_PORT'));
+  console.log('SMTP User:', Deno.env.get('ZOHO_SMTP_USER'));
 
-  const emailContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333; text-align: center;">Welcome to ${organizationName}!</h1>
-      
-      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h2 style="color: #007ACE; margin-top: 0;">You've been invited to join our organization</h2>
-        <p>An administrator from <strong>${organizationName}</strong> has created an account for you.</p>
+  try {
+    const client = new SMTPClient({
+      connection: {
+        hostname: Deno.env.get('ZOHO_SMTP_HOST')!,
+        port: parseInt(Deno.env.get('ZOHO_SMTP_PORT')!),
+        tls: true,
+        auth: {
+          username: Deno.env.get('ZOHO_SMTP_USER')!,
+          password: Deno.env.get('ZOHO_SMTP_PASSWORD')!,
+        },
+      },
+    });
+
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #333; text-align: center;">Welcome to ${organizationName}!</h1>
         
-        <div style="background-color: #fff; padding: 15px; border-radius: 5px; border-left: 4px solid #007ACE;">
-          <p><strong>Your email:</strong> ${email}</p>
-          <p><strong>Next step:</strong> Set up your password to access your account</p>
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h2 style="color: #007ACE; margin-top: 0;">You've been invited to join our organization</h2>
+          <p>An administrator from <strong>${organizationName}</strong> has created an account for you.</p>
+          
+          <div style="background-color: #fff; padding: 15px; border-radius: 5px; border-left: 4px solid #007ACE;">
+            <p><strong>Your email:</strong> ${email}</p>
+            <p><strong>Next step:</strong> Set up your password to access your account</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" 
+             style="background-color: #007ACE; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Set Up Your Password
+          </a>
+        </div>
+
+        <div style="background-color: #f1f3f4; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #333;">What happens next?</h3>
+          <ol style="color: #666;">
+            <li>Click the "Set Up Your Password" button above</li>
+            <li>Create a secure password for your account</li>
+            <li>You'll be automatically logged in and redirected to your organization dashboard</li>
+          </ol>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          <p style="color: #666; font-size: 14px;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <a href="${resetUrl}" style="color: #007ACE; word-break: break-all;">${resetUrl}</a>
+          </p>
+          <p style="color: #999; font-size: 12px; margin-top: 20px;">
+            This invitation link will expire in 24 hours for security purposes.
+          </p>
         </div>
       </div>
+    `;
 
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetUrl}" 
-           style="background-color: #007ACE; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-          Set Up Your Password
-        </a>
-      </div>
+    console.log('Sending email with subject:', `Welcome to ${organizationName} - Set Up Your Account`);
 
-      <div style="background-color: #f1f3f4; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #333;">What happens next?</h3>
-        <ol style="color: #666;">
-          <li>Click the "Set Up Your Password" button above</li>
-          <li>Create a secure password for your account</li>
-          <li>You'll be automatically logged in and redirected to your organization dashboard</li>
-        </ol>
-      </div>
+    await client.send({
+      from: Deno.env.get('ZOHO_FROM_EMAIL')!,
+      to: email,
+      subject: `Welcome to ${organizationName} - Set Up Your Account`,
+      html: emailContent,
+    });
 
-      <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-        <p style="color: #666; font-size: 14px;">
-          If the button doesn't work, copy and paste this link into your browser:<br>
-          <a href="${resetUrl}" style="color: #007ACE; word-break: break-all;">${resetUrl}</a>
-        </p>
-        <p style="color: #999; font-size: 12px; margin-top: 20px;">
-          This invitation link will expire in 24 hours for security purposes.
-        </p>
-      </div>
-    </div>
-  `;
-
-  await client.send({
-    from: Deno.env.get('ZOHO_FROM_EMAIL')!,
-    to: email,
-    subject: `Welcome to ${organizationName} - Set Up Your Account`,
-    html: emailContent,
-  });
-
-  await client.close();
+    console.log('Email sent successfully');
+    await client.close();
+  } catch (error) {
+    console.error('Detailed email error:', error);
+    throw error;
+  }
 };
 
 serve(async (req: Request) => {
@@ -80,6 +93,7 @@ serve(async (req: Request) => {
 
   try {
     const { email, organizationId, role, enhancedRole } = await req.json();
+    console.log('Processing invite for:', email, 'to organization:', organizationId);
 
     // Create admin client
     const supabaseAdmin = createClient(
