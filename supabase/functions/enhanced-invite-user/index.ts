@@ -52,15 +52,16 @@ serve(async (req: Request) => {
       });
     }
 
-    // Check if user already exists
-    const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+    // Check if user already exists - using correct method
+    const { data: existingUserData } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUserData.users.find(u => u.email === email);
     
-    if (existingUser.user) {
+    if (existingUser) {
       // User exists, check if already in organization
       const { data: existingOrgUser } = await supabaseAdmin
         .from('organization_users')
         .select('id')
-        .eq('user_id', existingUser.user.id)
+        .eq('user_id', existingUser.id)
         .eq('organization_id', organizationId)
         .single();
 
@@ -78,7 +79,7 @@ serve(async (req: Request) => {
       const { error: insertError } = await supabaseAdmin
         .from('organization_users')
         .insert({
-          user_id: existingUser.user.id,
+          user_id: existingUser.id,
           organization_id: organizationId,
           email: email,
           role: role,
