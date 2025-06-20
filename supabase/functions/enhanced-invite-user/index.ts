@@ -76,32 +76,36 @@ serve(async (req: Request) => {
 
     console.log('Organization found:', organization.name);
 
-    // Check if user already exists in auth
-    const { data: existingUserData } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUserData.users.find(u => u.email === email);
+    // Check if user already exists in auth.users by querying organization_users first
+    // This avoids the permission denied error we were getting
+    const { data: existingOrgUser } = await supabaseAdmin
+      .from('organization_users')
+      .select('user_id')
+      .eq('email', email)
+      .eq('organization_id', organizationId)
+      .maybeSingle();
+
+    if (existingOrgUser) {
+      console.log('User is already a member of this organization');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'User is already a member of this organization' 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      });
+    }
+
+    // Check if there's an existing user with this email across the system
+    const { data: existingUserData, error: listUsersError } = await supabaseAdmin.auth.admin.listUsers();
+    console.log('List users error:', listUsersError);
+    console.log('Total users found:', existingUserData?.users?.length || 0);
+    
+    const existingUser = existingUserData?.users?.find(u => u.email === email);
     
     if (existingUser) {
-      console.log('User already exists, checking if in organization...');
+      console.log('User already exists in auth, adding to organization...');
       
-      // User exists, check if already in organization
-      const { data: existingOrgUser } = await supabaseAdmin
-        .from('organization_users')
-        .select('id')
-        .eq('user_id', existingUser.id)
-        .eq('organization_id', organizationId)
-        .single();
-
-      if (existingOrgUser) {
-        console.log('User is already a member of this organization');
-        return new Response(JSON.stringify({ 
-          success: false, 
-          error: 'User is already a member of this organization' 
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400
-        });
-      }
-
       // Add existing user to organization
       const { error: insertError } = await supabaseAdmin
         .from('organization_users')
@@ -120,9 +124,13 @@ serve(async (req: Request) => {
         throw insertError;
       }
 
-      console.log('User added to organization, sending password reset email...');
+      console.log('User added to organization, generating password reset link...');
 
-      // Generate password reset link for existing user
+      // Generate password reset link for existing user with detailed logging
+      console.log('Attempting to generate password reset link...');
+      console.log('Email:', email);
+      console.log('Redirect URL will be:', `${req.headers.get('origin') || 'https://pulsify.co.ke'}/admin/${organization.slug}`);
+      
       const { data: resetLinkData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: email,
@@ -131,17 +139,35 @@ serve(async (req: Request) => {
         }
       });
 
+      console.log('Generate link response - Data:', resetLinkData);
+      console.log('Generate link response - Error:', resetError);
+
       if (resetError) {
         console.error('Password reset link generation error:', resetError);
-        // Don't fail the entire operation if email fails
+        return new Response(JSON.stringify({
+          success: false,
+          error: `Failed to send invitation email: ${resetError.message}`,
+          details: 'Password reset link generation failed'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        });
       } else {
-        console.log('Password reset link generated successfully:', resetLinkData.properties?.action_link ? 'Yes' : 'No');
+        console.log('Password reset link generated successfully');
+        console.log('Action link present:', resetLinkData.properties?.action_link ? 'Yes' : 'No');
+        if (resetLinkData.properties?.action_link) {
+          console.log('Action link:', resetLinkData.properties.action_link);
+        }
       }
 
       return new Response(JSON.stringify({
         success: true,
-        message: 'User added to organization and welcome email sent',
-        type: 'direct_add'
+        message: 'User added to organization and invitation email sent',
+        type: 'direct_add',
+        debug: {
+          emailGenerated: !!resetLinkData.properties?.action_link,
+          resetLinkData: resetLinkData
+        }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -189,7 +215,11 @@ serve(async (req: Request) => {
 
     console.log('New user added to organization, generating password reset link...');
 
-    // Generate password reset link for new user
+    // Generate password reset link for new user with detailed logging
+    console.log('Attempting to generate password reset link for new user...');
+    console.log('Email:', email);
+    console.log('Redirect URL will be:', `${req.headers.get('origin') || 'https://pulsify.co.ke'}/admin/${organization.slug}`);
+    
     const { data: resetLinkData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: email,
@@ -198,11 +228,25 @@ serve(async (req: Request) => {
       }
     });
 
+    console.log('Generate link response - Data:', resetLinkData);
+    console.log('Generate link response - Error:', resetError);
+
     if (resetError) {
       console.error('Reset link generation error:', resetError);
-      // Don't throw here - user creation was successful, email is secondary
+      return new Response(JSON.stringify({
+        success: false,
+        error: `User created but failed to send invitation email: ${resetError.message}`,
+        details: 'Password reset link generation failed for new user'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
+      });
     } else {
-      console.log('Password reset link generated successfully:', resetLinkData.properties?.action_link ? 'Yes' : 'No');
+      console.log('Password reset link generated successfully for new user');
+      console.log('Action link present:', resetLinkData.properties?.action_link ? 'Yes' : 'No');
+      if (resetLinkData.properties?.action_link) {
+        console.log('Action link:', resetLinkData.properties.action_link);
+      }
     }
 
     // Create invitation record for tracking (optional)
@@ -225,8 +269,12 @@ serve(async (req: Request) => {
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'User created successfully and welcome email sent via Supabase',
-      type: 'user_created'
+      message: 'User created successfully and invitation email sent',
+      type: 'user_created',
+      debug: {
+        emailGenerated: !!resetLinkData.properties?.action_link,
+        resetLinkData: resetLinkData
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
