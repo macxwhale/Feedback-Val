@@ -32,11 +32,14 @@ serve(async (req: Request) => {
     // Get current user and verify permissions
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
+      console.log('No authenticated user found');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401
       });
     }
+
+    console.log('Current user ID:', user.id);
 
     // Check if current user is org admin
     const { data: orgUser } = await supabaseAdmin
@@ -46,7 +49,10 @@ serve(async (req: Request) => {
       .eq('organization_id', organizationId)
       .single();
 
+    console.log('Current user org role:', orgUser);
+
     if (!orgUser || (orgUser.role !== 'admin' && orgUser.enhanced_role !== 'admin' && orgUser.enhanced_role !== 'owner')) {
+      console.log('User lacks admin permissions');
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403
@@ -61,17 +67,22 @@ serve(async (req: Request) => {
       .single();
 
     if (!organization) {
+      console.log('Organization not found');
       return new Response(JSON.stringify({ error: 'Organization not found' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404
       });
     }
 
+    console.log('Organization found:', organization.name);
+
     // Check if user already exists in auth
     const { data: existingUserData } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUserData.users.find(u => u.email === email);
     
     if (existingUser) {
+      console.log('User already exists, checking if in organization...');
+      
       // User exists, check if already in organization
       const { data: existingOrgUser } = await supabaseAdmin
         .from('organization_users')
@@ -81,6 +92,7 @@ serve(async (req: Request) => {
         .single();
 
       if (existingOrgUser) {
+        console.log('User is already a member of this organization');
         return new Response(JSON.stringify({ 
           success: false, 
           error: 'User is already a member of this organization' 
@@ -103,19 +115,27 @@ serve(async (req: Request) => {
           accepted_at: new Date().toISOString()
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Error adding user to organization:', insertError);
+        throw insertError;
+      }
 
-      // Generate password reset link for existing user using Supabase's email system
-      const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+      console.log('User added to organization, sending password reset email...');
+
+      // Generate password reset link for existing user
+      const { data: resetLinkData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: email,
         options: {
-          redirectTo: `${req.headers.get('origin') || 'http://localhost:3000'}/admin/${organization.slug}`
+          redirectTo: `${req.headers.get('origin') || 'https://pulsify.co.ke'}/admin/${organization.slug}`
         }
       });
 
       if (resetError) {
-        console.error('Reset link generation error:', resetError);
+        console.error('Password reset link generation error:', resetError);
+        // Don't fail the entire operation if email fails
+      } else {
+        console.log('Password reset link generated successfully:', resetLinkData.properties?.action_link ? 'Yes' : 'No');
       }
 
       return new Response(JSON.stringify({
@@ -126,6 +146,8 @@ serve(async (req: Request) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
+    console.log('Creating new user account...');
 
     // User doesn't exist, create new user account
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -145,6 +167,8 @@ serve(async (req: Request) => {
       throw createError;
     }
 
+    console.log('New user created successfully:', newUser.user.id);
+
     // Add user to organization
     const { error: orgInsertError } = await supabaseAdmin
       .from('organization_users')
@@ -158,20 +182,27 @@ serve(async (req: Request) => {
         accepted_at: new Date().toISOString()
       });
 
-    if (orgInsertError) throw orgInsertError;
+    if (orgInsertError) {
+      console.error('Error adding new user to organization:', orgInsertError);
+      throw orgInsertError;
+    }
 
-    // Generate password reset link for new user using Supabase's email system
-    const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+    console.log('New user added to organization, generating password reset link...');
+
+    // Generate password reset link for new user
+    const { data: resetLinkData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
-        redirectTo: `${req.headers.get('origin') || 'http://localhost:3000'}/admin/${organization.slug}`
+        redirectTo: `${req.headers.get('origin') || 'https://pulsify.co.ke'}/admin/${organization.slug}`
       }
     });
 
     if (resetError) {
       console.error('Reset link generation error:', resetError);
       // Don't throw here - user creation was successful, email is secondary
+    } else {
+      console.log('Password reset link generated successfully:', resetLinkData.properties?.action_link ? 'Yes' : 'No');
     }
 
     // Create invitation record for tracking (optional)
@@ -189,6 +220,8 @@ serve(async (req: Request) => {
     if (invitationError) {
       console.error('Invitation record error:', invitationError);
     }
+
+    console.log('Invitation process completed successfully');
 
     return new Response(JSON.stringify({
       success: true,
