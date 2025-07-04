@@ -40,7 +40,7 @@ export const GoogleInspiredLayout: React.FC<GoogleInspiredLayoutProps> = ({
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+      <div className="min-h-screen bg-white pb-20">
         <GoogleInspiredHeader
           organizationName={organizationName}
           organizationId={organizationId}
@@ -66,7 +66,7 @@ export const GoogleInspiredLayout: React.FC<GoogleInspiredLayoutProps> = ({
 
   return (
     <SidebarProvider defaultOpen={!isTablet}>
-      <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex w-full bg-white">
         <GoogleInspiredSidebar
           organizationName={organizationName}
           activeTab={activeTab}
@@ -84,7 +84,7 @@ export const GoogleInspiredLayout: React.FC<GoogleInspiredLayoutProps> = ({
           />
           
           <main className={cn(
-            'flex-1 overflow-auto bg-gray-50 dark:bg-gray-900',
+            'flex-1 overflow-auto bg-white',
             'px-6 py-6 lg:px-8',
             isTablet && 'px-4 py-4'
           )}>

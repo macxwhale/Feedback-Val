@@ -1,3 +1,4 @@
+
 export const colors = {
   // Google Material Design inspired palette
   'google-blue': {
@@ -7,7 +8,7 @@ export const colors = {
     300: '#8ab4f8',
     400: '#669df6',
     500: '#4285f4', // Primary Google Blue
-    600: '#1a73e8',
+    600: '#1a73e8', // Google Play Console Blue
     700: '#1967d2',
     800: '#185abc',
     900: '#174ea6',

@@ -94,33 +94,33 @@ export const GoogleInspiredSidebar: React.FC<GoogleInspiredSidebarProps> = ({
   };
 
   return (
-    <Sidebar className="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
-      <SidebarHeader className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <Sidebar className="border-r border-gray-200 bg-white w-60 flex flex-col">
+      <SidebarHeader className="border-b border-gray-200 px-6 py-4 bg-white">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+          <div className="w-8 h-8 bg-google-blue-500 rounded flex items-center justify-center">
             <BarChart3 className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-medium text-base text-gray-900 dark:text-gray-100 truncate font-sans" title={organizationName}>
+            <h2 className="font-normal text-base text-gray-900 truncate font-sans" title={organizationName}>
               {organizationName}
             </h2>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="flex-1 py-2">
+      <SidebarContent className="flex-1 py-2 bg-white">
         {groupedMenuItems.map((section, idx) => {
           const isExpanded = isMobile ? expandedGroups[section.label] !== false : true;
           return (
             <SidebarGroup
               key={section.label}
-              className={`px-3 ${idx !== 0 ? "mt-4" : "mt-0"}`}
+              className={`px-3 ${idx !== 0 ? "mt-6" : "mt-2"}`}
             >
               <div
                 className="flex items-center justify-between cursor-pointer select-none px-3 py-2"
                 onClick={isMobile ? () => toggleGroup(section.label) : undefined}
               >
-                <SidebarGroupLabel className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider font-sans">
+                <SidebarGroupLabel className="text-xs font-medium text-gray-700 uppercase tracking-wider font-sans">
                   {section.label}
                 </SidebarGroupLabel>
               </div>
@@ -131,18 +131,18 @@ export const GoogleInspiredSidebar: React.FC<GoogleInspiredSidebarProps> = ({
                       <SidebarMenuButton
                         onClick={() => onTabChange(item.id)}
                         isActive={activeTab === item.id}
-                        className={`flex items-center justify-between w-full px-3 py-2 rounded transition-all duration-200 font-sans text-sm
+                        className={`flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-200 font-sans text-sm
                           ${activeTab === item.id
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-medium"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            ? "bg-google-blue-50 text-google-blue-700 font-medium border-l-4 border-google-blue-500"
+                            : "text-gray-700 hover:bg-gray-50"
                           }
                         `}
                       >
                         <div className="flex items-center min-w-0">
                           <item.icon className={`h-4 w-4 mr-3 flex-shrink-0 ${
                             activeTab === item.id 
-                              ? "text-blue-600 dark:text-blue-400" 
-                              : "text-gray-500 dark:text-gray-400"
+                              ? "text-google-blue-600" 
+                              : "text-gray-400"
                           }`} />
                           <span className="truncate">{item.label}</span>
                         </div>
@@ -154,8 +154,8 @@ export const GoogleInspiredSidebar: React.FC<GoogleInspiredSidebarProps> = ({
                               variant="secondary"
                               className={`ml-2 text-xs font-normal flex-shrink-0 ${
                                 activeTab === item.id 
-                                  ? "bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300" 
-                                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                  ? "bg-google-blue-100 text-google-blue-700" 
+                                  : "bg-gray-100 text-gray-600"
                               }`}
                             >
                               {item.badge}
@@ -172,10 +172,10 @@ export const GoogleInspiredSidebar: React.FC<GoogleInspiredSidebarProps> = ({
         })}
       </SidebarContent>
       
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 bg-white">
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 font-sans h-9" 
+          className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-sans h-9" 
           onClick={handleLogout}
         >
           <LogOut className="w-4 h-4 mr-3" />
