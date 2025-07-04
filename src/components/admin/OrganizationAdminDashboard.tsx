@@ -1,17 +1,16 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useOrganization } from '@/context/OrganizationContext';
 import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
 import { StatsGrid } from '@/components/dashboard/StatsGrid';
+import { DesignText, DesignCard, DesignButton, spacing } from '@/components/ui/design-system';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
-import { H1, H2, Body } from '@/components/ui/typography';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 import { getOrganizationStatsEnhanced } from '@/services/organizationQueries';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { OrganizationStats } from '@/types/organizationStats';
-import { Plus, Users, MessageSquare, Activity, Star, TrendingUp } from 'lucide-react';
+import { Plus, Users, MessageSquare, Activity, Star } from 'lucide-react';
 
 // Tab components
 import MembersTab from './dashboard/tabs/MembersTab';
@@ -43,10 +42,15 @@ export const OrganizationAdminDashboard: React.FC = () => {
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsData(organization?.id || '');
 
   if (orgLoading || !organization) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <DesignCard padding="lg">
+          <DesignText.Body>Loading dashboard...</DesignText.Body>
+        </DesignCard>
+      </div>
+    );
   }
 
-  // Safe type conversion with proper fallbacks
   const typedStats: OrganizationStats | null = stats ? (stats as unknown as OrganizationStats) : null;
 
   const dashboardStats = [
@@ -105,30 +109,34 @@ export const OrganizationAdminDashboard: React.FC = () => {
         return <CustomerInsightsTab organizationId={organization.id} />;
       default:
         return (
-          <div className="space-y-6">
-            <div>
-              <H1 className="mb-2">Analytics Dashboard</H1>
-              <Body>Here's what's happening with {organization.name} today.</Body>
-            </div>
+          <div className="space-y-8">
+            {/* Overview Header */}
+            <DesignCard padding="lg" className={spacing.element}>
+              <DesignText.Heading2 className="mb-2">Analytics Overview</DesignText.Heading2>
+              <DesignText.Body>Key metrics and insights for {organization.name}</DesignText.Body>
+            </DesignCard>
             
+            {/* Stats Grid */}
             <StatsGrid
               stats={dashboardStats}
               isLoading={statsLoading}
               columns={4}
             />
 
-            {/* Trend Analysis Chart */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <H2 className="mb-4">Trend Analysis</H2>
-              <Body className="text-gray-600 mb-4">Key metrics over the selected period</Body>
+            {/* Chart Section */}
+            <DesignCard padding="lg" className={spacing.element}>
+              <DesignText.Heading2 className="mb-4">Trend Analysis</DesignText.Heading2>
+              <DesignText.BodySmall className="text-gray-600 mb-6">
+                Key metrics over the selected period
+              </DesignText.BodySmall>
               <SessionTrendsChart isLoading={statsLoading} />
-            </div>
+            </DesignCard>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Analytics Dashboard Table */}
-              <div className="bg-white rounded-lg shadow-sm border">
-                <div className="p-6 border-b">
-                  <H2>Analytics Dashboard</H2>
+            {/* Analytics Dashboard Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <DesignCard padding="lg">
+                <div className="mb-6">
+                  <DesignText.Heading2>Analytics Dashboard</DesignText.Heading2>
                 </div>
                 <AnalyticsTable 
                   questions={analyticsData?.questions || []}
@@ -142,58 +150,59 @@ export const OrganizationAdminDashboard: React.FC = () => {
                       : 0
                   }}
                 />
-              </div>
+              </DesignCard>
               
-              {/* Analytics Insights */}
-              <div className="bg-white rounded-lg shadow-sm border">
-                <div className="p-6 border-b">
-                  <H2>Analytics Insights</H2>
+              <DesignCard padding="lg">
+                <div className="mb-6">
+                  <DesignText.Heading2>Analytics Insights</DesignText.Heading2>
                 </div>
-                <div className="p-6">
-                  <AnalyticsInsights 
-                    stats={typedStats ? {
-                      total_questions: typedStats.total_questions,
-                      total_responses: typedStats.total_responses,
-                      total_sessions: typedStats.total_sessions,
-                      completed_sessions: typedStats.completed_sessions,
-                      active_members: typedStats.active_members,
-                      avg_session_score: typedStats.avg_session_score,
-                      growth_metrics: typedStats.growth_metrics || {
-                        sessions_this_month: 0,
-                        sessions_last_month: 0,
-                        growth_rate: null
-                      }
-                    } : undefined}
-                    isLoading={statsLoading}
-                  />
-                </div>
-              </div>
+                <AnalyticsInsights 
+                  stats={typedStats ? {
+                    total_questions: typedStats.total_questions,
+                    total_responses: typedStats.total_responses,
+                    total_sessions: typedStats.total_sessions,
+                    completed_sessions: typedStats.completed_sessions,
+                    active_members: typedStats.active_members,
+                    avg_session_score: typedStats.avg_session_score,
+                    growth_metrics: typedStats.growth_metrics || {
+                      sessions_this_month: 0,
+                      sessions_last_month: 0,
+                      growth_rate: null
+                    }
+                  } : undefined}
+                  isLoading={statsLoading}
+                />
+              </DesignCard>
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <H2 className="mb-4">Quick Actions</H2>
-              <div className="space-y-3">
-                <button
+            <DesignCard padding="lg">
+              <DesignText.Heading2 className="mb-6">Quick Actions</DesignText.Heading2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DesignButton
+                  variant="secondary"
                   onClick={() => setActiveTab('members')}
-                  className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="p-4 h-auto flex items-center gap-3 justify-start"
                 >
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-blue-600" />
-                    <span>Invite new members</span>
+                  <Users className="w-5 h-5 text-blue-600" />
+                  <div className="text-left">
+                    <div className="font-medium">Invite new members</div>
+                    <div className="text-sm text-gray-600">Add team members to your organization</div>
                   </div>
-                </button>
-                <button
+                </DesignButton>
+                <DesignButton
+                  variant="secondary"
                   onClick={() => setActiveTab('questions')}
-                  className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="p-4 h-auto flex items-center gap-3 justify-start"
                 >
-                  <div className="flex items-center gap-3">
-                    <MessageSquare className="w-5 h-5 text-green-600" />
-                    <span>Create new question</span>
+                  <MessageSquare className="w-5 h-5 text-green-600" />
+                  <div className="text-left">
+                    <div className="font-medium">Create new question</div>
+                    <div className="text-sm text-gray-600">Design feedback forms</div>
                   </div>
-                </button>
+                </DesignButton>
               </div>
-            </div>
+            </DesignCard>
           </div>
         );
     }
@@ -213,7 +222,6 @@ export const OrganizationAdminDashboard: React.FC = () => {
         {renderTabContent()}
       </EnhancedDashboardLayout>
       
-      {/* Floating Action Button for mobile */}
       {isMobile && activeTab === 'overview' && (
         <FloatingActionButton
           onClick={() => setActiveTab('members')}

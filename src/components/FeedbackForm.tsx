@@ -1,44 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { WelcomeScreen } from './feedback/WelcomeScreen';
-import { EnhancedLoading } from './feedback/EnhancedLoading';
-import { FeedbackContainer } from './feedback/FeedbackContainer';
+import React, { useState, useRef } from 'react';
 import { FeedbackContent } from './feedback/FeedbackContent';
-import { FeedbackModals } from './feedback/FeedbackModals';
+import { EnhancedFeedbackContainer } from './feedback/EnhancedFeedbackContainer';
+import { WelcomeScreen } from './feedback/WelcomeScreen';
+import { EnhancedThankYouModal } from './feedback/EnhancedThankYouModal';
+import { EnhancedLoading } from './feedback/EnhancedLoading';
 import { FeedbackErrorBoundary } from './feedback/FeedbackErrorBoundary';
 import { useFeedbackForm } from '@/hooks/useFeedbackForm';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { PrivacyNotice } from './feedback/PrivacyNotice';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
-import { useSaveContinue } from '@/hooks/useSaveContinue';
-import { useOrganization } from '@/hooks/useOrganization';
+import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 export interface QuestionConfig {
   id: string;
-  type: 'star' | 'nps' | 'likert' | 'single-choice' | 'multi-choice' | 'text' | 'emoji' | 'ranking' | 'matrix' | 'slider';
   question: string;
+  type: 'star' | 'nps' | 'likert' | 'text' | 'single-choice' | 'multi-choice' | 'emoji' | 'ranking' | 'matrix' | 'slider';
   required: boolean;
-  category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikeliRecommend' | 'DidWeMakeEasy' | 'Comments';
+  category?: string;
   options?: string[];
   scale?: {
     min: number;
     max: number;
     minLabel?: string;
     maxLabel?: string;
+    step?: number;
   };
 }
 
 export interface FeedbackResponse {
   questionId: string;
   value: any;
-  score: number;
-  category: string;
+  score?: number;
+  category?: string;
 }
 
-const FeedbackForm = () => {
+const FeedbackForm: React.FC = () => {
+  const { isMobileDetection } = useMobileDetection();
   const [showWelcome, setShowWelcome] = useState(true);
-  const { organization, isLoading: orgLoading, error: orgError } = useOrganization();
+  const { hasConsented, handleConsent } = usePrivacyConsent();
   
-  console.log('FeedbackForm - Organization state:', { organization, orgLoading, orgError });
-
   const {
     questions,
     currentQuestionIndex,
@@ -56,119 +55,71 @@ const FeedbackForm = () => {
     getValidationResult
   } = useFeedbackForm();
 
-  const {
-    trackQuestionStart,
-    trackQuestionResponse,
-    getAverageResponseTime,
-    getEstimatedTimeRemaining
-  } = useAnalytics(responses, questions.length, finalResponses);
-
-  const { hasConsented, showPrivacyNotice, acceptPrivacy } = usePrivacyConsent();
-  const { saveProgress, pauseAndExit, hasUnsavedChanges } = useSaveContinue(
-    responses,
-    currentQuestionIndex,
-    completedQuestions
-  );
-
-  useEffect(() => {
-    if (!showWelcome && questions.length > 0) {
-      trackQuestionStart();
-    }
-  }, [currentQuestionIndex, trackQuestionStart, showWelcome, questions.length]);
-
-  const handleQuestionResponse = (questionId: string, value: any) => {
-    handleResponse(questionId, value);
-    trackQuestionResponse();
-  };
-
-  const handleStart = () => {
-    setShowWelcome(false);
-  };
-
-  const handleReset = () => {
-    resetForm();
-    setShowWelcome(true);
-  };
-
-  // Check for error boundary conditions
-  if (orgLoading) {
-    console.log('FeedbackForm - Showing loading state');
+  if (isLoading) {
     return <EnhancedLoading />;
-  }
-
-  if (orgError || !organization) {
-    console.log('FeedbackForm - Showing error boundary for org');
-    return (
-      <FeedbackErrorBoundary 
-        orgLoading={orgLoading}
-        orgError={orgError}
-        organization={organization}
-      />
-    );
   }
 
   if (questionsError) {
-    console.log('FeedbackForm - Showing error boundary for questions');
     return (
-      <FeedbackErrorBoundary 
-        orgLoading={false}
-        orgError={questionsError}
-        organization={organization}
-      />
+      <FeedbackErrorBoundary>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center p-8">
+            <h2 className="text-xl font-semibold text-red-600 mb-4">
+              Unable to Load Survey
+            </h2>
+            <p className="text-gray-600 mb-6">{questionsError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-sunset-500 text-white rounded-lg hover:bg-sunset-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </FeedbackErrorBoundary>
     );
   }
 
-  if (isLoading) {
-    console.log('FeedbackForm - Questions loading');
-    return <EnhancedLoading />;
+  if (isComplete) {
+    return (
+      <EnhancedThankYouModal
+        responses={finalResponses}
+        onClose={resetForm}
+        isVisible={isComplete}
+      />
+    );
   }
 
   if (showWelcome) {
-    console.log('FeedbackForm - Showing welcome screen');
-    return <WelcomeScreen onStart={handleStart} />;
-  }
-
-  if (questions.length === 0) {
-    console.log('FeedbackForm - No questions available');
     return (
-      <FeedbackErrorBoundary 
-        orgLoading={false}
-        orgError="No questions configured for this organization"
-        organization={organization}
+      <WelcomeScreen
+        onStart={() => setShowWelcome(false)}
+        questionsCount={questions.length}
       />
     );
   }
 
-  console.log('FeedbackForm - Rendering main content');
+  if (!hasConsented) {
+    return <PrivacyNotice onConsent={handleConsent} />;
+  }
+
   return (
-    <FeedbackContainer>
-      <FeedbackContent
+    <FeedbackErrorBoundary>
+      <EnhancedFeedbackContainer
         questions={questions}
         currentQuestionIndex={currentQuestionIndex}
         responses={responses}
         completedQuestions={completedQuestions}
         hasConsented={hasConsented}
         canGoNext={isCurrentQuestionAnswered()}
-        estimatedTimeRemaining={getEstimatedTimeRemaining(currentQuestionIndex)}
-        averageResponseTime={getAverageResponseTime()}
-        hasUnsavedChanges={hasUnsavedChanges}
-        onQuestionResponse={handleQuestionResponse}
+        estimatedTimeRemaining={Math.ceil((questions.length - currentQuestionIndex) * 30 / 60)}
+        averageResponseTime={30}
+        onQuestionResponse={handleResponse}
         onNext={goToNext}
         onPrevious={goToPrevious}
-        onSaveProgress={saveProgress}
-        onPauseAndExit={pauseAndExit}
         getValidationResult={getValidationResult}
       />
-
-      <FeedbackModals
-        showPrivacyNotice={showPrivacyNotice}
-        isComplete={isComplete}
-        finalResponses={finalResponses}
-        questions={questions}
-        onAcceptPrivacy={acceptPrivacy}
-        onReset={handleReset}
-      />
-    </FeedbackContainer>
+    </FeedbackErrorBoundary>
   );
 };
 
