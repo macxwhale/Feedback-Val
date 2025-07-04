@@ -11,7 +11,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
-import { cn } from '@/lib/utils';
 
 interface MenuSection {
   label: string;
@@ -22,7 +21,6 @@ interface MenuSection {
     badge?: string | number;
   }[];
 }
-
 interface DashboardSidebarMenuProps {
   groupedMenuItems: MenuSection[];
   isMobile: boolean;
@@ -43,108 +41,75 @@ export const DashboardSidebarMenu: React.FC<DashboardSidebarMenuProps> = ({
   isLoading
 }) => {
   return (
-    <div className="space-y-6">
+    <>
       {groupedMenuItems.map((section, idx) => {
         const isExpanded = isMobile ? expandedGroups[section.label] !== false : true;
         return (
-          <SidebarGroup key={section.label} className="space-y-2">
+          <SidebarGroup
+            key={section.label}
+            className={`px-2 ${idx !== 0 ? "mt-5 pt-5 border-t border-gray-200 dark:border-sidebar-border" : ""}`}
+          >
             <div
-              className={cn(
-                "flex items-center justify-between px-2 py-1 rounded-lg",
-                "cursor-pointer select-none transition-colors",
-                isMobile && "hover:bg-gray-100/50"
-              )}
+              className="flex items-center justify-between cursor-pointer select-none px-2"
               onClick={isMobile ? () => toggleGroup(section.label) : undefined}
               tabIndex={isMobile ? 0 : -1}
               aria-label={section.label + " Menu"}
               aria-expanded={isExpanded}
             >
-              <SidebarGroupLabel className={cn(
-                "text-xs font-bold tracking-wider text-gray-500 uppercase",
-                "group-hover:text-gray-700 transition-colors"
-              )}>
+              <SidebarGroupLabel
+                className="uppercase font-extrabold tracking-wider text-orange-700 dark:text-sidebar-accent text-xs pb-1"
+                style={{ letterSpacing: '0.05em' }}
+              >
                 {section.label}
               </SidebarGroupLabel>
               {isMobile && (
-                <div className="p-1">
-                  {isExpanded ? (
-                    <ChevronDown className="w-3 h-3 text-gray-400" />
-                  ) : (
-                    <ChevronRight className="w-3 h-3 text-gray-400" />
-                  )}
-                </div>
+                isExpanded
+                  ? <ChevronDown className="w-4 h-4 text-gray-400" />
+                  : <ChevronRight className="w-4 h-4 text-gray-400" />
               )}
             </div>
-            
-            <SidebarGroupContent className={cn(
-              "transition-all duration-200",
-              isExpanded ? "block" : "hidden"
-            )}>
-              <SidebarMenu className="space-y-1">
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      onClick={() => onTabChange(item.id)}
-                      isActive={activeTab === item.id}
-                      className={cn(
-                        "flex items-center justify-between w-full px-3 py-2.5 rounded-lg",
-                        "transition-all duration-200 group",
-                        isMobile && "py-3 px-3 min-h-[48px]",
-                        // Active state
-                        activeTab === item.id ? [
-                          "bg-gradient-to-r from-orange-500 to-orange-600",
-                          "text-white shadow-lg",
-                          "border-0"
-                        ] : [
-                          "text-gray-700 hover:text-gray-900",
-                          "hover:bg-gray-100/80 active:bg-gray-200/50",
-                          "border border-transparent hover:border-gray-200/50"
-                        ]
-                      )}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <item.icon className={cn(
-                          "transition-all duration-200",
-                          isMobile ? "w-5 h-5" : "w-4 h-4",
-                          activeTab === item.id ? "text-white" : "text-gray-500 group-hover:text-gray-700"
-                        )} />
-                        <span className={cn(
-                          "font-medium transition-colors",
-                          isMobile && "text-base"
-                        )}>
-                          {item.label}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
+            <SidebarGroupContent className={isExpanded ? "block" : "hidden"}>
+              <div className="bg-white dark:bg-sidebar-accent rounded-lg mt-1 mb-2 shadow-xs transition-colors duration-150">
+                <SidebarMenu>
+                  {section.items.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => onTabChange(item.id)}
+                        isActive={activeTab === item.id}
+                        className={`flex items-center justify-between w-full px-3 py-2 gap-2 rounded-md
+                          transition-colors duration-150
+                          ${isMobile ? "py-3 px-2 gap-3" : ""}
+                          hover:bg-orange-50 dark:hover:bg-sidebar-ring/10
+                          focus-visible:bg-orange-100 dark:focus-visible:bg-sidebar-ring/15
+                          ${activeTab === item.id
+                            ? "bg-orange-100 dark:bg-sidebar-ring/20 font-semibold shadow-inner"
+                            : ""
+                          }
+                        `}
+                        style={isMobile ? { minHeight: 48, fontSize: 16 } : undefined}
+                      >
+                        <div className="flex items-center">
+                          <item.icon className={`mr-2 ${isMobile ? "w-5 h-5" : "h-4 w-4"}`} />
+                          <span>{item.label}</span>
+                        </div>
                         {isLoading ? (
-                          <EnhancedLoadingSpinner size="sm" text="" className="w-4 h-4" />
+                          <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
                         ) : (
                           item.badge && (
-                            <Badge 
-                              variant={activeTab === item.id ? "secondary" : "secondary"}
-                              className={cn(
-                                "text-xs font-semibold",
-                                activeTab === item.id ? [
-                                  "bg-white/20 text-white border-white/20"
-                                ] : [
-                                  "bg-gray-100 text-gray-600 border-gray-200"
-                                ]
-                              )}
-                            >
+                            <Badge variant="secondary" className="ml-2">
                               {item.badge}
                             </Badge>
                           )
                         )}
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </div>
             </SidebarGroupContent>
           </SidebarGroup>
         );
       })}
-    </div>
-  );
-};
+    </>
+  )
+}
