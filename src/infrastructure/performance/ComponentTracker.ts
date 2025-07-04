@@ -1,3 +1,6 @@
+
+import React from 'react';
+
 /**
  * Component Performance Tracker
  * Tracks React component render times and re-renders

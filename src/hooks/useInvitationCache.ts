@@ -1,5 +1,5 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface InvitationCacheStats {
   cacheSize: number;
@@ -41,6 +41,25 @@ export const useInvitationPerformanceStats = () => {
     queryFn: () => invitationCache.getStats(),
     refetchInterval: 5000, // Update every 5 seconds
   });
+};
+
+export const useInvitationCache = () => {
+  const queryClient = useQueryClient();
+  
+  const clearCacheMutation = useMutation({
+    mutationFn: async () => {
+      invitationCache.clear();
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitation-performance-stats'] });
+    },
+  });
+
+  return {
+    clearCache: clearCacheMutation.mutate,
+    isClearingCache: clearCacheMutation.isPending,
+  };
 };
 
 export { invitationCache };
