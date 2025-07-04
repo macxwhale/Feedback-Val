@@ -1,90 +1,31 @@
+
 /**
  * User Service Interface
- * Defines the contract for user-related operations
+ * Defines contract for user operations
  */
 
 export interface User {
   id: string;
   email: string;
-  role: 'super_admin' | 'org_admin' | 'member' | 'viewer';
-  organizationId?: string;
-  isActive: boolean;
+  name?: string;
+  avatar?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface InviteUserParams {
-  email: string;
-  organizationId: string;
-  role: User['role'];
-  invitedBy: string;
-}
-
-export interface InviteUserResponse {
-  success: boolean;
-  invitationId?: string;
-  error?: string;
-}
-
-export interface UpdateUserRoleParams {
-  userId: string;
-  role: User['role'];
-  updatedBy: string;
-}
-
-export interface UserFilters {
-  organizationId?: string;
-  role?: User['role'];
-  isActive?: boolean;
-  search?: string;
-}
-
-export interface PaginatedUsers {
-  users: User[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
-}
-
 export interface IUserService {
   /**
-   * Get users with filtering and pagination
+   * Get user by ID
    */
-  getUsers(filters: UserFilters, page: number, limit: number): Promise<PaginatedUsers>;
+  getUser(userId: string): Promise<User | null>;
 
   /**
-   * Get a user by ID
+   * Update user profile
    */
-  getUserById(userId: string): Promise<User | null>;
-
-  /**
-   * Invite a user to an organization
-   */
-  inviteUser(params: InviteUserParams): Promise<InviteUserResponse>;
-
-  /**
-   * Update user role
-   */
-  updateUserRole(params: UpdateUserRoleParams): Promise<void>;
-
-  /**
-   * Deactivate a user
-   */
-  deactivateUser(userId: string, deactivatedBy: string): Promise<void>;
-
-  /**
-   * Reactivate a user
-   */
-  reactivateUser(userId: string, reactivatedBy: string): Promise<void>;
+  updateUser(userId: string, updates: Partial<User>): Promise<User>;
 
   /**
    * Get users by organization
    */
   getUsersByOrganization(organizationId: string): Promise<User[]>;
-
-  /**
-   * Check if user has permission
-   */
-  hasPermission(userId: string, permission: string): Promise<boolean>;
 }

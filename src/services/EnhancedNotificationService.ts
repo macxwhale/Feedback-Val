@@ -15,7 +15,7 @@ export class EnhancedNotificationService implements INotificationService {
         type: notification.type,
         title: notification.title,
         message: notification.message,
-        metadata: notification.metadata,
+        metadata: notification.metadata ? JSON.parse(JSON.stringify(notification.metadata)) : null,
         organization_id: notification.metadata?.organizationId as string,
         user_id: notification.metadata?.userId as string || null
       });

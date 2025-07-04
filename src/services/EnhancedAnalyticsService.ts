@@ -7,6 +7,16 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { IAnalyticsService, AnalyticsData, AnalyticsMetrics } from '@/domain/interfaces/IAnalyticsService';
 
+// Type for the RPC response from get_organization_stats_enhanced
+interface OrganizationStatsResponse {
+  total_sessions: number;
+  completed_sessions: number;
+  avg_session_score: number;
+  total_questions: number;
+  total_responses: number;
+  active_members: number;
+}
+
 export class EnhancedAnalyticsService implements IAnalyticsService {
   private cache = new Map<string, { data: AnalyticsData; timestamp: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -19,13 +29,16 @@ export class EnhancedAnalyticsService implements IAnalyticsService {
     }
 
     try {
-      const { data: stats } = await supabase.rpc('get_organization_stats_enhanced', {
+      const { data: statsRaw } = await supabase.rpc('get_organization_stats_enhanced', {
         org_id: organizationId
       });
 
-      if (!stats) {
+      if (!statsRaw) {
         throw new Error('No analytics data available');
       }
+
+      // Type assertion for the RPC response
+      const stats = statsRaw as OrganizationStatsResponse;
 
       const analyticsData: AnalyticsData = {
         organizationId,
@@ -53,13 +66,16 @@ export class EnhancedAnalyticsService implements IAnalyticsService {
   }
 
   async getRealTimeMetrics(organizationId: string): Promise<AnalyticsMetrics> {
-    const { data: stats } = await supabase.rpc('get_organization_stats', {
+    const { data: statsRaw } = await supabase.rpc('get_organization_stats', {
       org_id: organizationId
     });
 
-    if (!stats) {
+    if (!statsRaw) {
       throw new Error('No metrics data available');
     }
+
+    // Type assertion for the RPC response
+    const stats = statsRaw as OrganizationStatsResponse;
 
     return {
       totalSessions: stats.total_sessions || 0,
