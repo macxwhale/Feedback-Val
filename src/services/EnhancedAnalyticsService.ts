@@ -38,7 +38,7 @@ export class EnhancedAnalyticsService implements IAnalyticsService {
       }
 
       // Type assertion for the RPC response
-      const stats = statsRaw as OrganizationStatsResponse;
+      const stats = statsRaw as unknown as OrganizationStatsResponse;
 
       const analyticsData: AnalyticsData = {
         organizationId,
@@ -75,7 +75,7 @@ export class EnhancedAnalyticsService implements IAnalyticsService {
     }
 
     // Type assertion for the RPC response
-    const stats = statsRaw as OrganizationStatsResponse;
+    const stats = statsRaw as unknown as OrganizationStatsResponse;
 
     return {
       totalSessions: stats.total_sessions || 0,
