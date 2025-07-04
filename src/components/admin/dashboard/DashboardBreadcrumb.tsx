@@ -7,59 +7,37 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { ChevronRight, Home } from 'lucide-react';
+} from "@/components/ui/breadcrumb";
+import { Building, LayoutDashboard } from 'lucide-react';
 
 interface DashboardBreadcrumbProps {
   organizationName: string;
-  organizationSlug: string;
-  activeTab: string;
+  currentPage?: string;
 }
 
-export const DashboardBreadcrumb: React.FC<DashboardBreadcrumbProps> = ({
+export const DashboardBreadcrumb: React.FC<DashboardBreadcrumbProps> = ({ 
   organizationName,
-  organizationSlug,
-  activeTab
+  currentPage = "Overview"
 }) => {
-  const getTabDisplayName = (tab: string) => {
-    const tabNames: Record<string, string> = {
-      overview: 'Analytics',
-      members: 'Members',
-      feedback: 'Feedback',
-      questions: 'Questions',
-      settings: 'Settings',
-      integrations: 'Integrations',
-      sentiment: 'Sentiment',
-      performance: 'Performance',
-      'customer-insights': 'Customer Insights'
-    };
-    return tabNames[tab] || tab.charAt(0).toUpperCase() + tab.slice(1);
-  };
-
   return (
     <Breadcrumb>
-      <BreadcrumbList className="text-sm">
+      <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/" className="flex items-center text-gray-500 hover:text-gray-700 transition-colors">
-            <Home className="h-4 w-4 mr-1" />
-            Dashboard
+          <BreadcrumbLink href="/admin" className="flex items-center">
+            <LayoutDashboard className="w-4 h-4 mr-1" />
+            Admin
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator>
-          <ChevronRight className="h-4 w-4" />
-        </BreadcrumbSeparator>
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href={`/admin/${organizationSlug}`} className="text-gray-500 hover:text-gray-700 transition-colors">
+          <BreadcrumbLink className="flex items-center">
+            <Building className="w-4 h-4 mr-1" />
             {organizationName}
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator>
-          <ChevronRight className="h-4 w-4" />
-        </BreadcrumbSeparator>
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage className="text-gray-900 font-medium">
-            {getTabDisplayName(activeTab)}
-          </BreadcrumbPage>
+          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

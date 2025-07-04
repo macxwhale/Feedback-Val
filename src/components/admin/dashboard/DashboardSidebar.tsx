@@ -9,8 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarTrigger
+  SidebarHeader
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -32,7 +31,6 @@ import { DashboardSidebarQuickStats } from './DashboardSidebarQuickStats';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 
 interface DashboardSidebarProps {
   organizationName: string;
@@ -61,79 +59,35 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   // For mobile: Store state of which groups are expanded
   const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({});
 
-  // Enhanced menu data with better organization
+  // Menu data stays here – ready to pass to <DashboardSidebarMenu />
   const groupedMenuItems = [
     {
-      label: "Analytics & Insights",
+      label: "Team & Settings",
       items: [
-        { 
-          id: 'overview', 
-          label: 'Overview', 
-          icon: BarChart3, 
-          badge: (stats?.growth_metrics?.growth_rate && stats.growth_metrics.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined),
-          description: 'Key metrics and performance'
-        },
-        { 
-          id: 'customer-insights', 
-          label: 'Customer Insights', 
-          icon: TrendingUp,
-          description: 'Customer behavior analysis'
-        },
-        { 
-          id: 'sentiment', 
-          label: 'Sentiment Analysis', 
-          icon: Brain,
-          description: 'Feedback sentiment trends'
-        },
-        { 
-          id: 'performance', 
-          label: 'Performance', 
-          icon: BarChart3,
-          description: 'System performance metrics'
-        }
+        { id: 'members', label: 'Members', icon: Users, badge: stats?.active_members || 0 },
+        { id: 'integrations', label: 'Integrations', icon: Webhook },
+        { id: 'settings', label: 'Settings', icon: Settings }
       ]
     },
     {
-      label: "Content & Feedback",
+      label: "Core Analytics",
       items: [
-        { 
-          id: 'feedback', 
-          label: 'Feedback', 
-          icon: MessageSquare, 
-          badge: stats?.total_responses || 0,
-          description: 'Customer feedback responses'
-        },
-        { 
-          id: 'questions', 
-          label: 'Questions', 
-          icon: MessageSquare, 
-          badge: stats?.total_questions || 0,
-          description: 'Survey question management'
-        }
+        { id: 'overview', label: 'Analytics', icon: BarChart3, badge: (stats?.growth_metrics?.growth_rate && stats.growth_metrics.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined) }
       ]
     },
     {
-      label: "Administration",
+      label: "Customer Intelligence",
       items: [
-        { 
-          id: 'members', 
-          label: 'Team Members', 
-          icon: Users, 
-          badge: stats?.active_members || 0,
-          description: 'User management and roles'
-        },
-        { 
-          id: 'integrations', 
-          label: 'Integrations', 
-          icon: Webhook,
-          description: 'Third-party connections'
-        },
-        { 
-          id: 'settings', 
-          label: 'Settings', 
-          icon: Settings,
-          description: 'Organization configuration'
-        }
+        { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp },
+        { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain },
+        { id: 'performance', label: 'Performance', icon: BarChart3 }
+      ]
+    },
+    {
+      label: "Content Management",
+      items: [
+        { id: 'feedback', label: 'Feedback', icon: MessageSquare, badge: stats?.total_responses || 0 },
+        { id: 'questions', label: 'Questions', icon: MessageSquare, badge: stats?.total_questions || 0 }
       ]
     }
   ];
@@ -147,25 +101,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   };
 
   return (
-    <Sidebar className="border-r-0 bg-white shadow-lg">
-      <SidebarHeader className="border-b border-gray-100 p-6 bg-gradient-to-r from-orange-50 to-orange-100/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              {organizationName.substring(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <h2 className="font-bold text-lg text-gray-900 truncate" title={organizationName}>
-                {organizationName}
-              </h2>
-              <p className="text-xs text-gray-600">Organization Dashboard</p>
-            </div>
-          </div>
-          <SidebarTrigger className="h-8 w-8 hover:bg-orange-100 transition-colors" />
-        </div>
+    <Sidebar className="border-r bg-gray-50 dark:bg-sidebar-background rounded-xl shadow-sm transition-colors duration-200 flex flex-col">
+      <SidebarHeader className="border-b p-4 bg-white dark:bg-sidebar-background rounded-t-xl">
+        <h2 className="font-bold text-lg truncate" title={organizationName}>
+          {organizationName}
+        </h2>
       </SidebarHeader>
-      
-      <SidebarContent className="flex-1 py-6">
+      <SidebarContent className="flex-1">
         <DashboardSidebarMenu
           groupedMenuItems={groupedMenuItems}
           isMobile={isMobile}
@@ -181,15 +123,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <DashboardSidebarQuickStats stats={stats} />
         )}
       </SidebarContent>
-      
-      <div className="p-4 border-t border-gray-100">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start hover:bg-red-50 hover:text-red-600 transition-colors group" 
-          onClick={handleLogout}
-        >
-          <LogOut className="w-4 h-4 mr-3 group-hover:text-red-600 transition-colors" />
-          <span>Sign Out</span>
+      <div className="p-4 border-t border-gray-200 dark:border-sidebar-border">
+        <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+          <LogOut className="w-4 h-4 mr-2" />
+          Log Out
         </Button>
       </div>
     </Sidebar>
