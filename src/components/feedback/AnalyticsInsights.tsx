@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock, Target, Brain } from 'lucide-react';
-import { AnalyticsData } from '@/services/AnalyticsService';
+import { AnalyticsData } from '@/services/analyticsService';
 
 interface AnalyticsInsightsProps {
   analytics: AnalyticsData;

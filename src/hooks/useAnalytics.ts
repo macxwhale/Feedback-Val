@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { FeedbackResponse } from '@/components/FeedbackForm';
-import { generateInsights, calculateEngagementScore, AnalyticsData } from '@/services/AnalyticsService';
+import { generateInsights, calculateEngagementScore, AnalyticsData } from '@/services/analyticsService';
 
 export const useAnalytics = (
   responses: Record<string, any>,
