@@ -85,7 +85,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           
           <main className={cn(
             'flex-1 overflow-auto bg-gray-50 dark:bg-gray-900',
-            'px-8 py-8 lg:px-10',
+            'px-8 py-8 lg:px-12',
             isTablet && 'px-6 py-6'
           )}>
             <div className="max-w-7xl mx-auto space-y-8">

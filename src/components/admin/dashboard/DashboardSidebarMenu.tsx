@@ -47,56 +47,65 @@ export const DashboardSidebarMenu: React.FC<DashboardSidebarMenuProps> = ({
         return (
           <SidebarGroup
             key={section.label}
-            className={`px-2 ${idx !== 0 ? "mt-5 pt-5 border-t border-gray-200 dark:border-sidebar-border" : ""}`}
+            className={`px-3 ${idx !== 0 ? "mt-6" : "mt-2"}`}
           >
             <div
-              className="flex items-center justify-between cursor-pointer select-none px-2"
+              className="flex items-center justify-between cursor-pointer select-none px-3 py-2 rounded-lg hover:bg-white/60 dark:hover:bg-gray-800/60 transition-all duration-200"
               onClick={isMobile ? () => toggleGroup(section.label) : undefined}
               tabIndex={isMobile ? 0 : -1}
               aria-label={section.label + " Menu"}
               aria-expanded={isExpanded}
             >
               <SidebarGroupLabel
-                className="uppercase font-extrabold tracking-wider text-orange-700 dark:text-sidebar-accent text-xs pb-1"
-                style={{ letterSpacing: '0.05em' }}
+                className="uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 text-xs pb-0 font-inter"
+                style={{ letterSpacing: '0.08em' }}
               >
                 {section.label}
               </SidebarGroupLabel>
               {isMobile && (
                 isExpanded
-                  ? <ChevronDown className="w-4 h-4 text-gray-400" />
-                  : <ChevronRight className="w-4 h-4 text-gray-400" />
+                  ? <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200" />
+                  : <ChevronRight className="w-4 h-4 text-gray-400 transition-transform duration-200" />
               )}
             </div>
             <SidebarGroupContent className={isExpanded ? "block" : "hidden"}>
-              <div className="bg-white dark:bg-sidebar-accent rounded-lg mt-1 mb-2 shadow-xs transition-colors duration-150">
-                <SidebarMenu>
+              <div className="mt-2 mb-3">
+                <SidebarMenu className="space-y-1">
                   {section.items.map((item) => (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton
                         onClick={() => onTabChange(item.id)}
                         isActive={activeTab === item.id}
-                        className={`flex items-center justify-between w-full px-3 py-2 gap-2 rounded-md
-                          transition-colors duration-150
-                          ${isMobile ? "py-3 px-2 gap-3" : ""}
-                          hover:bg-orange-50 dark:hover:bg-sidebar-ring/10
-                          focus-visible:bg-orange-100 dark:focus-visible:bg-sidebar-ring/15
+                        className={`flex items-center justify-between w-full px-4 py-3 gap-3 rounded-xl
+                          transition-all duration-200 font-inter font-medium
+                          ${isMobile ? "py-4 px-3 gap-4 text-base" : "text-sm"}
                           ${activeTab === item.id
-                            ? "bg-orange-100 dark:bg-sidebar-ring/20 font-semibold shadow-inner"
-                            : ""
+                            ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 shadow-sm border border-blue-100 dark:border-blue-800/50 font-semibold"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-sm"
                           }
                         `}
-                        style={isMobile ? { minHeight: 48, fontSize: 16 } : undefined}
+                        style={isMobile ? { minHeight: 52 } : undefined}
                       >
-                        <div className="flex items-center">
-                          <item.icon className={`mr-2 ${isMobile ? "w-5 h-5" : "h-4 w-4"}`} />
-                          <span>{item.label}</span>
+                        <div className="flex items-center min-w-0">
+                          <item.icon className={`${isMobile ? "w-5 h-5" : "h-4 w-4"} mr-3 flex-shrink-0 ${
+                            activeTab === item.id 
+                              ? "text-blue-600 dark:text-blue-400" 
+                              : "text-gray-500 dark:text-gray-400"
+                          }`} />
+                          <span className="truncate">{item.label}</span>
                         </div>
                         {isLoading ? (
-                          <EnhancedLoadingSpinner size="sm" text="" className="ml-2" />
+                          <EnhancedLoadingSpinner size="sm" text="" className="ml-2 flex-shrink-0" />
                         ) : (
                           item.badge && (
-                            <Badge variant="secondary" className="ml-2">
+                            <Badge 
+                              variant={activeTab === item.id ? "default" : "secondary"} 
+                              className={`ml-2 text-xs font-medium flex-shrink-0 ${
+                                activeTab === item.id 
+                                  ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" 
+                                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                              }`}
+                            >
                               {item.badge}
                             </Badge>
                           )
