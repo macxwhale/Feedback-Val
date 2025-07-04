@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useDashboard } from '@/context/DashboardContext';
 import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
 import { downloadCSV } from '@/lib/csv';
-import { Download } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 
 interface DashboardHeaderProps {
   organizationName: string;
@@ -33,31 +33,45 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-4 mb-6">
-      {/* Top row: Breadcrumbs only */}
-      <div className="flex items-center space-x-4">
-        <SidebarTrigger />
-        <DashboardBreadcrumb 
-          organizationName={organizationName}
-          currentPage={currentPage}
-        />
-      </div>
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <div className="flex flex-col space-y-4">
+        {/* Top row: Sidebar trigger and Breadcrumbs */}
+        <div className="flex items-center space-x-4">
+          <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md p-2 transition-colors" />
+          <DashboardBreadcrumb 
+            organizationName={organizationName}
+            currentPage={currentPage}
+          />
+        </div>
 
-      {/* Bottom row: Filters and Actions */}
-      <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
-        <DatePickerWithRange
-          selected={dateRange}
-          onSelect={setDateRange}
-          className="w-full sm:w-auto"
-          placeholder="Filter by date range"
-        />
-        <div className="flex gap-2 w-full sm:w-auto">
-          {dateRange && (
-            <Button variant="ghost" onClick={() => setDateRange(undefined)} className="w-full sm:w-auto">
-              Clear
-            </Button>
-          )}
-          <Button onClick={handleExport} disabled={isLoading || !analyticsData?.questions.length} className="w-full sm:w-auto">
+        {/* Bottom row: Filters and Actions */}
+        <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-3">
+          <div className="flex items-center gap-3">
+            <DatePickerWithRange
+              selected={dateRange}
+              onSelect={setDateRange}
+              className="w-full sm:w-auto"
+              placeholder="Filter by date range"
+            />
+            
+            {dateRange && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setDateRange(undefined)} 
+                className="h-9 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
+          
+          <Button 
+            onClick={handleExport} 
+            disabled={isLoading || !analyticsData?.questions.length} 
+            className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200 font-medium"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export Data
           </Button>

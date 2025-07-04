@@ -10,8 +10,9 @@ interface TypographyProps {
 
 export const H1: React.FC<TypographyProps> = ({ children, className, as: Component = 'h1' }) => (
   <Component className={cn(
-    'scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl',
+    'scroll-m-20 text-3xl font-semibold tracking-tight lg:text-4xl',
     'leading-tight text-gray-900 dark:text-gray-100',
+    'font-inter',
     className
   )}>
     {children}
@@ -20,8 +21,9 @@ export const H1: React.FC<TypographyProps> = ({ children, className, as: Compone
 
 export const H2: React.FC<TypographyProps> = ({ children, className, as: Component = 'h2' }) => (
   <Component className={cn(
-    'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight',
-    'text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700',
+    'scroll-m-20 text-2xl font-semibold tracking-tight',
+    'text-gray-900 dark:text-gray-100',
+    'font-inter',
     className
   )}>
     {children}
@@ -30,8 +32,9 @@ export const H2: React.FC<TypographyProps> = ({ children, className, as: Compone
 
 export const H3: React.FC<TypographyProps> = ({ children, className, as: Component = 'h3' }) => (
   <Component className={cn(
-    'scroll-m-20 text-2xl font-semibold tracking-tight',
+    'scroll-m-20 text-xl font-semibold tracking-tight',
     'text-gray-900 dark:text-gray-100',
+    'font-inter',
     className
   )}>
     {children}
@@ -40,8 +43,9 @@ export const H3: React.FC<TypographyProps> = ({ children, className, as: Compone
 
 export const H4: React.FC<TypographyProps> = ({ children, className, as: Component = 'h4' }) => (
   <Component className={cn(
-    'scroll-m-20 text-xl font-semibold tracking-tight',
+    'scroll-m-20 text-lg font-medium tracking-tight',
     'text-gray-800 dark:text-gray-200',
+    'font-inter',
     className
   )}>
     {children}
@@ -50,7 +54,18 @@ export const H4: React.FC<TypographyProps> = ({ children, className, as: Compone
 
 export const Body: React.FC<TypographyProps> = ({ children, className, as: Component = 'p' }) => (
   <Component className={cn(
-    'leading-7 text-gray-600 dark:text-gray-300',
+    'text-base leading-relaxed text-gray-700 dark:text-gray-300',
+    'font-inter',
+    className
+  )}>
+    {children}
+  </Component>
+);
+
+export const BodySmall: React.FC<TypographyProps> = ({ children, className, as: Component = 'p' }) => (
+  <Component className={cn(
+    'text-sm leading-relaxed text-gray-600 dark:text-gray-400',
+    'font-inter',
     className
   )}>
     {children}
@@ -59,7 +74,18 @@ export const Body: React.FC<TypographyProps> = ({ children, className, as: Compo
 
 export const Caption: React.FC<TypographyProps> = ({ children, className, as: Component = 'span' }) => (
   <Component className={cn(
-    'text-sm text-gray-500 dark:text-gray-400',
+    'text-xs text-gray-500 dark:text-gray-400 font-medium',
+    'font-inter tracking-wide',
+    className
+  )}>
+    {children}
+  </Component>
+);
+
+export const Label: React.FC<TypographyProps> = ({ children, className, as: Component = 'label' }) => (
+  <Component className={cn(
+    'text-sm font-medium text-gray-700 dark:text-gray-300',
+    'font-inter',
     className
   )}>
     {children}

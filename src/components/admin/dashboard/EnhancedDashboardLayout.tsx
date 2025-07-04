@@ -47,8 +47,8 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           currentPage={activeTab}
           onNavigate={() => {}}
         />
-        <main className="px-4 py-6 max-w-7xl mx-auto">
-          <div className="space-y-6">
+        <main className="px-4 py-8 max-w-7xl mx-auto">
+          <div className="space-y-8">
             {children}
           </div>
         </main>
@@ -84,9 +84,9 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           />
           
           <main className={cn(
-            'flex-1 overflow-auto',
-            'px-6 py-6 lg:px-8',
-            isTablet && 'px-4 py-4'
+            'flex-1 overflow-auto bg-gray-50 dark:bg-gray-900',
+            'px-8 py-8 lg:px-10',
+            isTablet && 'px-6 py-6'
           )}>
             <div className="max-w-7xl mx-auto space-y-8">
               {children}

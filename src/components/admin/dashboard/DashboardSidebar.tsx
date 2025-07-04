@@ -101,13 +101,19 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   };
 
   return (
-    <Sidebar className="border-r bg-gray-50 dark:bg-sidebar-background rounded-xl shadow-sm transition-colors duration-200 flex flex-col">
-      <SidebarHeader className="border-b p-4 bg-white dark:bg-sidebar-background rounded-t-xl">
-        <h2 className="font-bold text-lg truncate" title={organizationName}>
-          {organizationName}
-        </h2>
+    <Sidebar className="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm transition-colors duration-200 flex flex-col">
+      <SidebarHeader className="border-b border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-900">
+        <div className="space-y-1">
+          <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate font-inter tracking-tight" title={organizationName}>
+            {organizationName}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-inter">
+            Dashboard
+          </p>
+        </div>
       </SidebarHeader>
-      <SidebarContent className="flex-1">
+      
+      <SidebarContent className="flex-1 py-4">
         <DashboardSidebarMenu
           groupedMenuItems={groupedMenuItems}
           isMobile={isMobile}
@@ -123,9 +129,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <DashboardSidebarQuickStats stats={stats} />
         )}
       </SidebarContent>
-      <div className="p-4 border-t border-gray-200 dark:border-sidebar-border">
-        <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-          <LogOut className="w-4 h-4 mr-2" />
+      
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-inter" 
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-3" />
           Log Out
         </Button>
       </div>
