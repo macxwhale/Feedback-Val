@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { FeedbackContent } from './feedback/FeedbackContent';
 import { EnhancedFeedbackContainer } from './feedback/EnhancedFeedbackContainer';
@@ -9,6 +10,7 @@ import { useFeedbackForm } from '@/hooks/useFeedbackForm';
 import { PrivacyNotice } from './feedback/PrivacyNotice';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { useOrganization } from '@/hooks/useOrganization';
 
 export interface QuestionConfig {
   id: string;
@@ -34,9 +36,10 @@ export interface FeedbackResponse {
 }
 
 const FeedbackForm: React.FC = () => {
-  const { isMobileDetection } = useMobileDetection();
+  const { isMobile } = useMobileDetection();
   const [showWelcome, setShowWelcome] = useState(true);
-  const { hasConsented, handleConsent } = usePrivacyConsent();
+  const { hasConsented, acceptPrivacy } = usePrivacyConsent();
+  const { organization, loading: orgLoading, error: orgError } = useOrganization();
   
   const {
     questions,
@@ -61,7 +64,11 @@ const FeedbackForm: React.FC = () => {
 
   if (questionsError) {
     return (
-      <FeedbackErrorBoundary>
+      <FeedbackErrorBoundary
+        orgLoading={orgLoading}
+        orgError={questionsError}
+        organization={organization}
+      >
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center p-8">
             <h2 className="text-xl font-semibold text-red-600 mb-4">
@@ -83,9 +90,10 @@ const FeedbackForm: React.FC = () => {
   if (isComplete) {
     return (
       <EnhancedThankYouModal
+        isOpen={isComplete}
         responses={finalResponses}
-        onClose={resetForm}
-        isVisible={isComplete}
+        questions={questions}
+        onReset={resetForm}
       />
     );
   }
@@ -94,17 +102,20 @@ const FeedbackForm: React.FC = () => {
     return (
       <WelcomeScreen
         onStart={() => setShowWelcome(false)}
-        questionsCount={questions.length}
       />
     );
   }
 
   if (!hasConsented) {
-    return <PrivacyNotice onConsent={handleConsent} />;
+    return <PrivacyNotice isVisible={true} onAccept={acceptPrivacy} />;
   }
 
   return (
-    <FeedbackErrorBoundary>
+    <FeedbackErrorBoundary
+      orgLoading={orgLoading}
+      orgError={orgError}
+      organization={organization}
+    >
       <EnhancedFeedbackContainer
         questions={questions}
         currentQuestionIndex={currentQuestionIndex}

@@ -54,7 +54,6 @@ export const EnhancedDashboardLayout = memo<EnhancedDashboardLayoutProps>(({
           <DesignCard padding="sm" shadow="none" border={false} className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
             <DashboardTabs
               activeTab={activeTab}
-              onTabChange={onTabChange}
               organizationId={organizationId}
             />
           </DesignCard>
