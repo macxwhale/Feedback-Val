@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { ModernCard, MetricCard } from '@/components/ui/modern-card';
 import { ModernButton } from '@/components/ui/modern-button';
-import { ModernInput } from '@/components/ui/modern-input';
 import { ModernSearch } from '@/components/ui/modern-search';
 import { StatusIndicator } from '@/components/ui/status-indicator';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +10,13 @@ import {
   MessageSquare, 
   BarChart3, 
   Settings, 
-  TrendingUp, 
   Plus,
   Bell,
-  Search,
   Menu,
   Home,
-  Filter
+  Activity,
+  PieChart,
+  UserCog
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +24,8 @@ interface ModernDashboardLayoutProps {
   organizationName: string;
   organizationId: string;
   children: React.ReactNode;
+  activeSection?: string;
+  onNavigate?: (section: string) => void;
   stats?: {
     active_members: number;
     total_responses: number;
@@ -40,7 +41,7 @@ const navigationSections = [
   {
     title: "Overview",
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: Home, active: true },
+      { id: 'dashboard', label: 'Dashboard', icon: Home },
       { id: 'analytics', label: 'Analytics', icon: BarChart3, badge: '12' },
     ]
   },
@@ -48,13 +49,16 @@ const navigationSections = [
     title: "Content & Feedback",
     items: [
       { id: 'feedback', label: 'Feedback', icon: MessageSquare, badge: '248' },
-      { id: 'questions', label: 'Questions', icon: MessageSquare },
+      { id: 'questions', label: 'Questions', icon: PieChart },
+      { id: 'performance', label: 'Performance', icon: Activity },
+      { id: 'customer-insights', label: 'Insights', icon: BarChart3 },
     ]
   },
   {
     title: "Team & Settings",
     items: [
       { id: 'members', label: 'Members', icon: Users, badge: '15' },
+      { id: 'integrations', label: 'Integrations', icon: UserCog },
       { id: 'settings', label: 'Settings', icon: Settings },
     ]
   }
@@ -64,10 +68,16 @@ export const ModernDashboardLayout: React.FC<ModernDashboardLayoutProps> = ({
   organizationName,
   organizationId,
   children,
+  activeSection = 'dashboard',
+  onNavigate,
   stats
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+
+  const handleNavigate = (section: string) => {
+    onNavigate?.(section);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -117,12 +127,12 @@ export const ModernDashboardLayout: React.FC<ModernDashboardLayoutProps> = ({
               <ul className="space-y-1">
                 {section.items.map((item) => (
                   <li key={item.id}>
-                    <a
-                      href="#"
+                    <button
+                      onClick={() => handleNavigate(item.id)}
                       className={cn(
-                        "flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                        "w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
                         "hover:bg-gray-100 dark:hover:bg-gray-700",
-                        item.active 
+                        activeSection === item.id
                           ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 dark:bg-blue-900/20 dark:text-blue-300" 
                           : "text-gray-700 dark:text-gray-300"
                       )}
@@ -134,7 +144,7 @@ export const ModernDashboardLayout: React.FC<ModernDashboardLayoutProps> = ({
                       
                       {!sidebarCollapsed && (
                         <>
-                          <span className="flex-1">{item.label}</span>
+                          <span className="flex-1 text-left">{item.label}</span>
                           {item.badge && (
                             <Badge variant="secondary" className="ml-auto text-xs">
                               {item.badge}
@@ -142,7 +152,7 @@ export const ModernDashboardLayout: React.FC<ModernDashboardLayoutProps> = ({
                           )}
                         </>
                       )}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>

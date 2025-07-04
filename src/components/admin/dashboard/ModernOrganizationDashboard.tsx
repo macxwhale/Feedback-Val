@@ -67,6 +67,8 @@ export const ModernOrganizationDashboard: React.FC = () => {
     <ModernDashboardLayout
       organizationName={organization.name}
       organizationId={organization.id}
+      activeSection={activeSection}
+      onNavigate={handleNavigate}
       stats={stats}
     >
       {renderContent()}
