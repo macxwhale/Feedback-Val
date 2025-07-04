@@ -40,6 +40,17 @@ import { AnalyticsTable } from './dashboard/AnalyticsTable';
 import { AnalyticsInsights } from './dashboard/AnalyticsInsights';
 import { SessionTrendsChart } from './dashboard/charts/SessionTrendsChart';
 
+// Define types for dashboard metrics
+interface DashboardMetric {
+  id: string;
+  label: string;
+  value: number;
+  icon: React.ComponentType<any>;
+  trend?: { value: number; isPositive: boolean };
+  status: 'success' | 'warning' | 'error' | 'neutral';
+  format?: 'rating';
+}
+
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { organization, loading: orgLoading } = useOrganization();
@@ -68,14 +79,14 @@ export const OrganizationAdminDashboard: React.FC = () => {
   // Safe type conversion with proper fallbacks
   const typedStats: OrganizationStats | null = stats ? (stats as unknown as OrganizationStats) : null;
 
-  const dashboardMetrics = [
+  const dashboardMetrics: DashboardMetric[] = [
     {
       id: 'members',
       label: 'Active Members',
       value: typedStats?.active_members ?? 0,
       icon: Users,
       trend: { value: 12, isPositive: true },
-      status: 'success' as const,
+      status: 'success',
     },
     {
       id: 'responses',
@@ -83,22 +94,22 @@ export const OrganizationAdminDashboard: React.FC = () => {
       value: typedStats?.total_responses ?? 0,
       icon: MessageSquare,
       trend: { value: 8, isPositive: true },
-      status: 'success' as const,
+      status: 'success',
     },
     {
       id: 'sessions',
       label: 'Active Sessions',
       value: typedStats?.total_sessions ?? 0,
       icon: Activity,
-      status: 'neutral' as const,
+      status: 'neutral',
     },
     {
       id: 'rating',
       label: 'Avg Rating',
       value: typedStats?.avg_session_score ?? 0,
       icon: Star,
-      format: 'rating' as const,
-      status: 'success' as const,
+      format: 'rating',
+      status: 'success',
     },
   ];
 
