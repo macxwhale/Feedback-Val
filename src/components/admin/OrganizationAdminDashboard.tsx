@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useOrganization } from '@/context/OrganizationContext';
-import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 import { getOrganizationStatsEnhanced } from '@/services/organizationQueries';
@@ -14,15 +13,18 @@ import { Plus, Users, MessageSquare, Activity, Star, TrendingUp } from 'lucide-r
 import { 
   PageTitle, 
   SectionSubtitle, 
-  MetricCard, 
+  GoogleCard as MetricCard, 
   MetricLabel, 
   MetricValue, 
-  DashboardCard,
-  DashboardGrid,
-  DashboardSection,
-  ActionButton,
-  StatusDot
-} from '@/components/ui/refined-design-system';
+  GoogleDashboardCard as DashboardCard,
+  GoogleGrid as DashboardGrid,
+  GoogleSection as DashboardSection,
+  GoogleButton as ActionButton,
+  GoogleStatusDot as StatusDot
+} from '@/components/ui/google-inspired-design-system';
+
+// Import new layout
+import { GoogleInspiredLayout } from './dashboard/GoogleInspiredLayout';
 
 // Tab components
 import MembersTab from './dashboard/tabs/MembersTab';
@@ -81,7 +83,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
   const dashboardMetrics: DashboardMetric[] = [
     {
       id: 'members',
-      label: 'Active Members',
+      label: 'Active users',
       value: typedStats?.active_members ?? 0,
       icon: Users,
       trend: { value: 12, isPositive: true },
@@ -89,7 +91,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
     },
     {
       id: 'responses',
-      label: 'Total Responses',
+      label: 'Total responses',
       value: typedStats?.total_responses ?? 0,
       icon: MessageSquare,
       trend: { value: 8, isPositive: true },
@@ -97,14 +99,14 @@ export const OrganizationAdminDashboard: React.FC = () => {
     },
     {
       id: 'sessions',
-      label: 'Active Sessions',
+      label: 'Active sessions',
       value: typedStats?.total_sessions ?? 0,
       icon: Activity,
       status: 'neutral',
     },
     {
       id: 'rating',
-      label: 'Avg Rating',
+      label: 'Average rating',
       value: typedStats?.avg_session_score ?? 0,
       icon: Star,
       format: 'rating',
@@ -134,26 +136,26 @@ export const OrganizationAdminDashboard: React.FC = () => {
         return (
           <DashboardSection>
             {/* Header Section */}
-            <div className="mb-10">
-              <PageTitle className="mb-3">Analytics Dashboard</PageTitle>
+            <div className="mb-8">
+              <PageTitle className="mb-2">Dashboard</PageTitle>
               <SectionSubtitle>
                 Here's what's happening with {organization.name} today.
               </SectionSubtitle>
             </div>
             
             {/* Metrics Grid */}
-            <DashboardGrid columns={4} className="mb-10">
+            <DashboardGrid columns={4} className="mb-8">
               {dashboardMetrics.map((metric) => (
-                <MetricCard key={metric.id} className="relative overflow-hidden">
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                      <metric.icon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <MetricCard key={metric.id} className="relative">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded">
+                      <metric.icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     </div>
                     <StatusDot variant={metric.status} />
                   </div>
                   
                   <MetricLabel>{metric.label}</MetricLabel>
-                  <MetricValue className="mb-3">
+                  <MetricValue className="mb-2">
                     {metric.format === 'rating' 
                       ? `${metric.value}/5.0`
                       : metric.value.toLocaleString()
@@ -161,12 +163,12 @@ export const OrganizationAdminDashboard: React.FC = () => {
                   </MetricValue>
                   
                   {metric.trend && (
-                    <div className="flex items-center text-sm">
-                      <TrendingUp className="w-4 h-4 text-green-600 mr-2" />
+                    <div className="flex items-center text-xs">
+                      <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
                       <span className="text-green-600 font-medium">
                         +{metric.trend.value}%
                       </span>
-                      <span className="text-gray-500 ml-2">vs last month</span>
+                      <span className="text-gray-500 ml-1">vs last month</span>
                     </div>
                   )}
                 </MetricCard>
@@ -175,16 +177,16 @@ export const OrganizationAdminDashboard: React.FC = () => {
 
             {/* Charts Section */}
             <DashboardCard 
-              title="Trend Analysis"
+              title="Trend analysis"
               subtitle="Key metrics over the selected period"
-              className="mb-10"
+              className="mb-8"
             >
               <SessionTrendsChart isLoading={statsLoading} />
             </DashboardCard>
             
             {/* Analytics Section */}
-            <DashboardGrid columns={2} className="mb-10">
-              <DashboardCard title="Analytics Dashboard">
+            <DashboardGrid columns={2} className="mb-8">
+              <DashboardCard title="Analytics dashboard">
                 <AnalyticsTable 
                   questions={analyticsData?.questions || []}
                   categories={analyticsData?.categories || []}
@@ -199,7 +201,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
                 />
               </DashboardCard>
               
-              <DashboardCard title="Analytics Insights">
+              <DashboardCard title="Analytics insights">
                 <AnalyticsInsights 
                   stats={typedStats ? {
                     total_questions: typedStats.total_questions,
@@ -220,22 +222,22 @@ export const OrganizationAdminDashboard: React.FC = () => {
             </DashboardGrid>
 
             {/* Quick Actions */}
-            <DashboardCard title="Quick Actions">
-              <div className="space-y-4">
+            <DashboardCard title="Quick actions">
+              <div className="space-y-3">
                 <ActionButton
                   onClick={() => setActiveTab('members')}
                   variant="ghost"
-                  className="w-full justify-start p-6 h-auto border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 dark:hover:border-gray-600"
+                  className="w-full justify-start p-4 h-auto border border-gray-200 dark:border-gray-700 rounded hover:border-gray-300 dark:hover:border-gray-600"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                      <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="text-left">
-                      <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1 font-inter">
-                        Invite new members
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1 font-sans">
+                        Invite new users
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 font-inter">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-sans">
                         Add team members to your organization
                       </div>
                     </div>
@@ -245,17 +247,17 @@ export const OrganizationAdminDashboard: React.FC = () => {
                 <ActionButton
                   onClick={() => setActiveTab('questions')}
                   variant="ghost"
-                  className="w-full justify-start p-6 h-auto border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 dark:hover:border-gray-600"
+                  className="w-full justify-start p-4 h-auto border border-gray-200 dark:border-gray-700 rounded hover:border-gray-300 dark:hover:border-gray-600"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                      <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                      <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="text-left">
-                      <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1 font-inter">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1 font-sans">
                         Create new question
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 font-inter">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-sans">
                         Add questions to your feedback forms
                       </div>
                     </div>
@@ -270,7 +272,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
 
   return (
     <>
-      <EnhancedDashboardLayout
+      <GoogleInspiredLayout
         organizationName={organization.name}
         organizationId={organization.id}
         organizationSlug={slug || ''}
@@ -280,7 +282,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
         isLoading={statsLoading}
       >
         {renderTabContent()}
-      </EnhancedDashboardLayout>
+      </GoogleInspiredLayout>
       
       {/* Floating Action Button for mobile */}
       {isMobile && activeTab === 'overview' && (
