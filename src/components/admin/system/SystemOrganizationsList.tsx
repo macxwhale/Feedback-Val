@@ -113,7 +113,7 @@ export const SystemOrganizationsList: React.FC<SystemOrganizationsListProps> = (
               
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Members</span>
-                <span className="font-medium">{org.active_members || 0}</span>
+                <span className="font-medium">-</span>
               </div>
               
               <div className="flex items-center justify-between text-sm">
