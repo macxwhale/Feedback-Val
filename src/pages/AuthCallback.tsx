@@ -136,7 +136,7 @@ const AuthCallback: React.FC = () => {
               organization_id: organization.id,
               email: userEmail,
               role: role,
-              enhanced_role: enhancedRole as EnhancedRole,
+              enhanced_role: enhancedRole as Role,
               status: 'active',
               accepted_at: new Date().toISOString()
             });
