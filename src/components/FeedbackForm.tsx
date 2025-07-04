@@ -39,7 +39,7 @@ const FeedbackForm: React.FC = () => {
   const { isMobile } = useMobileDetection();
   const [showWelcome, setShowWelcome] = useState(true);
   const { hasConsented, acceptPrivacy } = usePrivacyConsent();
-  const { organization, loading: orgLoading, error: orgError } = useOrganization();
+  const { organization, isLoading: orgLoading, error: orgError } = useOrganization();
   
   const {
     questions,
@@ -64,26 +64,13 @@ const FeedbackForm: React.FC = () => {
 
   if (questionsError) {
     return (
-      <FeedbackErrorBoundary
-        orgLoading={orgLoading}
-        orgError={questionsError}
-        organization={organization}
-      >
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center p-8">
-            <h2 className="text-xl font-semibold text-red-600 mb-4">
-              Unable to Load Survey
-            </h2>
-            <p className="text-gray-600 mb-6">{questionsError}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-2 bg-sunset-500 text-white rounded-lg hover:bg-sunset-600 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </FeedbackErrorBoundary>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <FeedbackErrorBoundary
+          orgLoading={orgLoading}
+          orgError={questionsError}
+          organization={organization}
+        />
+      </div>
     );
   }
 
@@ -111,11 +98,12 @@ const FeedbackForm: React.FC = () => {
   }
 
   return (
-    <FeedbackErrorBoundary
-      orgLoading={orgLoading}
-      orgError={orgError}
-      organization={organization}
-    >
+    <div>
+      <FeedbackErrorBoundary
+        orgLoading={orgLoading}
+        orgError={orgError}
+        organization={organization}
+      />
       <EnhancedFeedbackContainer
         questions={questions}
         currentQuestionIndex={currentQuestionIndex}
@@ -130,7 +118,7 @@ const FeedbackForm: React.FC = () => {
         onPrevious={goToPrevious}
         getValidationResult={getValidationResult}
       />
-    </FeedbackErrorBoundary>
+    </div>
   );
 };
 

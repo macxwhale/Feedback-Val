@@ -27,6 +27,13 @@ export const EnhancedDashboardLayout = memo<EnhancedDashboardLayoutProps>(({
   isLoading,
   children
 }) => {
+  // Create organization object from props for DashboardTabs
+  const organization = {
+    id: organizationId,
+    name: organizationName,
+    slug: organizationSlug
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DesignContainer size="xl" className="py-8">
@@ -54,7 +61,17 @@ export const EnhancedDashboardLayout = memo<EnhancedDashboardLayoutProps>(({
           <DesignCard padding="sm" shadow="none" border={false} className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
             <DashboardTabs
               activeTab={activeTab}
-              organizationId={organizationId}
+              setActiveTab={onTabChange}
+              organization={organization}
+              stats={stats}
+              isLiveActivity={false}
+              setIsLiveActivity={() => {}}
+              handleQuickActions={{
+                onCreateQuestion: () => {},
+                onInviteUser: () => {},
+                onExportData: () => {},
+                onViewSettings: () => {}
+              }}
             />
           </DesignCard>
         </div>
