@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { OrganizationAdminDashboard } from '@/components/admin/OrganizationAdminDashboard';
+import { SystemAdminDashboard } from '@/components/admin/SystemAdminDashboard';
 
 const Admin = () => {
-  return <OrganizationAdminDashboard />;
+  return <SystemAdminDashboard />;
 };
 
 export default Admin;
