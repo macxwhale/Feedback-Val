@@ -21,26 +21,23 @@ export const DashboardBreadcrumb: React.FC<DashboardBreadcrumbProps> = ({
 }) => {
   return (
     <Breadcrumb>
-      <BreadcrumbList className="text-sm">
+      <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink 
-            href="/admin" 
-            className="flex items-center text-gray-600 hover:text-gray-900 font-medium transition-colors"
-          >
-            <LayoutDashboard className="w-4 h-4 mr-1.5" />
+          <BreadcrumbLink href="/admin" className="flex items-center">
+            <LayoutDashboard className="w-4 h-4 mr-1" />
             Admin
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator className="text-gray-400" />
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink className="flex items-center text-gray-600 hover:text-gray-900 font-medium transition-colors">
-            <Building className="w-4 h-4 mr-1.5" />
+          <BreadcrumbLink className="flex items-center">
+            <Building className="w-4 h-4 mr-1" />
             {organizationName}
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator className="text-gray-400" />
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage className="text-gray-900 font-semibold">{currentPage}</BreadcrumbPage>
+          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
