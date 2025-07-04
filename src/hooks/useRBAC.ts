@@ -1,9 +1,8 @@
-
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useQuery } from '@tanstack/react-query';
 import { RBACService, type RBACContext, type PermissionResult } from '@/services/rbacService';
 import { useCallback, useMemo } from 'react';
-import { hasPermission, canManageRole } from '@/utils/enhancedRoleUtils';
+import { hasPermission, canManageRole } from '@/utils/roleManagement';
 
 export const useRBAC = (organizationId?: string) => {
   const { user, isAdmin } = useAuth();

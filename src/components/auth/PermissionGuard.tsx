@@ -4,7 +4,7 @@ import { useRBAC } from '@/hooks/useRBAC';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Lock, UserX, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { getEnhancedRoleBadge } from '@/utils/enhancedRoleUtils';
+import { getRoleConfig } from '@/utils/roleManagement';
 
 interface PermissionGuardProps {
   children: React.ReactNode;
@@ -75,8 +75,8 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 
   // Default access denied UI
   const requiredRole = getRequiredRoleForPermission(permission);
-  const { icon: RequiredIcon, label: requiredLabel, variant } = getEnhancedRoleBadge(requiredRole);
-  const currentRoleBadge = userRole ? getEnhancedRoleBadge(userRole) : null;
+  const requiredConfig = getRoleConfig(requiredRole);
+  const currentConfig = userRole ? getRoleConfig(userRole) : null;
 
   return (
     <Card className="border-red-200">
@@ -98,18 +98,18 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium">Required role:</span>
-              <Badge variant={variant} className="flex items-center gap-1">
-                <RequiredIcon className="w-3 h-3" />
-                {requiredLabel}
+              <Badge variant={requiredConfig.variant} className="flex items-center gap-1">
+                <requiredConfig.icon className="w-3 h-3" />
+                {requiredConfig.label}
               </Badge>
             </div>
             
-            {currentRoleBadge && (
+            {currentConfig && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">Your role:</span>
-                <Badge variant={currentRoleBadge.variant} className="flex items-center gap-1">
-                  <currentRoleBadge.icon className="w-3 h-3" />
-                  {currentRoleBadge.label}
+                <Badge variant={currentConfig.variant} className="flex items-center gap-1">
+                  <currentConfig.icon className="w-3 h-3" />
+                  {currentConfig.label}
                 </Badge>
               </div>
             )}

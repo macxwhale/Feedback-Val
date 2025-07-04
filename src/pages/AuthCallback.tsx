@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedLoadingSpinner } from '@/components/admin/dashboard/EnhancedLoadingSpinner';
 import { AuthService } from '@/services/authService';
-import type { EnhancedRole } from '@/utils/userManagementUtils';
+import type { Role } from '@/utils/roleManagement';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
