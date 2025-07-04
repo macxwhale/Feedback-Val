@@ -1,46 +1,90 @@
-
 /**
  * Metrics Aggregator
- * Processes and aggregates performance data for reporting
+ * Collects and aggregates performance metrics from various sources
  */
-
-import type { PerformanceEntry } from './PerformanceCollector';
-
-export interface MetricsSummary {
-  averages: Record<string, number>;
-  totals: Record<string, number>;
-  counts: Record<string, number>;
-  percentiles: Record<string, { p50: number; p95: number; p99: number }>;
-}
 
 export interface ComponentMetric {
   componentName: string;
   renderTime: number;
   rerenderCount: number;
-  lastRender: number;
+  timestamp: number;
 }
 
-/**
- * Aggregates and processes performance metrics
- */
-export class MetricsAggregator {
-  private static instance: MetricsAggregator;
-  private componentMetrics = new Map<string, ComponentMetric>();
+export interface MetricsSummary {
+  averages: Record<string, number>;
+  totals: Record<string, number>;
+  counts: Record<string, number>;
+  percentiles: Record<string, number>;
+}
 
-  private constructor() {}
+export interface PerformanceSnapshot {
+  timestamp: number;
+  memoryUsage?: {
+    used: number;
+    total: number;
+    limit: number;
+  };
+  navigationTiming?: {
+    domContentLoaded: number;
+    loadComplete: number;
+    firstPaint?: number;
+  };
+  componentMetrics: ComponentMetric[];
+}
 
-  public static getInstance(): MetricsAggregator {
-    if (!MetricsAggregator.instance) {
-      MetricsAggregator.instance = new MetricsAggregator();
+class MetricsAggregatorClass {
+  private snapshots: PerformanceSnapshot[] = [];
+  private maxSnapshots = 100;
+
+  captureSnapshot(): PerformanceSnapshot {
+    const snapshot: PerformanceSnapshot = {
+      timestamp: Date.now(),
+      componentMetrics: [],
+    };
+
+    // Capture memory usage if available
+    if (typeof window !== 'undefined' && 'memory' in performance) {
+      const memory = (performance as any).memory;
+      snapshot.memoryUsage = {
+        used: memory.usedJSHeapSize,
+        total: memory.totalJSHeapSize,
+        limit: memory.jsHeapSizeLimit,
+      };
     }
-    return MetricsAggregator.instance;
+
+    // Capture navigation timing
+    if (typeof window !== 'undefined' && performance.timing) {
+      const timing = performance.timing;
+      snapshot.navigationTiming = {
+        domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+        loadComplete: timing.loadEventEnd - timing.navigationStart,
+      };
+
+      // Try to get first paint timing
+      if ('getEntriesByType' in performance) {
+        const paintEntries = performance.getEntriesByType('paint');
+        const firstPaint = paintEntries.find(entry => entry.name === 'first-paint');
+        if (firstPaint) {
+          snapshot.navigationTiming.firstPaint = firstPaint.startTime;
+        }
+      }
+    }
+
+    this.snapshots.push(snapshot);
+
+    // Keep only recent snapshots
+    if (this.snapshots.length > this.maxSnapshots) {
+      this.snapshots = this.snapshots.slice(-this.maxSnapshots);
+    }
+
+    return snapshot;
   }
 
-  /**
-   * Aggregate performance entries into summary statistics
-   */
-  aggregateEntries(entries: PerformanceEntry[]): MetricsSummary {
-    const grouped = this.groupEntriesByName(entries);
+  getRecentSnapshots(count: number = 10): PerformanceSnapshot[] {
+    return this.snapshots.slice(-count);
+  }
+
+  aggregateMetrics(): MetricsSummary {
     const summary: MetricsSummary = {
       averages: {},
       totals: {},
@@ -48,101 +92,36 @@ export class MetricsAggregator {
       percentiles: {},
     };
 
-    Object.entries(grouped).forEach(([name, nameEntries]) => {
-      const durations = nameEntries.map(entry => entry.duration).filter(d => d > 0);
-      
-      if (durations.length > 0) {
-        summary.averages[name] = this.calculateAverage(durations);
-        summary.totals[name] = this.calculateSum(durations);
-        summary.counts[name] = durations.length;
-        summary.percentiles[name] = this.calculatePercentiles(durations);
-      }
-    });
+    if (this.snapshots.length === 0) return summary;
+
+    // Aggregate memory usage
+    const memoryUsages = this.snapshots
+      .map(s => s.memoryUsage?.used)
+      .filter(Boolean) as number[];
+    
+    if (memoryUsages.length > 0) {
+      summary.averages.memoryUsage = memoryUsages.reduce((a, b) => a + b, 0) / memoryUsages.length;
+      summary.totals.memoryUsage = Math.max(...memoryUsages);
+      summary.counts.memorySnapshots = memoryUsages.length;
+    }
+
+    // Aggregate navigation timing
+    const loadTimes = this.snapshots
+      .map(s => s.navigationTiming?.loadComplete)
+      .filter(Boolean) as number[];
+    
+    if (loadTimes.length > 0) {
+      summary.averages.loadTime = loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length;
+      summary.totals.maxLoadTime = Math.max(...loadTimes);
+      summary.counts.loadTimeSnapshots = loadTimes.length;
+    }
 
     return summary;
   }
 
-  /**
-   * Track component performance
-   */
-  trackComponent(componentName: string, renderTime: number): void {
-    const existing = this.componentMetrics.get(componentName);
-    
-    if (existing) {
-      existing.renderTime = renderTime;
-      existing.rerenderCount += 1;
-      existing.lastRender = Date.now();
-    } else {
-      this.componentMetrics.set(componentName, {
-        componentName,
-        renderTime,
-        rerenderCount: 1,
-        lastRender: Date.now(),
-      });
-    }
-  }
-
-  /**
-   * Get component metrics
-   */
-  getComponentMetrics(): ComponentMetric[] {
-    return Array.from(this.componentMetrics.values());
-  }
-
-  /**
-   * Get slow components (render time > threshold)
-   */
-  getSlowComponents(threshold: number = 16): ComponentMetric[] {
-    return this.getComponentMetrics().filter(metric => metric.renderTime > threshold);
-  }
-
-  /**
-   * Clear component metrics
-   */
-  clearComponentMetrics(): void {
-    this.componentMetrics.clear();
-  }
-
-  /**
-   * Group entries by name
-   */
-  private groupEntriesByName(entries: PerformanceEntry[]): Record<string, PerformanceEntry[]> {
-    return entries.reduce((groups, entry) => {
-      if (!groups[entry.name]) {
-        groups[entry.name] = [];
-      }
-      groups[entry.name].push(entry);
-      return groups;
-    }, {} as Record<string, PerformanceEntry[]>);
-  }
-
-  /**
-   * Calculate average
-   */
-  private calculateAverage(values: number[]): number {
-    return values.reduce((sum, val) => sum + val, 0) / values.length;
-  }
-
-  /**
-   * Calculate sum
-   */
-  private calculateSum(values: number[]): number {
-    return values.reduce((sum, val) => sum + val, 0);
-  }
-
-  /**
-   * Calculate percentiles
-   */
-  private calculatePercentiles(values: number[]): { p50: number; p95: number; p99: number } {
-    const sorted = [...values].sort((a, b) => a - b);
-    const len = sorted.length;
-
-    return {
-      p50: sorted[Math.floor(len * 0.5)] || 0,
-      p95: sorted[Math.floor(len * 0.95)] || 0,
-      p99: sorted[Math.floor(len * 0.99)] || 0,
-    };
+  clearMetrics(): void {
+    this.snapshots = [];
   }
 }
 
-export const metricsAggregator = MetricsAggregator.getInstance();
+export const MetricsAggregator = new MetricsAggregatorClass();
