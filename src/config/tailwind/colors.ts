@@ -1,67 +1,68 @@
 
 export const colors = {
-  // Google Material Design inspired palette
-  'google-blue': {
-    50: '#e8f0fe',
-    100: '#d2e3fc',
-    200: '#aecbfa',
-    300: '#8ab4f8',
-    400: '#669df6',
-    500: '#4285f4', // Primary Google Blue
-    600: '#1a73e8', // Google Play Console Blue
-    700: '#1967d2',
-    800: '#185abc',
-    900: '#174ea6',
+  // Warm color palette
+  'sunset': {
+    50: '#fff7ed',
+    100: '#ffedd5',
+    200: '#fed7aa',
+    300: '#fdba74',
+    400: '#fb923c',
+    500: '#FF6B35', // Primary sunset orange
+    600: '#ea580c',
+    700: '#c2410c',
+    800: '#9a3412',
+    900: '#7c2d12',
   },
-  'google-green': {
-    50: '#e6f4ea',
-    100: '#ceead6',
-    200: '#a8dab5',
-    300: '#81c995',
-    400: '#5bb974',
-    500: '#34a853', // Google Green
-    600: '#2d9142',
-    700: '#267936',
-    800: '#1e6129',
-    900: '#174e1b',
+  'golden': {
+    50: '#fffbeb',
+    100: '#fef3c7',
+    200: '#fde68a',
+    300: '#fcd34d',
+    400: '#FFC93C', // Primary golden yellow
+    500: '#f59e0b',
+    600: '#d97706',
+    700: '#b45309',
+    800: '#92400e',
+    900: '#78350f',
   },
-  'google-yellow': {
-    50: '#fef7e0',
-    100: '#feefc3',
-    200: '#fce8a6',
-    300: '#fde047',
-    400: '#fbbc04', // Google Yellow
-    500: '#f9ab00',
-    600: '#f29900',
-    700: '#ea8600',
-    800: '#e37400',
-    900: '#d56e0c',
+  'coral': {
+    50: '#fdf2f8',
+    100: '#fce7f3',
+    200: '#fbcfe8',
+    300: '#f9a8d4',
+    400: '#F67280', // Primary warm coral
+    500: '#ec4899',
+    600: '#db2777',
+    700: '#be185d',
+    800: '#9d174d',
+    900: '#831843',
   },
-  'google-red': {
-    50: '#fce8e6',
-    100: '#fad2cf',
-    200: '#f6aea9',
-    300: '#f28b82',
-    400: '#ee675c',
-    500: '#ea4335', // Google Red
-    600: '#d93025',
-    700: '#c5221f',
-    800: '#b31412',
-    900: '#a50e0e',
+  'warm-gray': {
+    50: '#fafaf9',
+    100: '#f5f5f4',
+    200: '#e7e5e4',
+    300: '#d6d3d1',
+    400: '#a8a29e',
+    500: '#78716c',
+    600: '#57534e',
+    700: '#44403c',
+    800: '#292524',
+    900: '#1c1917',
   },
-  'google-gray': {
-    50: '#f8f9fa',
-    100: '#f1f3f4',
-    200: '#e8eaed',
-    300: '#dadce0',
-    400: '#bdc1c6',
-    500: '#9aa0a6',
-    600: '#80868b',
-    700: '#5f6368',
-    800: '#3c4043',
-    900: '#202124',
+  // Dark theme colors
+  'dark-warm': {
+    50: '#1a1a1a',
+    100: '#262626',
+    200: '#404040',
+    300: '#525252',
+    400: '#737373',
+    500: '#a3a3a3',
+    600: '#d4d4d4',
+    700: '#e5e5e5',
+    800: '#f5f5f5',
+    900: '#fafafa',
   },
-  // Keep existing shadcn colors for compatibility
+  // Shadcn UI colors
   border: 'hsl(var(--border))',
   input: 'hsl(var(--input))',
   ring: 'hsl(var(--ring))',

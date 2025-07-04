@@ -40,17 +40,15 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20">
         <DashboardHeader
           organizationName={organizationName}
           organizationId={organizationId}
           currentPage={activeTab}
           onNavigate={() => {}}
         />
-        <main className="px-4 py-8 max-w-7xl mx-auto">
-          <div className="space-y-8">
-            {children}
-          </div>
+        <main className="px-4 py-6">
+          {children}
         </main>
         <BottomNavigation
           items={navigationItems.map(item => ({
@@ -66,7 +64,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
 
   return (
     <SidebarProvider defaultOpen={!isTablet}>
-      <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex w-full bg-gray-50">
         <DashboardSidebar
           organizationName={organizationName}
           activeTab={activeTab}
@@ -84,13 +82,10 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           />
           
           <main className={cn(
-            'flex-1 overflow-auto bg-gray-50 dark:bg-gray-900',
-            'px-8 py-8 lg:px-12',
-            isTablet && 'px-6 py-6'
+            'flex-1 p-6 overflow-auto',
+            isTablet && 'p-4'
           )}>
-            <div className="max-w-7xl mx-auto space-y-8">
-              {children}
-            </div>
+            {children}
           </main>
         </div>
       </div>

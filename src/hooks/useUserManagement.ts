@@ -67,8 +67,9 @@ export const useUserManagement = (organizationId: string) => {
             if (inviterData) {
               invited_by = { email: inviterData.email };
             } else {
-              // Fallback: show as system invite
-              invited_by = { email: 'System' };
+              // Fallback: try to get from auth.users via admin function if needed
+              // For now, we'll just show as unknown
+              invited_by = { email: 'Unknown' };
             }
           }
           
@@ -110,48 +111,13 @@ export const useUserManagement = (organizationId: string) => {
       return data;
     },
     onSuccess: () => {
-      toast({ 
-        title: "Role updated", 
-        description: "User role has been successfully updated"
-      });
+      toast({ title: "User role updated successfully" });
       queryClient.invalidateQueries({ queryKey: ['organization-members', organizationId] });
     },
     onError: (error: any) => {
       console.error('Role update error:', error);
       toast({ 
-        title: "Error updating role", 
-        description: error.message || 'An unexpected error occurred', 
-        variant: 'destructive' 
-      });
-    }
-  });
-
-  const removeMemberMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      console.log('Removing member:', { userId, organizationId });
-      
-      const { error } = await supabase
-        .from('organization_users')
-        .delete()
-        .eq('user_id', userId)
-        .eq('organization_id', organizationId);
-
-      if (error) {
-        console.error('Error removing member:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      toast({ 
-        title: "Member removed", 
-        description: "Member has been successfully removed from the organization"
-      });
-      queryClient.invalidateQueries({ queryKey: ['organization-members', organizationId] });
-    },
-    onError: (error: any) => {
-      console.error('Remove member error:', error);
-      toast({ 
-        title: "Error removing member", 
+        title: "Error updating user role", 
         description: error.message || 'An unexpected error occurred', 
         variant: 'destructive' 
       });
@@ -162,22 +128,15 @@ export const useUserManagement = (organizationId: string) => {
     updateRoleMutation.mutate({ userId, newRole });
   };
 
-  const handleRemoveMember = (userId: string) => {
-    removeMemberMutation.mutate(userId);
-  };
-
   const activeMembers = membersData?.filter((member: MemberWithInviter) => 
     member.status === 'active'
   ) || [];
 
   return {
-    members: membersData || [],
     activeMembers,
     membersLoading,
     membersError,
     handleUpdateRole,
-    handleRemoveMember,
     updateRoleMutation,
-    removeMemberMutation,
   };
 };

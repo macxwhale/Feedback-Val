@@ -101,26 +101,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   };
 
   return (
-    <Sidebar className="border-r-0 bg-white dark:bg-gray-950 shadow-lg transition-all duration-300 flex flex-col">
-      <SidebarHeader className="border-b border-gray-100 dark:border-gray-800 px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate font-inter tracking-tight leading-tight" title={organizationName}>
-                {organizationName}
-              </h2>
-              <p className="text-sm text-blue-600 dark:text-blue-400 font-medium font-inter">
-                Dashboard
-              </p>
-            </div>
-          </div>
-        </div>
+    <Sidebar className="border-r bg-gray-50 dark:bg-sidebar-background rounded-xl shadow-sm transition-colors duration-200 flex flex-col">
+      <SidebarHeader className="border-b p-4 bg-white dark:bg-sidebar-background rounded-t-xl">
+        <h2 className="font-bold text-lg truncate" title={organizationName}>
+          {organizationName}
+        </h2>
       </SidebarHeader>
-      
-      <SidebarContent className="flex-1 py-3 bg-gray-50/50 dark:bg-gray-900/50">
+      <SidebarContent className="flex-1">
         <DashboardSidebarMenu
           groupedMenuItems={groupedMenuItems}
           isMobile={isMobile}
@@ -136,15 +123,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <DashboardSidebarQuickStats stats={stats} />
         )}
       </SidebarContent>
-      
-      <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 font-inter font-medium h-11 rounded-xl" 
-          onClick={handleLogout}
-        >
-          <LogOut className="w-4 h-4 mr-3" />
-          Sign out
+      <div className="p-4 border-t border-gray-200 dark:border-sidebar-border">
+        <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+          <LogOut className="w-4 h-4 mr-2" />
+          Log Out
         </Button>
       </div>
     </Sidebar>
