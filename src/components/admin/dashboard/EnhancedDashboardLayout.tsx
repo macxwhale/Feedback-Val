@@ -40,14 +40,16 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <DashboardHeader
-          organizationName={organizationName}
-          organizationId={organizationId}
-          currentPage={activeTab}
-          onNavigate={() => {}}
-        />
-        <main className="px-4 py-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50/50 pb-20">
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
+          <DashboardHeader
+            organizationName={organizationName}
+            organizationId={organizationId}
+            currentPage={activeTab}
+            onNavigate={() => {}}
+          />
+        </div>
+        <main className="px-4 py-6 max-w-7xl mx-auto">
           {children}
         </main>
         <BottomNavigation
@@ -64,7 +66,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
 
   return (
     <SidebarProvider defaultOpen={!isTablet}>
-      <div className="min-h-screen flex w-full bg-gray-50">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 via-white to-gray-50/50">
         <DashboardSidebar
           organizationName={organizationName}
           activeTab={activeTab}
@@ -74,18 +76,22 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
         />
         
         <div className="flex-1 flex flex-col min-w-0">
-          <DashboardHeader
-            organizationName={organizationName}
-            organizationId={organizationId}
-            currentPage={activeTab}
-            onNavigate={() => {}}
-          />
+          <div className="bg-white border-b border-gray-100 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
+            <DashboardHeader
+              organizationName={organizationName}
+              organizationId={organizationId}
+              currentPage={activeTab}
+              onNavigate={() => {}}
+            />
+          </div>
           
           <main className={cn(
-            'flex-1 p-6 overflow-auto',
-            isTablet && 'p-4'
+            'flex-1 p-8 overflow-auto max-w-7xl mx-auto w-full',
+            isTablet && 'p-6'
           )}>
-            {children}
+            <div className="space-y-6">
+              {children}
+            </div>
           </main>
         </div>
       </div>
