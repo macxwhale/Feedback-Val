@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { 
@@ -67,6 +66,17 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
+
+  // Check if we're on an organization route to use modern layout
+  const isOrganizationRoute = location.pathname.includes('/admin/') && 
+                             location.pathname.split('/').length > 2 &&
+                             !location.pathname.includes('/admin/users') &&
+                             !location.pathname.includes('/admin/organizations');
+
+  // If on organization route, let the ModernOrganizationDashboard handle the layout
+  if (isOrganizationRoute) {
+    return <>{children || <Outlet />}</>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
