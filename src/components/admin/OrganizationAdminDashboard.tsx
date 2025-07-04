@@ -4,14 +4,26 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useOrganization } from '@/context/OrganizationContext';
 import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
-import { StatsGrid } from '@/components/dashboard/StatsGrid';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
-import { H1, H2, Body } from '@/components/ui/typography';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 import { getOrganizationStatsEnhanced } from '@/services/organizationQueries';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { OrganizationStats } from '@/types/organizationStats';
 import { Plus, Users, MessageSquare, Activity, Star, TrendingUp } from 'lucide-react';
+
+// Refined Design System Components
+import { 
+  PageTitle, 
+  SectionSubtitle, 
+  MetricCard, 
+  MetricLabel, 
+  MetricValue, 
+  DashboardCard,
+  DashboardGrid,
+  DashboardSection,
+  ActionButton,
+  StatusDot
+} from '@/components/ui/refined-design-system';
 
 // Tab components
 import MembersTab from './dashboard/tabs/MembersTab';
@@ -43,45 +55,50 @@ export const OrganizationAdminDashboard: React.FC = () => {
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsData(organization?.id || '');
 
   if (orgLoading || !organization) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   // Safe type conversion with proper fallbacks
   const typedStats: OrganizationStats | null = stats ? (stats as unknown as OrganizationStats) : null;
 
-  const dashboardStats = [
+  const dashboardMetrics = [
     {
       id: 'members',
-      title: 'Active Members',
+      label: 'Active Members',
       value: typedStats?.active_members ?? 0,
       icon: Users,
-      trend: 'up' as const,
-      trendValue: 12,
-      color: 'blue' as const,
+      trend: { value: 12, isPositive: true },
+      status: 'success' as const,
     },
     {
       id: 'responses',
-      title: 'Total Responses',
+      label: 'Total Responses',
       value: typedStats?.total_responses ?? 0,
-      icon: MessageSquare,  
-      trend: 'up' as const,
-      trendValue: 8,
-      color: 'green' as const,
+      icon: MessageSquare,
+      trend: { value: 8, isPositive: true },
+      status: 'success' as const,
     },
     {
       id: 'sessions',
-      title: 'Active Sessions',
+      label: 'Active Sessions',
       value: typedStats?.total_sessions ?? 0,
       icon: Activity,
-      color: 'purple' as const,
+      status: 'neutral' as const,
     },
     {
       id: 'rating',
-      title: 'Avg Rating',
+      label: 'Avg Rating',
       value: typedStats?.avg_session_score ?? 0,
-      format: 'rating' as const,
       icon: Star,
-      color: 'orange' as const,
+      format: 'rating' as const,
+      status: 'success' as const,
     },
   ];
 
@@ -105,31 +122,58 @@ export const OrganizationAdminDashboard: React.FC = () => {
         return <CustomerInsightsTab organizationId={organization.id} />;
       default:
         return (
-          <div className="space-y-6">
-            <div>
-              <H1 className="mb-2">Analytics Dashboard</H1>
-              <Body>Here's what's happening with {organization.name} today.</Body>
+          <DashboardSection>
+            {/* Header Section */}
+            <div className="mb-8">
+              <PageTitle className="mb-2">Analytics Dashboard</PageTitle>
+              <SectionSubtitle>
+                Here's what's happening with {organization.name} today.
+              </SectionSubtitle>
             </div>
             
-            <StatsGrid
-              stats={dashboardStats}
-              isLoading={statsLoading}
-              columns={4}
-            />
+            {/* Metrics Grid */}
+            <DashboardGrid columns={4}>
+              {dashboardMetrics.map((metric) => (
+                <MetricCard key={metric.id} className="relative overflow-hidden">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <metric.icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    </div>
+                    <StatusDot variant={metric.status} />
+                  </div>
+                  
+                  <MetricLabel>{metric.label}</MetricLabel>
+                  <MetricValue>
+                    {metric.format === 'rating' 
+                      ? `${metric.value}/5.0`
+                      : metric.value.toLocaleString()
+                    }
+                  </MetricValue>
+                  
+                  {metric.trend && (
+                    <div className="flex items-center mt-2 text-xs">
+                      <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
+                      <span className="text-green-600 font-medium">
+                        +{metric.trend.value}%
+                      </span>
+                      <span className="text-gray-500 ml-1">vs last month</span>
+                    </div>
+                  )}
+                </MetricCard>
+              ))}
+            </DashboardGrid>
 
-            {/* Trend Analysis Chart */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <H2 className="mb-4">Trend Analysis</H2>
-              <Body className="text-gray-600 mb-4">Key metrics over the selected period</Body>
+            {/* Charts Section */}
+            <DashboardCard 
+              title="Trend Analysis"
+              subtitle="Key metrics over the selected period"
+            >
               <SessionTrendsChart isLoading={statsLoading} />
-            </div>
+            </DashboardCard>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Analytics Dashboard Table */}
-              <div className="bg-white rounded-lg shadow-sm border">
-                <div className="p-6 border-b">
-                  <H2>Analytics Dashboard</H2>
-                </div>
+            {/* Analytics Section */}
+            <DashboardGrid columns={2}>
+              <DashboardCard title="Analytics Dashboard">
                 <AnalyticsTable 
                   questions={analyticsData?.questions || []}
                   categories={analyticsData?.categories || []}
@@ -142,59 +186,73 @@ export const OrganizationAdminDashboard: React.FC = () => {
                       : 0
                   }}
                 />
-              </div>
+              </DashboardCard>
               
-              {/* Analytics Insights */}
-              <div className="bg-white rounded-lg shadow-sm border">
-                <div className="p-6 border-b">
-                  <H2>Analytics Insights</H2>
-                </div>
-                <div className="p-6">
-                  <AnalyticsInsights 
-                    stats={typedStats ? {
-                      total_questions: typedStats.total_questions,
-                      total_responses: typedStats.total_responses,
-                      total_sessions: typedStats.total_sessions,
-                      completed_sessions: typedStats.completed_sessions,
-                      active_members: typedStats.active_members,
-                      avg_session_score: typedStats.avg_session_score,
-                      growth_metrics: typedStats.growth_metrics || {
-                        sessions_this_month: 0,
-                        sessions_last_month: 0,
-                        growth_rate: null
-                      }
-                    } : undefined}
-                    isLoading={statsLoading}
-                  />
-                </div>
-              </div>
-            </div>
+              <DashboardCard title="Analytics Insights">
+                <AnalyticsInsights 
+                  stats={typedStats ? {
+                    total_questions: typedStats.total_questions,
+                    total_responses: typedStats.total_responses,
+                    total_sessions: typedStats.total_sessions,
+                    completed_sessions: typedStats.completed_sessions,
+                    active_members: typedStats.active_members,
+                    avg_session_score: typedStats.avg_session_score,
+                    growth_metrics: typedStats.growth_metrics || {
+                      sessions_this_month: 0,
+                      sessions_last_month: 0,
+                      growth_rate: null
+                    }
+                  } : undefined}
+                  isLoading={statsLoading}
+                />
+              </DashboardCard>
+            </DashboardGrid>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <H2 className="mb-4">Quick Actions</H2>
+            <DashboardCard title="Quick Actions">
               <div className="space-y-3">
-                <button
+                <ActionButton
                   onClick={() => setActiveTab('members')}
-                  className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  variant="ghost"
+                  className="w-full justify-start p-4 h-auto border border-gray-200 dark:border-gray-700 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-blue-600" />
-                    <span>Invite new members</span>
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        Invite new members
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Add team members to your organization
+                      </div>
+                    </div>
                   </div>
-                </button>
-                <button
+                </ActionButton>
+                
+                <ActionButton
                   onClick={() => setActiveTab('questions')}
-                  className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  variant="ghost"
+                  className="w-full justify-start p-4 h-auto border border-gray-200 dark:border-gray-700 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <MessageSquare className="w-5 h-5 text-green-600" />
-                    <span>Create new question</span>
+                    <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                      <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        Create new question
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Add questions to your feedback forms
+                      </div>
+                    </div>
                   </div>
-                </button>
+                </ActionButton>
               </div>
-            </div>
-          </div>
+            </DashboardCard>
+          </DashboardSection>
         );
     }
   };

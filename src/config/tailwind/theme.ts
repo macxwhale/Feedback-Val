@@ -12,9 +12,8 @@ export const themeConfig = {
   },
   extend: {
     fontFamily: {
-      'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-      'space': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-      'inter': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+      'inter': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
     },
     colors,
     borderRadius: {
@@ -28,6 +27,10 @@ export const themeConfig = {
       'fluid-1': 'radial-gradient(ellipse at top, #FF6B35, transparent)',
       'fluid-2': 'radial-gradient(ellipse at bottom right, #F67280, transparent)',
       'fluid-3': 'radial-gradient(ellipse at center left, #FFC93C, transparent)',
+    },
+    boxShadow: {
+      'refined': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+      'refined-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
     },
     keyframes,
     animation
