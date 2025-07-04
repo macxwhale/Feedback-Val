@@ -1,46 +1,44 @@
-
-import React, { useState, useRef } from 'react';
-import { FeedbackContent } from './feedback/FeedbackContent';
-import { EnhancedFeedbackContainer } from './feedback/EnhancedFeedbackContainer';
+import React, { useEffect, useState } from 'react';
 import { WelcomeScreen } from './feedback/WelcomeScreen';
-import { EnhancedThankYouModal } from './feedback/EnhancedThankYouModal';
 import { EnhancedLoading } from './feedback/EnhancedLoading';
+import { FeedbackContainer } from './feedback/FeedbackContainer';
+import { FeedbackContent } from './feedback/FeedbackContent';
+import { FeedbackModals } from './feedback/FeedbackModals';
 import { FeedbackErrorBoundary } from './feedback/FeedbackErrorBoundary';
 import { useFeedbackForm } from '@/hooks/useFeedbackForm';
-import { PrivacyNotice } from './feedback/PrivacyNotice';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { usePrivacyConsent } from '@/hooks/usePrivacyConsent';
-import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { useSaveContinue } from '@/hooks/useSaveContinue';
 import { useOrganization } from '@/hooks/useOrganization';
 
 export interface QuestionConfig {
   id: string;
+  type: 'star' | 'nps' | 'likert' | 'single-choice' | 'multi-choice' | 'text' | 'emoji' | 'ranking' | 'matrix' | 'slider';
   question: string;
-  type: 'star' | 'nps' | 'likert' | 'text' | 'single-choice' | 'multi-choice' | 'emoji' | 'ranking' | 'matrix' | 'slider';
   required: boolean;
-  category?: string;
+  category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikeliRecommend' | 'DidWeMakeEasy' | 'Comments';
   options?: string[];
   scale?: {
     min: number;
     max: number;
     minLabel?: string;
     maxLabel?: string;
-    step?: number;
   };
 }
 
 export interface FeedbackResponse {
   questionId: string;
   value: any;
-  score?: number;
-  category?: string;
+  score: number;
+  category: string;
 }
 
-const FeedbackForm: React.FC = () => {
-  const { isMobile } = useMobileDetection();
+const FeedbackForm = () => {
   const [showWelcome, setShowWelcome] = useState(true);
-  const { hasConsented, acceptPrivacy } = usePrivacyConsent();
   const { organization, isLoading: orgLoading, error: orgError } = useOrganization();
   
+  console.log('FeedbackForm - Organization state:', { organization, orgLoading, orgError });
+
   const {
     questions,
     currentQuestionIndex,
@@ -58,67 +56,119 @@ const FeedbackForm: React.FC = () => {
     getValidationResult
   } = useFeedbackForm();
 
-  if (isLoading) {
+  const {
+    trackQuestionStart,
+    trackQuestionResponse,
+    getAverageResponseTime,
+    getEstimatedTimeRemaining
+  } = useAnalytics(responses, questions.length, finalResponses);
+
+  const { hasConsented, showPrivacyNotice, acceptPrivacy } = usePrivacyConsent();
+  const { saveProgress, pauseAndExit, hasUnsavedChanges } = useSaveContinue(
+    responses,
+    currentQuestionIndex,
+    completedQuestions
+  );
+
+  useEffect(() => {
+    if (!showWelcome && questions.length > 0) {
+      trackQuestionStart();
+    }
+  }, [currentQuestionIndex, trackQuestionStart, showWelcome, questions.length]);
+
+  const handleQuestionResponse = (questionId: string, value: any) => {
+    handleResponse(questionId, value);
+    trackQuestionResponse();
+  };
+
+  const handleStart = () => {
+    setShowWelcome(false);
+  };
+
+  const handleReset = () => {
+    resetForm();
+    setShowWelcome(true);
+  };
+
+  // Check for error boundary conditions
+  if (orgLoading) {
+    console.log('FeedbackForm - Showing loading state');
     return <EnhancedLoading />;
   }
 
-  if (questionsError) {
+  if (orgError || !organization) {
+    console.log('FeedbackForm - Showing error boundary for org');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <FeedbackErrorBoundary
-          orgLoading={orgLoading}
-          orgError={questionsError}
-          organization={organization}
-        />
-      </div>
-    );
-  }
-
-  if (isComplete) {
-    return (
-      <EnhancedThankYouModal
-        isOpen={isComplete}
-        responses={finalResponses}
-        questions={questions}
-        onReset={resetForm}
-      />
-    );
-  }
-
-  if (showWelcome) {
-    return (
-      <WelcomeScreen
-        onStart={() => setShowWelcome(false)}
-      />
-    );
-  }
-
-  if (!hasConsented) {
-    return <PrivacyNotice isVisible={true} onAccept={acceptPrivacy} />;
-  }
-
-  return (
-    <div>
-      <FeedbackErrorBoundary
+      <FeedbackErrorBoundary 
         orgLoading={orgLoading}
         orgError={orgError}
         organization={organization}
       />
-      <EnhancedFeedbackContainer
+    );
+  }
+
+  if (questionsError) {
+    console.log('FeedbackForm - Showing error boundary for questions');
+    return (
+      <FeedbackErrorBoundary 
+        orgLoading={false}
+        orgError={questionsError}
+        organization={organization}
+      />
+    );
+  }
+
+  if (isLoading) {
+    console.log('FeedbackForm - Questions loading');
+    return <EnhancedLoading />;
+  }
+
+  if (showWelcome) {
+    console.log('FeedbackForm - Showing welcome screen');
+    return <WelcomeScreen onStart={handleStart} />;
+  }
+
+  if (questions.length === 0) {
+    console.log('FeedbackForm - No questions available');
+    return (
+      <FeedbackErrorBoundary 
+        orgLoading={false}
+        orgError="No questions configured for this organization"
+        organization={organization}
+      />
+    );
+  }
+
+  console.log('FeedbackForm - Rendering main content');
+  return (
+    <FeedbackContainer>
+      <FeedbackContent
         questions={questions}
         currentQuestionIndex={currentQuestionIndex}
         responses={responses}
         completedQuestions={completedQuestions}
         hasConsented={hasConsented}
         canGoNext={isCurrentQuestionAnswered()}
-        estimatedTimeRemaining={Math.ceil((questions.length - currentQuestionIndex) * 30 / 60)}
-        averageResponseTime={30}
-        onQuestionResponse={handleResponse}
+        estimatedTimeRemaining={getEstimatedTimeRemaining(currentQuestionIndex)}
+        averageResponseTime={getAverageResponseTime()}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onQuestionResponse={handleQuestionResponse}
         onNext={goToNext}
         onPrevious={goToPrevious}
+        onSaveProgress={saveProgress}
+        onPauseAndExit={pauseAndExit}
         getValidationResult={getValidationResult}
       />
-    </div>
+
+      <FeedbackModals
+        showPrivacyNotice={showPrivacyNotice}
+        isComplete={isComplete}
+        finalResponses={finalResponses}
+        questions={questions}
+        onAcceptPrivacy={acceptPrivacy}
+        onReset={handleReset}
+      />
+    </FeedbackContainer>
   );
 };
 
