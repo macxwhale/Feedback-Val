@@ -8,6 +8,12 @@ interface TypographyProps {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span' | 'div';
 }
 
+interface LabelProps {
+  children: React.ReactNode;
+  className?: string;
+  as?: 'label' | 'span' | 'div';
+}
+
 export const H1: React.FC<TypographyProps> = ({ children, className, as: Component = 'h1' }) => (
   <Component className={cn(
     'scroll-m-20 text-3xl font-semibold tracking-tight lg:text-4xl',
@@ -82,7 +88,7 @@ export const Caption: React.FC<TypographyProps> = ({ children, className, as: Co
   </Component>
 );
 
-export const Label: React.FC<TypographyProps> = ({ children, className, as: Component = 'label' }) => (
+export const Label: React.FC<LabelProps> = ({ children, className, as: Component = 'label' }) => (
   <Component className={cn(
     'text-sm font-medium text-gray-700 dark:text-gray-300',
     'font-inter',
