@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { LandingPage } from '@/components/landing/LandingPage';
+import { EnhancedLandingPage } from '@/components/landing/EnhancedLandingPage';
 
 const Landing = () => {
-  return <LandingPage />;
+  return <EnhancedLandingPage />;
 };
 
 export default Landing;

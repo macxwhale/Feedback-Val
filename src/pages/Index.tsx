@@ -1,8 +1,8 @@
 
-import FeedbackForm from "@/components/FeedbackForm";
+import { EnhancedFeedbackForm } from "@/components/feedback/EnhancedFeedbackForm";
 
 const Index = () => {
-  return <FeedbackForm />;
+  return <EnhancedFeedbackForm />;
 };
 
 export default Index;
