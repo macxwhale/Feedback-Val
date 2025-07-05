@@ -6,6 +6,13 @@ export { spacing, componentSpacing } from './spacing';
 export { shadows } from './shadows';
 export { borderRadius } from './borderRadius';
 
+// Import for internal use
+import { designSystemColors, semanticColors } from './colors';
+import { typography } from './typography';
+import { spacing } from './spacing';
+import { shadows } from './shadows';
+import { borderRadius } from './borderRadius';
+
 // Combined theme object for easy consumption
 export const designSystem = {
   colors: designSystemColors,
