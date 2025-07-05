@@ -20,7 +20,6 @@ import {
   Brain,
   Webhook,
   LogOut,
-  ArrowLeft,
 } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
@@ -51,10 +50,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const handleLogout = async () => {
     await signOut();
     navigate('/auth');
-  };
-
-  const handleBackToOrgs = () => {
-    navigate('/admin');
   };
 
   // Main navigation items with enhanced structure
@@ -121,26 +116,20 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
   return (
     <Sidebar className="border-r-0 bg-white dark:bg-slate-900 shadow-lg">
-      {/* Header with back navigation */}
+      {/* Header with Pulsify branding */}
       <SidebarHeader className="p-0 border-b border-slate-100 dark:border-slate-800">
-        <div className="p-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToOrgs}
-            className="mb-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 -ml-2"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            All organizations
-          </Button>
-          <div>
-            <h1 className="text-lg font-medium text-slate-900 dark:text-slate-100 truncate" title={organizationName}>
-              {organizationName}
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm">P</span>
+            </div>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Pulsify
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Organization Dashboard
-            </p>
           </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Customer Feedback Platform
+          </p>
         </div>
       </SidebarHeader>
 
@@ -159,12 +148,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                         "flex items-center justify-between",
                         "hover:bg-orange-50 dark:hover:bg-orange-950/20",
                         "focus:bg-orange-50 dark:focus:bg-orange-950/20",
-                        "focus:outline-none focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-800",
+                        "focus:outline-none focus:ring-2 focus:ring-orange-200/50 dark:focus:ring-orange-800/50",
                         isActive && [
-                          "bg-orange-100 dark:bg-orange-950/30",
+                          "bg-orange-100/70 dark:bg-orange-950/40",
                           "text-orange-700 dark:text-orange-300",
-                          "shadow-sm",
-                          "border-r-2 border-orange-500"
+                          "shadow-sm shadow-orange-100/50 dark:shadow-orange-900/20",
+                          "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
+                          "before:w-1 before:h-8 before:bg-orange-500 before:rounded-r-full"
                         ]
                       )}
                     >
@@ -209,7 +199,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                               className={cn(
                                 "text-xs px-2 py-0.5 min-w-0 shrink-0",
                                 isActive 
-                                  ? "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200" 
+                                  ? "bg-orange-200/80 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200" 
                                   : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                               )}
                             >
