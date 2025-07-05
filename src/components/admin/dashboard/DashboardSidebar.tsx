@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Sidebar,
@@ -119,7 +118,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       {/* Header with Pulsify branding */}
       <SidebarHeader className="p-0 border-b border-slate-100 dark:border-slate-800">
         <div className="p-6">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-sm">P</span>
             </div>
@@ -127,9 +126,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               Pulsify
             </h1>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Customer Feedback Platform
-          </p>
         </div>
       </SidebarHeader>
 
