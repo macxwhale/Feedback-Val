@@ -83,7 +83,6 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           
           <main className={cn(
             'flex-1 p-8 overflow-auto bg-white dark:bg-slate-900',
-            'border-l border-slate-100 dark:border-slate-800',
             isTablet && 'p-6'
           )}>
             <div className="max-w-7xl mx-auto">
