@@ -1,5 +1,5 @@
 
-import { materialTheme } from '../design-system/theme';
+import { colors } from './colors';
 import { keyframes, animation } from './animations';
 
 export const themeConfig = {
@@ -11,27 +11,25 @@ export const themeConfig = {
     }
   },
   extend: {
-    // Apply our Material Design system
-    ...materialTheme,
-    
-    // Enhanced animations
-    keyframes,
-    animation,
-    
-    // Background patterns for depth
+    fontFamily: {
+      'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      'space': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      'inter': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+    },
+    colors,
+    borderRadius: {
+      lg: 'var(--radius)',
+      md: 'calc(var(--radius) - 2px)',
+      sm: 'calc(var(--radius) - 4px)'
+    },
     backgroundImage: {
-      'gradient-warm': `linear-gradient(135deg, ${materialTheme.colors.primary[500]}, ${materialTheme.colors.accent[400]})`,
-      'gradient-subtle': `linear-gradient(135deg, ${materialTheme.colors.surface}, ${materialTheme.colors['surface-variant']})`,
-      'surface-pattern': 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+      'gradient-warm': 'linear-gradient(135deg, #FF6B35, #F67280, #FFC93C)',
+      'gradient-dark-warm': 'linear-gradient(135deg, #FF6B35, #F67280, #FFC93C)',
+      'fluid-1': 'radial-gradient(ellipse at top, #FF6B35, transparent)',
+      'fluid-2': 'radial-gradient(ellipse at bottom right, #F67280, transparent)',
+      'fluid-3': 'radial-gradient(ellipse at center left, #FFC93C, transparent)',
     },
-    
-    // Material Design backdrop filters
-    backdropBlur: {
-      xs: '2px',
-      sm: '4px',
-      md: '8px',
-      lg: '12px',
-      xl: '16px',
-    },
+    keyframes,
+    animation
   }
 };
