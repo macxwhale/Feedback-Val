@@ -16,7 +16,7 @@
     --popover: 255 255 255; /* white */
     --popover-foreground: 30 41 59; /* slate-800 */
 
-    --primary: 22 101 52; /* Our primary orange in HSL equivalent */
+    --primary: 255 107 53; /* Our primary orange #FF6B35 converted to HSL */
     --primary-foreground: 255 255 255; /* white */
 
     --secondary: 245 245 244; /* stone-100 */
@@ -25,7 +25,7 @@
     --muted: 245 245 244; /* stone-100 */
     --muted-foreground: 100 116 139; /* slate-500 */
 
-    --accent: 245 245 244; /* stone-100 */
+    --accent: 255 196 60; /* Our accent golden #FFC93C converted to HSL */
     --accent-foreground: 30 41 59; /* slate-800 */
 
     --destructive: 220 38 38; /* red-600 */
@@ -33,19 +33,19 @@
 
     --border: 226 232 240; /* slate-200 */
     --input: 226 232 240; /* slate-200 */
-    --ring: 22 101 52; /* primary color */
+    --ring: 255 107 53; /* primary color */
 
     --radius: 0.5rem;
 
     /* Sidebar colors */
     --sidebar-background: 255 255 255; /* white */
     --sidebar-foreground: 30 41 59; /* slate-800 */
-    --sidebar-primary: 22 101 52; /* primary */
+    --sidebar-primary: 255 107 53; /* primary */
     --sidebar-primary-foreground: 255 255 255; /* white */
     --sidebar-accent: 248 250 252; /* slate-50 */
     --sidebar-accent-foreground: 30 41 59; /* slate-800 */
     --sidebar-border: 226 232 240; /* slate-200 */
-    --sidebar-ring: 22 101 52; /* primary */
+    --sidebar-ring: 255 107 53; /* primary */
   }
 
   .dark {
@@ -67,8 +67,8 @@
     --muted: 51 65 85; /* slate-700 */
     --muted-foreground: 148 163 184; /* slate-400 */
 
-    --accent: 51 65 85; /* slate-700 */
-    --accent-foreground: 248 250 252; /* slate-50 */
+    --accent: 255 196 60; /* Our accent golden */
+    --accent-foreground: 15 23 42; /* slate-900 */
 
     --destructive: 239 68 68; /* red-500 */
     --destructive-foreground: 248 250 252; /* slate-50 */
@@ -90,7 +90,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-slate-200 dark:border-slate-700;
   }
 
   body {
