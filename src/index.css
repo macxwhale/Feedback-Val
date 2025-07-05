@@ -1,88 +1,90 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light theme - using our design system colors */
+    --background: 250 250 249; /* stone-50 */
+    --foreground: 30 41 59; /* slate-800 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 255 255 255; /* white */
+    --card-foreground: 30 41 59; /* slate-800 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 255 255 255; /* white */
+    --popover-foreground: 30 41 59; /* slate-800 */
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 22 101 52; /* Our primary orange in HSL equivalent */
+    --primary-foreground: 255 255 255; /* white */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 245 245 244; /* stone-100 */
+    --secondary-foreground: 30 41 59; /* slate-800 */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 245 245 244; /* stone-100 */
+    --muted-foreground: 100 116 139; /* slate-500 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 245 245 244; /* stone-100 */
+    --accent-foreground: 30 41 59; /* slate-800 */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 220 38 38; /* red-600 */
+    --destructive-foreground: 255 255 255; /* white */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 226 232 240; /* slate-200 */
+    --input: 226 232 240; /* slate-200 */
+    --ring: 22 101 52; /* primary color */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 60 17% 98%;
-    --sidebar-foreground: 36 6% 33%;
-    --sidebar-primary: 16 100% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 33 100% 92%;
-    --sidebar-accent-foreground: 18 92% 41%;
-    --sidebar-border: 30 6% 83%;
-    --sidebar-ring: 28 97% 61%;
+    /* Sidebar colors */
+    --sidebar-background: 255 255 255; /* white */
+    --sidebar-foreground: 30 41 59; /* slate-800 */
+    --sidebar-primary: 22 101 52; /* primary */
+    --sidebar-primary-foreground: 255 255 255; /* white */
+    --sidebar-accent: 248 250 252; /* slate-50 */
+    --sidebar-accent-foreground: 30 41 59; /* slate-800 */
+    --sidebar-border: 226 232 240; /* slate-200 */
+    --sidebar-ring: 22 101 52; /* primary */
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
+    --background: 15 23 42; /* slate-900 */
+    --foreground: 248 250 252; /* slate-50 */
 
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
+    --card: 30 41 59; /* slate-800 */
+    --card-foreground: 248 250 252; /* slate-50 */
 
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
+    --popover: 30 41 59; /* slate-800 */
+    --popover-foreground: 248 250 252; /* slate-50 */
 
-    --primary: 47.9 95.8% 53.1%;
-    --primary-foreground: 26 83.3% 14.1%;
+    --primary: 255 107 53; /* Our primary orange */
+    --primary-foreground: 15 23 42; /* slate-900 */
 
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
+    --secondary: 51 65 85; /* slate-700 */
+    --secondary-foreground: 248 250 252; /* slate-50 */
 
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
+    --muted: 51 65 85; /* slate-700 */
+    --muted-foreground: 148 163 184; /* slate-400 */
 
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 60 9.1% 97.8%;
+    --accent: 51 65 85; /* slate-700 */
+    --accent-foreground: 248 250 252; /* slate-50 */
 
-    --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive: 239 68 68; /* red-500 */
+    --destructive-foreground: 248 250 252; /* slate-50 */
 
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 35.5 91.7% 32.9%;
+    --border: 51 65 85; /* slate-700 */
+    --input: 51 65 85; /* slate-700 */
+    --ring: 255 107 53; /* primary orange */
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 15 23 42; /* slate-900 */
+    --sidebar-foreground: 248 250 252; /* slate-50 */
+    --sidebar-primary: 255 107 53; /* primary orange */
+    --sidebar-primary-foreground: 15 23 42; /* slate-900 */
+    --sidebar-accent: 30 41 59; /* slate-800 */
+    --sidebar-accent-foreground: 248 250 252; /* slate-50 */
+    --sidebar-border: 51 65 85; /* slate-700 */
+    --sidebar-ring: 255 107 53; /* primary orange */
   }
 }
 
@@ -93,29 +95,54 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Custom scrollbar */
+  /* Custom scrollbar using our design system */
   ::-webkit-scrollbar {
     width: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-warm-gray-100 dark:bg-dark-warm-200;
+    @apply bg-stone-100 dark:bg-slate-800;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-warm-gray-300 dark:bg-dark-warm-400 rounded-full;
+    @apply bg-stone-300 dark:bg-slate-600 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-warm-gray-400 dark:bg-dark-warm-500;
+    @apply bg-stone-400 dark:bg-slate-500;
   }
 }
 
 /* Smooth theme transitions */
 * {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Material Design inspired typography utilities */
+@layer utilities {
+  .text-display-lg {
+    @apply text-display-lg;
+  }
+  
+  .text-headline-lg {
+    @apply text-headline-lg;
+  }
+  
+  .text-title-lg {
+    @apply text-title-lg;
+  }
+  
+  .text-body-lg {
+    @apply text-body-lg;
+  }
+  
+  .text-label-lg {
+    @apply text-label-lg;
+  }
 }
