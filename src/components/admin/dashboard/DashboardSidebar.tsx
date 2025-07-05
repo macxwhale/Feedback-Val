@@ -5,7 +5,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -13,8 +12,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import {
-  ChevronDown,
-  ChevronRight,
   BarChart3,
   Users,
   MessageSquare,
@@ -23,14 +20,14 @@ import {
   Brain,
   Webhook,
   LogOut,
+  ArrowLeft,
 } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
-import { DashboardSidebarMenu } from './DashboardSidebarMenu';
-import { DashboardSidebarQuickStats } from './DashboardSidebarQuickStats';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface DashboardSidebarProps {
   organizationName: string;
@@ -56,77 +53,189 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     navigate('/auth');
   };
 
-  // For mobile: Store state of which groups are expanded
-  const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({});
+  const handleBackToOrgs = () => {
+    navigate('/admin');
+  };
 
-  // Menu data stays here – ready to pass to <DashboardSidebarMenu />
-  const groupedMenuItems = [
-    {
-      label: "Team & Settings",
-      items: [
-        { id: 'members', label: 'Members', icon: Users, badge: stats?.active_members || 0 },
-        { id: 'integrations', label: 'Integrations', icon: Webhook },
-        { id: 'settings', label: 'Settings', icon: Settings }
-      ]
+  // Main navigation items with enhanced structure
+  const navigationItems = [
+    { 
+      id: 'overview', 
+      label: 'Dashboard', 
+      icon: BarChart3, 
+      badge: stats?.growth_metrics?.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined,
+      description: 'Overview and analytics'
     },
-    {
-      label: "Core Analytics",
-      items: [
-        { id: 'overview', label: 'Analytics', icon: BarChart3, badge: (stats?.growth_metrics?.growth_rate && stats.growth_metrics.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined) }
-      ]
+    { 
+      id: 'members', 
+      label: 'Team Members', 
+      icon: Users, 
+      badge: stats?.active_members || 0,
+      description: 'Manage team access'
     },
-    {
-      label: "Customer Intelligence",
-      items: [
-        { id: 'customer-insights', label: 'Customer Insights', icon: TrendingUp },
-        { id: 'sentiment', label: 'Sentiment Analysis', icon: Brain },
-        { id: 'performance', label: 'Performance', icon: BarChart3 }
-      ]
+    { 
+      id: 'feedback', 
+      label: 'Customer Feedback', 
+      icon: MessageSquare, 
+      badge: stats?.total_responses || 0,
+      description: 'Reviews and responses'
     },
-    {
-      label: "Content Management",
-      items: [
-        { id: 'feedback', label: 'Feedback', icon: MessageSquare, badge: stats?.total_responses || 0 },
-        { id: 'questions', label: 'Questions', icon: MessageSquare, badge: stats?.total_questions || 0 }
-      ]
+    { 
+      id: 'questions', 
+      label: 'Survey Questions', 
+      icon: MessageSquare, 
+      badge: stats?.total_questions || 0,
+      description: 'Question management'
+    },
+    { 
+      id: 'customer-insights', 
+      label: 'Customer Insights', 
+      icon: TrendingUp,
+      description: 'Advanced analytics'
+    },
+    { 
+      id: 'sentiment', 
+      label: 'Sentiment Analysis', 
+      icon: Brain,
+      description: 'AI-powered insights'
+    },
+    { 
+      id: 'performance', 
+      label: 'Performance Metrics', 
+      icon: BarChart3,
+      description: 'System performance'
+    },
+    { 
+      id: 'integrations', 
+      label: 'Integrations', 
+      icon: Webhook,
+      description: 'Third-party connections'
+    },
+    { 
+      id: 'settings', 
+      label: 'Settings', 
+      icon: Settings,
+      description: 'Organization settings'
     }
   ];
 
-  // Handler for toggling group visibility on mobile
-  const toggleGroup = (label: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [label]: !prev[label]
-    }));
-  };
-
   return (
-    <Sidebar className="border-r bg-gray-50 dark:bg-sidebar-background rounded-xl shadow-sm transition-colors duration-200 flex flex-col">
-      <SidebarHeader className="border-b p-4 bg-white dark:bg-sidebar-background rounded-t-xl">
-        <h2 className="font-bold text-lg truncate" title={organizationName}>
-          {organizationName}
-        </h2>
+    <Sidebar className="border-r-0 bg-white dark:bg-slate-900 shadow-lg">
+      {/* Header with back navigation */}
+      <SidebarHeader className="p-0 border-b border-slate-100 dark:border-slate-800">
+        <div className="p-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBackToOrgs}
+            className="mb-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 -ml-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            All organizations
+          </Button>
+          <div>
+            <h1 className="text-lg font-medium text-slate-900 dark:text-slate-100 truncate" title={organizationName}>
+              {organizationName}
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Organization Dashboard
+            </p>
+          </div>
+        </div>
       </SidebarHeader>
-      <SidebarContent className="flex-1">
-        <DashboardSidebarMenu
-          groupedMenuItems={groupedMenuItems}
-          isMobile={isMobile}
-          expandedGroups={expandedGroups}
-          toggleGroup={toggleGroup}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          isLoading={isLoading}
-        />
 
-        {/* Quick Stats */}
-        {stats && !isLoading && (
-          <DashboardSidebarQuickStats stats={stats} />
-        )}
+      <SidebarContent className="p-4">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {navigationItems.map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onTabChange(item.id)}
+                      className={cn(
+                        "w-full h-12 px-3 rounded-lg transition-all duration-200 group relative",
+                        "flex items-center justify-between",
+                        "hover:bg-orange-50 dark:hover:bg-orange-950/20",
+                        "focus:bg-orange-50 dark:focus:bg-orange-950/20",
+                        "focus:outline-none focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-800",
+                        isActive && [
+                          "bg-orange-100 dark:bg-orange-950/30",
+                          "text-orange-700 dark:text-orange-300",
+                          "shadow-sm",
+                          "border-r-2 border-orange-500"
+                        ]
+                      )}
+                    >
+                      <div className="flex items-center min-w-0 flex-1">
+                        <item.icon 
+                          className={cn(
+                            "w-5 h-5 mr-3 shrink-0 transition-colors",
+                            isActive 
+                              ? "text-orange-600 dark:text-orange-400" 
+                              : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                          )} 
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className={cn(
+                            "text-sm font-medium truncate",
+                            isActive 
+                              ? "text-orange-700 dark:text-orange-300" 
+                              : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100"
+                          )}>
+                            {item.label}
+                          </div>
+                          {!isMobile && (
+                            <div className={cn(
+                              "text-xs truncate mt-0.5",
+                              isActive 
+                                ? "text-orange-600/80 dark:text-orange-400/80" 
+                                : "text-slate-500 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400"
+                            )}>
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center ml-2">
+                        {isLoading ? (
+                          <EnhancedLoadingSpinner size="sm" text="" className="w-4 h-4" />
+                        ) : (
+                          item.badge && (
+                            <Badge 
+                              variant="secondary" 
+                              className={cn(
+                                "text-xs px-2 py-0.5 min-w-0 shrink-0",
+                                isActive 
+                                  ? "bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200" 
+                                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                              )}
+                            >
+                              {item.badge}
+                            </Badge>
+                          )
+                        )}
+                      </div>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
-      <div className="p-4 border-t border-gray-200 dark:border-sidebar-border">
-        <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-          <LogOut className="w-4 h-4 mr-2" />
-          Log Out
+
+      {/* Footer with logout */}
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start h-10 text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-3" />
+          Sign out
         </Button>
       </div>
     </Sidebar>

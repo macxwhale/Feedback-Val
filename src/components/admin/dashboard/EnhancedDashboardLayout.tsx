@@ -40,7 +40,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
         <DashboardHeader
           organizationName={organizationName}
           organizationId={organizationId}
@@ -64,7 +64,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
 
   return (
     <SidebarProvider defaultOpen={!isTablet}>
-      <div className="min-h-screen flex w-full bg-gray-50">
+      <div className="min-h-screen flex w-full bg-slate-50 dark:bg-slate-900">
         <DashboardSidebar
           organizationName={organizationName}
           activeTab={activeTab}
@@ -82,10 +82,13 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           />
           
           <main className={cn(
-            'flex-1 p-6 overflow-auto',
-            isTablet && 'p-4'
+            'flex-1 p-8 overflow-auto bg-white dark:bg-slate-900',
+            'border-l border-slate-100 dark:border-slate-800',
+            isTablet && 'p-6'
           )}>
-            {children}
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </main>
         </div>
       </div>

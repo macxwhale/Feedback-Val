@@ -8,13 +8,13 @@
   :root {
     /* Material Design inspired color system */
     --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
+    --foreground: 215 25% 27%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
+    --card-foreground: 215 25% 27%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --popover-foreground: 215 25% 27%;
 
     /* Primary - Warm Orange */
     --primary: 22 96% 50%;
@@ -24,7 +24,7 @@
     --secondary: 215 16% 47%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 218 11% 65%;
+    --muted: 210 11% 96%;
     --muted-foreground: 215 16% 47%;
 
     --accent: 33 100% 50%;
@@ -40,8 +40,8 @@
     --radius: 0.75rem;
 
     /* Sidebar colors */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5% 26%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 27%;
     --sidebar-primary: 22 96% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 33 100% 96%;
@@ -51,41 +51,41 @@
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 24 9.8% 10%;
-    --card-foreground: 60 9.1% 97.8%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
 
     --primary: 22 96% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 215 25% 27%;
-    --secondary-foreground: 60 9.1% 97.8%;
+    --secondary-foreground: 213 31% 91%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
 
     --accent: 33 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive-foreground: 213 31% 91%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
     --ring: 22 96% 50%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-background: 224 71% 4%;
+    --sidebar-foreground: 213 31% 91%;
     --sidebar-primary: 22 96% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-accent: 216 34% 17%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 216 34% 17%;
     --sidebar-ring: 22 96% 50%;
   }
 }
@@ -96,7 +96,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-slate-800 dark:text-slate-50;
     font-family: 'Inter', system-ui, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
@@ -110,22 +110,22 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-neutral-100 dark:bg-neutral-800;
+    @apply bg-slate-100 dark:bg-slate-800;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-300 dark:bg-neutral-600;
+    @apply bg-slate-300 dark:bg-slate-600;
     border-radius: 4px;
     transition: background-color 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-400 dark:bg-neutral-500;
+    @apply bg-slate-400 dark:bg-slate-500;
   }
 
   ::-webkit-scrollbar-corner {
-    @apply bg-neutral-100 dark:bg-neutral-800;
+    @apply bg-slate-100 dark:bg-slate-800;
   }
 }
 
@@ -142,7 +142,7 @@
 
 /* Smooth theme transitions */
 * {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Material Design elevation classes */
@@ -277,5 +277,29 @@
     font-weight: 500;
     line-height: 1rem;
     letter-spacing: 0.03125em;
+  }
+}
+
+/* Sidebar-specific enhancements */
+@layer components {
+  .sidebar-nav-item {
+    @apply relative transition-all duration-200;
+  }
+  
+  .sidebar-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 3px;
+    height: 0;
+    background: hsl(var(--primary));
+    border-radius: 2px 0 0 2px;
+    transform: translateY(-50%);
+    transition: height 0.2s ease;
+  }
+  
+  .sidebar-nav-item.active::before {
+    height: 70%;
   }
 }
