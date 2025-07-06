@@ -1,9 +1,6 @@
 
 import React, { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { EnhancedLoading } from '@/components/ui/enhanced-loading';
-import { ErrorFallback } from '@/components/ui/error-fallback';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { DashboardDataProvider } from './DashboardDataProvider';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
@@ -54,23 +51,14 @@ export const OptimizedDashboard: React.FC<OptimizedDashboardProps> = ({
   };
 
   return (
-    <PerformanceMonitor>
-      <ErrorBoundary
-        FallbackComponent={ErrorFallback}
-        onError={(error, errorInfo) => {
-          console.error('Dashboard Error:', error, errorInfo);
-        }}
+    <DashboardDataProvider>
+      <ResponsiveContainer
+        maxWidth="full"
+        padding={isMobile ? 'sm' : 'lg'}
+        className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100"
       >
-        <DashboardDataProvider>
-          <ResponsiveContainer
-            maxWidth="full"
-            padding={isMobile ? 'sm' : 'lg'}
-            className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100"
-          >
-            {renderView()}
-          </ResponsiveContainer>
-        </DashboardDataProvider>
-      </ErrorBoundary>
-    </PerformanceMonitor>
+        {renderView()}
+      </ResponsiveContainer>
+    </DashboardDataProvider>
   );
 };

@@ -3,9 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Zap, Clock, AlertTriangle } from 'lucide-react';
-import { performanceCollector } from '@/infrastructure/performance/PerformanceCollector';
-import { MetricsAggregator } from '@/infrastructure/performance/MetricsAggregator';
+import { Activity, Zap, Clock } from 'lucide-react';
 
 interface PerformanceMonitorProps {
   children: React.ReactNode;
@@ -23,15 +21,18 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ children
 
   useEffect(() => {
     const collectMetrics = () => {
-      const snapshot = MetricsAggregator.captureSnapshot();
-      const navigationMetrics = performanceCollector.collectNavigationMetrics();
-      const paintMetrics = performanceCollector.collectPaintMetrics();
+      // Simple performance collection without external dependencies
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const paintEntries = performance.getEntriesByType('paint');
+      
+      const firstPaintEntry = paintEntries.find(entry => entry.name === 'first-paint');
+      const memoryInfo = (performance as any).memory;
 
       setMetrics({
-        memoryUsage: snapshot.memoryUsage?.used || 0,
-        loadTime: navigationMetrics?.totalLoad || 0,
-        firstPaint: paintMetrics['first-paint'] || 0,
-        renderCount: MetricsAggregator.getRecentSnapshots().length
+        memoryUsage: memoryInfo?.usedJSHeapSize || 0,
+        loadTime: navigation?.loadEventEnd - navigation?.loadEventStart || 0,
+        firstPaint: firstPaintEntry?.startTime || 0,
+        renderCount: Math.floor(performance.now() / 1000) // Simple render count approximation
       });
     };
 
@@ -109,8 +110,8 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ children
               </div>
               
               <div className="flex items-center justify-between text-xs pt-2 border-t">
-                <span>Snapshots</span>
-                <span className="font-mono">{metrics.renderCount}</span>
+                <span>Runtime</span>
+                <span className="font-mono">{metrics.renderCount}s</span>
               </div>
             </CardContent>
           </Card>

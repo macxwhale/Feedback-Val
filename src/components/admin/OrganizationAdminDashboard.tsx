@@ -6,8 +6,7 @@ import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-a
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 import { usePerformanceOptimization } from '@/hooks/usePerformanceOptimization';
 import { Plus } from 'lucide-react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { ErrorFallback } from '@/components/ui/error-fallback';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 // Data Provider
 import { DashboardDataProvider, useDashboardData } from './dashboard/DashboardDataProvider';
@@ -141,13 +140,8 @@ const DashboardContent: React.FC = () => {
 
   return (
     <ErrorBoundary
-      FallbackComponent={(props) => (
-        <ErrorFallback 
-          {...props} 
-          title="Dashboard Error"
-          description="There was an error loading the dashboard. Please try refreshing the page."
-        />
-      )}
+      title="Dashboard Error"
+      description="There was an error loading the dashboard. Please try refreshing the page."
     >
       <EnhancedDashboardLayout
         organizationName={organization.name}
