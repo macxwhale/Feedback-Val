@@ -7,6 +7,8 @@ interface UseResponsiveDesignReturn {
   isDesktop: boolean;
   screenWidth: number;
   breakpoint: 'mobile' | 'tablet' | 'desktop';
+  isTouchDevice: boolean;
+  hasHover: boolean;
 }
 
 export const useResponsiveDesign = (): UseResponsiveDesignReturn => {
@@ -33,6 +35,18 @@ export const useResponsiveDesign = (): UseResponsiveDesignReturn => {
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
   const isDesktop = screenWidth >= 1024;
 
+  // Detect touch device
+  const isTouchDevice = typeof window !== 'undefined' && (
+    'ontouchstart' in window || 
+    navigator.maxTouchPoints > 0 ||
+    // @ts-ignore - for older browsers
+    navigator.msMaxTouchPoints > 0
+  );
+
+  // Detect hover capability (typically desktop with mouse)
+  const hasHover = typeof window !== 'undefined' && 
+    window.matchMedia('(hover: hover)').matches;
+
   const getBreakpoint = (): 'mobile' | 'tablet' | 'desktop' => {
     if (isMobile) return 'mobile';
     if (isTablet) return 'tablet';
@@ -44,6 +58,8 @@ export const useResponsiveDesign = (): UseResponsiveDesignReturn => {
     isTablet,
     isDesktop,
     screenWidth,
-    breakpoint: getBreakpoint()
+    breakpoint: getBreakpoint(),
+    isTouchDevice,
+    hasHover
   };
 };
