@@ -20,6 +20,7 @@ export interface StatCard {
   };
   icon?: React.ComponentType<{ className?: string }>;
   description?: string;
+  explanation?: string; // New field for detailed explanations
 }
 
 interface EnhancedStatsGridProps {
@@ -99,7 +100,13 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
           </div>
         )}
         
-        {stat.description && (
+        {stat.explanation && (
+          <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+            {stat.explanation}
+          </p>
+        )}
+        
+        {stat.description && !stat.explanation && (
           <p className="text-xs text-muted-foreground mt-1">
             {stat.description}
           </p>
@@ -117,7 +124,7 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
   className = '' 
 }) => {
   return (
-    <div className={`grid gap-4 md:grid-cols-2 lg:grid-cols-4 ${className}`}>
+    <div className={`grid gap-4 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
       {stats.map((stat) => (
         <StatCardComponent
           key={stat.id}

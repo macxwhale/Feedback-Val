@@ -22,7 +22,7 @@ export const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> =
             <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
               <Zap className="w-6 h-6 text-white" />
             </div>
-            <span>Analytics Command Center</span>
+            <span>Analytics Dashboard</span>
           </H1>
           <Body className="text-gray-600">
             Comprehensive insights and performance metrics for <span className="font-semibold text-orange-600">{organization?.name}</span>
