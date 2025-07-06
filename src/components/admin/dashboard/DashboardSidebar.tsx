@@ -84,6 +84,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           id: 'sentiment', 
           label: 'Sentiment', 
           icon: Brain
+        },
+        { 
+          id: 'performance', 
+          label: 'Performance', 
+          icon: TrendingUp
         }
       ]
     },
@@ -111,11 +116,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           id: 'integrations', 
           label: 'Integrations', 
           icon: Zap
-        },
-        { 
-          id: 'performance', 
-          label: 'Performance', 
-          icon: TrendingUp
         },
         { 
           id: 'settings', 
