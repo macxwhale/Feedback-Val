@@ -1,73 +1,49 @@
 
 import { useState, useEffect } from 'react';
 
-export type BreakpointType = 'mobile' | 'tablet' | 'desktop';
-export type OrientationType = 'portrait' | 'landscape';
-
-interface ResponsiveState {
-  breakpoint: BreakpointType;
-  orientation: OrientationType;
+interface UseResponsiveDesignReturn {
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
   screenWidth: number;
-  screenHeight: number;
-  hasHover: boolean;
-  isTouchDevice: boolean;
+  breakpoint: 'mobile' | 'tablet' | 'desktop';
 }
 
-export const useResponsiveDesign = (): ResponsiveState => {
-  const [state, setState] = useState<ResponsiveState>(() => ({
-    breakpoint: 'desktop',
-    orientation: 'landscape',
-    isMobile: false,
-    isTablet: false,
-    isDesktop: true,
-    screenWidth: 1024,
-    screenHeight: 768,
-    hasHover: true,
-    isTouchDevice: false,
-  }));
+export const useResponsiveDesign = (): UseResponsiveDesignReturn => {
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
 
   useEffect(() => {
-    const updateState = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      let breakpoint: BreakpointType = 'desktop';
-      if (width < 768) breakpoint = 'mobile';
-      else if (width < 1024) breakpoint = 'tablet';
+    if (typeof window === 'undefined') return;
 
-      const orientation: OrientationType = width > height ? 'landscape' : 'portrait';
-      const hasHover = window.matchMedia('(hover: hover)').matches;
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-      setState({
-        breakpoint,
-        orientation,
-        isMobile: breakpoint === 'mobile',
-        isTablet: breakpoint === 'tablet',
-        isDesktop: breakpoint === 'desktop',
-        screenWidth: width,
-        screenHeight: height,
-        hasHover,
-        isTouchDevice,
-      });
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
     };
 
-    updateState();
+    window.addEventListener('resize', handleResize);
     
-    const mediaQuery = window.matchMedia('(orientation: portrait)');
-    const resizeHandler = () => updateState();
-    
-    window.addEventListener('resize', resizeHandler);
-    mediaQuery.addEventListener('change', updateState);
+    // Set initial value
+    handleResize();
 
-    return () => {
-      window.removeEventListener('resize', resizeHandler);
-      mediaQuery.removeEventListener('change', updateState);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return state;
+  const isMobile = screenWidth < 768;
+  const isTablet = screenWidth >= 768 && screenWidth < 1024;
+  const isDesktop = screenWidth >= 1024;
+
+  const getBreakpoint = (): 'mobile' | 'tablet' | 'desktop' => {
+    if (isMobile) return 'mobile';
+    if (isTablet) return 'tablet';
+    return 'desktop';
+  };
+
+  return {
+    isMobile,
+    isTablet,
+    isDesktop,
+    screenWidth,
+    breakpoint: getBreakpoint()
+  };
 };

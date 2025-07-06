@@ -30,18 +30,33 @@ interface DashboardDataProviderProps {
 }
 
 export const DashboardDataProvider: React.FC<DashboardDataProviderProps> = ({ children }) => {
+  console.log('DashboardDataProvider rendering');
+  
   const { organization, loading: orgLoading } = useOrganization();
+  console.log('Organization from context:', { organization, orgLoading });
 
   const { data: stats, isLoading: statsLoading, error } = useQuery({
     queryKey: ['organization-stats', organization?.id],
-    queryFn: () => getOrganizationStatsEnhanced(organization!.id),
+    queryFn: () => {
+      console.log('Fetching stats for organization:', organization?.id);
+      return getOrganizationStatsEnhanced(organization!.id);
+    },
     enabled: !!organization?.id,
   });
+
+  console.log('Stats query result:', { stats, statsLoading, error });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsData(organization?.id || '');
 
   const isLoading = orgLoading || statsLoading || analyticsLoading;
   const typedStats: OrganizationStats | null = stats ? (stats as unknown as OrganizationStats) : null;
+
+  console.log('DashboardDataProvider state:', {
+    organization: organization?.name,
+    hasStats: !!typedStats,
+    isLoading,
+    error: error?.message
+  });
 
   const value: DashboardContextValue = {
     organization,
