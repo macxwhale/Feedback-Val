@@ -28,9 +28,6 @@ export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> =
               <Target className="w-6 h-6 text-blue-600" />
               <span className="text-base font-semibold text-gray-700">Overall Performance Score</span>
             </div>
-            <div className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full font-medium">
-              Good 100%
-            </div>
           </div>
           <div className="text-3xl font-bold text-blue-600 mb-4">
             {Math.round((performanceInsights.avgCompletionRate + (5000 - performanceInsights.avgResponseTime) / 50) / 2)}%
