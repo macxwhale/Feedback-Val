@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,67 +73,67 @@ export const DataSummaryBar: React.FC<DataSummaryBarProps> = ({
   const overallScore = Math.round((metrics.filter(m => m.status === 'good').length / metrics.length) * 100);
 
   return (
-    <Card className="bg-gradient-to-r from-white via-orange-50/40 to-amber-50/30 border-0 shadow-lg ring-1 ring-black/5">
-      <CardContent className="p-6">
+    <Card variant="glass" className="border-0 shadow-xl ring-1 ring-black/5">
+      <CardContent className="p-8">
         {/* Enhanced Header Section */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-sm">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="p-4 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg">
+                <Zap className="w-8 h-8 text-white" />
               </div>
               <div>
-                <div className="flex items-center space-x-3">
-                  <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+                <div className="flex items-center space-x-4">
+                  <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{title}</h3>
                   <div className={cn(
-                    "flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm font-semibold ring-1",
+                    "flex items-center space-x-3 px-4 py-2 rounded-full text-sm font-bold ring-2 shadow-sm",
                     getStatusColor(overallStatus)
                   )}>
                     {getStatusIcon(overallStatus)}
                     <span className="capitalize">{overallStatus}</span>
-                    <span className="text-xs opacity-75">• {overallScore}%</span>
+                    <span className="text-xs opacity-80">• {overallScore}%</span>
                   </div>
                 </div>
                 {lastUpdated && (
-                  <p className="text-sm text-gray-600 mt-1 flex items-center space-x-2">
+                  <p className="text-sm text-gray-600 mt-2 flex items-center space-x-2">
                     <span>{lastUpdated}</span>
-                    <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   </p>
                 )}
               </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <Badge variant="outline" className="text-xs font-medium border-orange-200 text-orange-700 bg-orange-50">
-              <Target className="w-3 h-3 mr-1" />
+          <div className="flex items-center space-x-4">
+            <Badge variant="outline" className="text-sm font-semibold border-orange-200 text-orange-700 bg-orange-50 px-4 py-2">
+              <Target className="w-4 h-4 mr-2" />
               Performance Tracking
             </Badge>
             {onRefresh && (
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={onRefresh}
                 disabled={isRefreshing}
-                className="h-9 px-4 hover:bg-orange-50 hover:border-orange-200"
+                className="h-10 px-6 hover:bg-orange-50 hover:border-orange-200 shadow-sm"
               >
-                <RefreshCw className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
-                <span className="text-sm">Refresh</span>
+                <RefreshCw className={cn("w-5 h-5 mr-2", isRefreshing && "animate-spin")} />
+                <span>Refresh</span>
               </Button>
             )}
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-              <MoreHorizontal className="w-4 h-4" />
+            <Button variant="ghost" size="default" className="h-10 w-10 p-0 hover:bg-gray-100">
+              <MoreHorizontal className="w-5 h-5" />
             </Button>
           </div>
         </div>
         
         {/* Enhanced Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {metrics.map((metric, index) => (
             <div 
               key={index} 
               className={cn(
-                "relative p-5 rounded-xl border ring-1 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group",
+                "relative p-6 rounded-2xl border-2 ring-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group cursor-pointer",
                 getStatusColor(metric.status)
               )}
             >
@@ -198,38 +197,38 @@ export const DataSummaryBar: React.FC<DataSummaryBarProps> = ({
                 </div>
               )}
 
-              {/* Hover overlay for additional context */}
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-amber-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              {/* Enhanced Hover Effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </div>
           ))}
         </div>
 
         {/* Enhanced Summary Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200/60">
+        <div className="mt-10 pt-8 border-t border-gray-200/60">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6 text-sm">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700 font-medium">
+            <div className="flex items-center space-x-8 text-sm">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">
                   {metrics.filter(m => m.status === 'good').length} Excellent
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                <span className="text-gray-700 font-medium">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-amber-500 rounded-full shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">
                   {metrics.filter(m => m.status === 'warning').length} Needs Attention
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-gray-700 font-medium">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">
                   {metrics.filter(m => m.status === 'critical').length} Critical
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="font-medium">Live monitoring active</span>
+            <div className="flex items-center space-x-3 text-sm text-gray-600">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
+              <span className="font-semibold">Live monitoring active</span>
             </div>
           </div>
         </div>

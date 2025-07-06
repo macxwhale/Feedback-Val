@@ -112,20 +112,23 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
   };
 
   return (
-    <Card className={cn(
-      "group hover:shadow-xl transition-all duration-300 border-l-4 hover:-translate-y-1",
-      "bg-white/90 backdrop-blur-sm border-0 shadow-md",
-      getStatusColor(status),
-      className
-    )}>
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
-        <div className="flex items-start space-x-3 flex-1">
-          <div className="p-3 rounded-xl bg-white shadow-sm ring-1 ring-black/10">
-            <Icon className="w-5 h-5 text-orange-600" />
+    <Card 
+      variant="elevated"
+      className={cn(
+        "group hover:shadow-2xl transition-all duration-300 border-l-4 hover:-translate-y-2",
+        "bg-gradient-to-br from-white via-orange-50/30 to-amber-50/20 backdrop-blur-sm",
+        getStatusColor(status),
+        className
+      )}
+    >
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-6">
+        <div className="flex items-start space-x-4 flex-1">
+          <div className="p-4 rounded-2xl bg-white shadow-lg ring-2 ring-black/5">
+            <Icon className="w-6 h-6 text-orange-600" />
           </div>
-          <div className="space-y-2 flex-1">
+          <div className="space-y-3 flex-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-700 tracking-tight">{title}</p>
+              <p className="text-sm font-bold text-gray-700 tracking-tight">{title}</p>
               <div className="flex items-center space-x-2">
                 {getStatusIcon(status)}
                 {onDrillDown && (
@@ -133,34 +136,34 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={onDrillDown}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-2 h-8 w-8 hover:bg-orange-50"
                   >
-                    <ExternalLink className="w-3 h-3 text-gray-500" />
+                    <ExternalLink className="w-4 h-4 text-gray-500" />
                   </Button>
                 )}
               </div>
             </div>
             
-            {/* Primary Value Display */}
-            <div className="flex items-baseline space-x-3">
-              <span className="text-3xl font-bold text-gray-900 tracking-tight">
+            {/* Enhanced Primary Value Display */}
+            <div className="flex items-baseline space-x-4">
+              <span className="text-4xl font-bold text-gray-900 tracking-tight">
                 {typeof value === 'number' ? value.toLocaleString() : value}
               </span>
               {previousValue && (
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-sm text-gray-500 font-medium">
                   from {typeof previousValue === 'number' ? previousValue.toLocaleString() : previousValue}
                 </span>
               )}
             </div>
 
-            {/* Change Indicator */}
+            {/* Enhanced Change Indicator */}
             {change && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <Badge 
                   variant="secondary" 
-                  className={cn("text-xs px-2 py-0.5 font-semibold border", getTrendColor(change.trend))}
+                  className={cn("text-sm px-3 py-1 font-bold border-2 shadow-sm", getTrendColor(change.trend))}
                 >
-                  <span className="flex items-center space-x-1">
+                  <span className="flex items-center space-x-2">
                     {getTrendIcon(change.trend)}
                     <span>
                       {change.trend === 'up' ? '+' : change.trend === 'down' ? '-' : ''}
@@ -168,37 +171,37 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
                     </span>
                   </span>
                 </Badge>
-                <span className="text-xs text-gray-600 font-medium">vs {change.period}</span>
+                <span className="text-sm text-gray-600 font-medium">vs {change.period}</span>
               </div>
             )}
           </div>
         </div>
         
-        {/* Contextual Actions */}
-        <div className="flex items-center space-x-1">
+        {/* Enhanced Contextual Actions */}
+        <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 h-8 w-8 hover:bg-gray-100"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 h-10 w-10 hover:bg-gray-100 rounded-xl"
           >
-            <MoreVertical className="w-4 h-4 text-gray-500" />
+            <MoreVertical className="w-5 h-5 text-gray-500" />
           </Button>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-4">
-        {/* Secondary Metrics Grid */}
+      <CardContent className="pt-0 space-y-6">
+        {/* Enhanced Secondary Metrics Grid */}
         {secondaryMetrics.length > 0 && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             {secondaryMetrics.map((metric, index) => (
-              <div key={index} className="space-y-2 p-3 bg-white/60 rounded-lg border border-gray-100">
+              <div key={index} className="space-y-3 p-4 bg-white/70 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-600">{metric.label}</span>
+                  <span className="text-sm font-semibold text-gray-600">{metric.label}</span>
                   {metric.trend && (
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center space-x-2">
                       {getTrendIcon(metric.trend)}
                       {metric.change && (
-                        <span className={cn("text-xs font-medium", getMetricStatusColor(metric.status || 'good'))}>
+                        <span className={cn("text-sm font-bold", getMetricStatusColor(metric.status || 'good'))}>
                           {metric.change.value > 0 ? '+' : ''}{metric.change.value}%
                         </span>
                       )}
@@ -206,23 +209,23 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
                   )}
                 </div>
                 
-                <div className="flex items-baseline space-x-2">
-                  <span className={cn("text-lg font-bold", getMetricStatusColor(metric.status || 'good'))}>
+                <div className="flex items-baseline space-x-3">
+                  <span className={cn("text-xl font-bold", getMetricStatusColor(metric.status || 'good'))}>
                     {typeof metric.value === 'number' ? metric.value.toLocaleString() : metric.value}
                   </span>
                 </div>
                 
                 {metric.target && typeof metric.value === 'number' && (
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">Target</span>
-                      <span className="font-medium text-gray-700">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500 font-medium">Target</span>
+                      <span className="font-bold text-gray-900">
                         {Math.round((metric.value / metric.target) * 100)}%
                       </span>
                     </div>
                     <Progress 
                       value={(metric.value / metric.target) * 100} 
-                      className="h-1.5"
+                      className="h-2 bg-gray-100"
                     />
                   </div>
                 )}
@@ -231,32 +234,32 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
           </div>
         )}
 
-        {/* Insights Section */}
+        {/* Enhanced Insights Section */}
         {insights.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="space-y-1">
-              <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Insights</h4>
+            <div className="space-y-2">
+              <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Key Insights</h4>
               {insights.map((insight, index) => (
-                <p key={index} className="text-xs text-gray-600 leading-relaxed">
-                  • {insight}
+                <p key={index} className="text-sm text-gray-600 leading-relaxed pl-4 border-l-2 border-orange-200">
+                  {insight}
                 </p>
               ))}
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Enhanced Action Buttons */}
         {(actionLabel || contextualActions.length > 0) && (
-          <div className="pt-2 space-y-2">
+          <div className="pt-4 space-y-3">
             <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {actionLabel && onAction && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onAction}
-                  className="flex-1 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700"
+                  className="flex-1 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 shadow-sm"
                 >
                   {actionLabel}
                 </Button>
@@ -267,9 +270,9 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={action.onClick}
-                  className="text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-50"
                 >
-                  {action.icon && <action.icon className="w-3 h-3 mr-1" />}
+                  {action.icon && <action.icon className="w-4 h-4 mr-2" />}
                   {action.label}
                 </Button>
               ))}

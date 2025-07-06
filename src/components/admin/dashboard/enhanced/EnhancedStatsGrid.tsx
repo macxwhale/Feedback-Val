@@ -1,3 +1,4 @@
+
 /**
  * Enhanced Stats Grid Component
  * Optimized statistics display with proper memoization
