@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Sidebar,
@@ -52,35 +51,35 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     navigate('/auth');
   };
 
-  // Main navigation items with Material Design structure
+  // Main navigation items with enhanced structure
   const navigationItems = [
     { 
       id: 'overview', 
       label: 'Dashboard', 
       icon: BarChart3, 
       badge: stats?.growth_metrics?.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined,
-      description: 'Analytics overview'
+      description: 'Overview and analytics'
     },
     { 
       id: 'members', 
       label: 'Team Members', 
       icon: Users, 
       badge: stats?.active_members || 0,
-      description: 'User management'
+      description: 'Manage team access'
     },
     { 
       id: 'feedback', 
       label: 'Customer Feedback', 
       icon: MessageSquare, 
       badge: stats?.total_responses || 0,
-      description: 'Review responses'
+      description: 'Reviews and responses'
     },
     { 
       id: 'questions', 
       label: 'Survey Questions', 
       icon: MessageSquare, 
       badge: stats?.total_questions || 0,
-      description: 'Manage surveys'
+      description: 'Question management'
     },
     { 
       id: 'customer-insights', 
@@ -92,7 +91,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       id: 'sentiment', 
       label: 'Sentiment Analysis', 
       icon: Brain,
-      description: 'AI insights'
+      description: 'AI-powered insights'
     },
     { 
       id: 'performance', 
@@ -104,39 +103,33 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       id: 'integrations', 
       label: 'Integrations', 
       icon: Webhook,
-      description: 'Connected services'
+      description: 'Third-party connections'
     },
     { 
       id: 'settings', 
       label: 'Settings', 
       icon: Settings,
-      description: 'Configuration'
+      description: 'Organization settings'
     }
   ];
 
   return (
-    <Sidebar className="border-r-0 bg-surface elevation-1">
-      {/* Material Design header */}
-      <SidebarHeader className="p-0 border-b border-outline-variant">
+    <Sidebar className="border-r-0 bg-white dark:bg-slate-900 shadow-lg">
+      {/* Header with Pulsify branding */}
+      <SidebarHeader className="p-0 border-b border-slate-100 dark:border-slate-800">
         <div className="p-6">
           <div className="flex items-center gap-3">
-            {/* Google-style app icon */}
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center elevation-2">
-              <span className="text-white font-medium text-lg">P</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm">P</span>
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-title-large text-on-surface font-medium">
-                Pulsify
-              </h1>
-              <p className="text-body-small text-on-surface-variant">
-                Analytics Console
-              </p>
-            </div>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Pulsify
+            </h1>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-2">
+      <SidebarContent className="p-4">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
@@ -147,42 +140,44 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                     <SidebarMenuButton
                       onClick={() => onTabChange(item.id)}
                       className={cn(
-                        "material-nav-item w-full h-14 px-4 rounded-full transition-all duration-200 group relative",
-                        "flex items-center justify-start",
-                        "hover:bg-primary/8 hover:text-primary",
-                        "focus:bg-primary/12 focus:text-primary",
-                        "focus:outline-none",
+                        "w-full h-12 px-3 rounded-lg transition-all duration-200 group relative",
+                        "flex items-center justify-between",
+                        "hover:bg-orange-50 dark:hover:bg-orange-950/20",
+                        "focus:bg-orange-50 dark:focus:bg-orange-950/20",
+                        "focus:outline-none focus:ring-2 focus:ring-orange-200/50 dark:focus:ring-orange-800/50",
                         isActive && [
-                          "bg-primary/12 text-primary",
-                          "shadow-sm",
-                          "active"
+                          "bg-orange-100/70 dark:bg-orange-950/40",
+                          "text-orange-700 dark:text-orange-300",
+                          "shadow-sm shadow-orange-100/50 dark:shadow-orange-900/20",
+                          "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
+                          "before:w-1 before:h-8 before:bg-orange-500 before:rounded-r-full"
                         ]
                       )}
                     >
                       <div className="flex items-center min-w-0 flex-1">
-                        <div className={cn(
-                          "w-6 h-6 mr-4 shrink-0 transition-colors flex items-center justify-center",
-                          isActive 
-                            ? "text-primary" 
-                            : "text-on-surface-variant group-hover:text-primary"
-                        )}>
-                          <item.icon className="w-5 h-5" />
-                        </div>
+                        <item.icon 
+                          className={cn(
+                            "w-5 h-5 mr-3 shrink-0 transition-colors",
+                            isActive 
+                              ? "text-orange-600 dark:text-orange-400" 
+                              : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                          )} 
+                        />
                         <div className="min-w-0 flex-1">
                           <div className={cn(
-                            "text-label-large truncate",
+                            "text-sm font-medium truncate",
                             isActive 
-                              ? "text-primary font-medium" 
-                              : "text-on-surface group-hover:text-primary"
+                              ? "text-orange-700 dark:text-orange-300" 
+                              : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100"
                           )}>
                             {item.label}
                           </div>
                           {!isMobile && (
                             <div className={cn(
-                              "text-body-small truncate mt-0.5",
+                              "text-xs truncate mt-0.5",
                               isActive 
-                                ? "text-primary/80" 
-                                : "text-on-surface-variant group-hover:text-primary/80"
+                                ? "text-orange-600/80 dark:text-orange-400/80" 
+                                : "text-slate-500 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400"
                             )}>
                               {item.description}
                             </div>
@@ -190,7 +185,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                         </div>
                       </div>
                       
-                      <div className="flex items-center ml-3">
+                      <div className="flex items-center ml-2">
                         {isLoading ? (
                           <EnhancedLoadingSpinner size="sm" text="" className="w-4 h-4" />
                         ) : (
@@ -198,10 +193,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                             <Badge 
                               variant="secondary" 
                               className={cn(
-                                "text-label-small px-2 py-0.5 min-w-0 shrink-0 rounded-full",
+                                "text-xs px-2 py-0.5 min-w-0 shrink-0",
                                 isActive 
-                                  ? "bg-primary/20 text-primary border-primary/20" 
-                                  : "bg-surface-container text-on-surface-variant border-outline-variant"
+                                  ? "bg-orange-200/80 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200" 
+                                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                               )}
                             >
                               {item.badge}
@@ -218,15 +213,15 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Material Design footer */}
-      <div className="p-4 border-t border-outline-variant mt-auto">
+      {/* Footer with logout */}
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
         <Button 
           variant="ghost" 
-          className="w-full justify-start h-12 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full"
+          className="w-full justify-start h-10 text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
           onClick={handleLogout}
         >
-          <LogOut className="w-5 h-5 mr-4" />
-          <span className="text-label-large">Sign out</span>
+          <LogOut className="w-4 h-4 mr-3" />
+          Sign out
         </Button>
       </div>
     </Sidebar>
