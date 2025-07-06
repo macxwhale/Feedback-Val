@@ -1,3 +1,4 @@
+
 export interface TrendDataPoint {
   date: string;
   total_sessions: number;
