@@ -6,6 +6,7 @@ import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { DashboardHeader } from './DashboardHeader';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 import { ResponsiveLayout, ResponsiveStack } from '@/components/ui/responsive-layout';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { cn } from '@/lib/utils';
 import { BarChart3, Users, MessageSquare, Settings } from 'lucide-react';
 
@@ -88,12 +89,10 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
   // Mobile Layout with enhanced responsiveness
   if (isMobile) {
     return (
-      <ResponsiveLayout
+      <ResponsiveContainer
         className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20"
         padding="none"
         maxWidth="full"
-        skipLink="#main-content"
-        ariaLabel="Dashboard Layout"
       >
         <DashboardHeader
           organizationName={organizationName}
@@ -120,18 +119,16 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           }))}
           organizationSlug={organizationSlug}
         />
-      </ResponsiveLayout>
+      </ResponsiveContainer>
     );
   }
 
   // Desktop/Tablet Layout with improved spacing and content area optimization
   return (
-    <ResponsiveLayout
+    <ResponsiveContainer
       className="min-h-screen"
       padding="none"
       maxWidth="full"
-      skipLink="#main-content"
-      ariaLabel="Dashboard Layout"
     >
       <SidebarProvider 
         defaultOpen={!isTablet}
@@ -179,6 +176,6 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           </ResponsiveStack>
         </ResponsiveStack>
       </SidebarProvider>
-    </ResponsiveLayout>
+    </ResponsiveContainer>
   );
 };

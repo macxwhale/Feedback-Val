@@ -40,7 +40,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   // Get responsive padding based on current breakpoint
   const containerPadding = React.useMemo(() => {
-    if (padding === 'none') return '';
+    if (padding === 'none') return '0';
     
     if (padding === 'auto') {
       return getResponsiveValue(responsiveSpacing.container);
