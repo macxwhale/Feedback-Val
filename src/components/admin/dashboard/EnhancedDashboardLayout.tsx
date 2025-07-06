@@ -9,6 +9,15 @@ import { AccessibilityWrapper } from '@/components/ui/accessibility-wrapper';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { MobileNavigation } from '@/components/ui/mobile-navigation';
 import { cn } from '@/lib/utils';
+import { BarChart3, Users, MessageSquare, Settings } from 'lucide-react';
+
+// Icon mapping for dynamic icon resolution
+const iconMap = {
+  BarChart3,
+  Users,
+  MessageSquare,
+  Settings
+};
 
 interface EnhancedDashboardLayoutProps {
   children: React.ReactNode;
@@ -62,7 +71,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           <BottomNavigation
             items={navigationItems.map(item => ({
               ...item,
-              icon: require('lucide-react')[item.icon],
+              icon: iconMap[item.icon as keyof typeof iconMap] || MessageSquare,
               path: item.path
             }))}
             organizationSlug={organizationSlug}
