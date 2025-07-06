@@ -27,7 +27,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     label: 'Admin',
     description: 'Full access except billing and ownership changes',
     level: 5,
-    permissions: ['manage_users', 'manage_questions', 'view_analytics', 'manage_integrations']
+    permissions: ['manage_users', 'manage_questions', 'view_analytics', 'export_data', 'manage_integrations']
   },
   manager: {
     variant: 'secondary',
@@ -35,7 +35,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     label: 'Manager',
     description: 'Team management and question creation',
     level: 4,
-    permissions: ['manage_questions', 'view_analytics', 'invite_users']
+    permissions: ['manage_questions', 'view_analytics', 'export_data', 'invite_users']
   },
   analyst: {
     variant: 'outline',
@@ -43,7 +43,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     label: 'Analyst',
     description: 'Analytics access and data export',
     level: 3,
-    permissions: ['view_analytics', 'export_data']
+    permissions: ['view_analytics', 'export_data', 'manage_questions']
   },
   member: {
     variant: 'secondary',
@@ -59,7 +59,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     label: 'Viewer',
     description: 'Read-only access to basic analytics',
     level: 1,
-    permissions: ['view_basic_analytics']
+    permissions: ['view_analytics']
   }
 };
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from '@/components/auth/AuthWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Lock, UserX, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   showRequiredRole = true
 }) => {
   const { hasPermission, userRole, isLoading, isAdmin, error } = useRBAC(organizationId);
+  const { isOrgAdmin } = useAuth();
 
   if (isLoading) {
     return (
@@ -54,9 +56,9 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     );
   }
 
-  // Admin bypass
-  if (isAdmin) {
-    console.log('Permission granted via system admin privileges');
+  // Admin bypass - both system admin and org admin should have access
+  if (isAdmin || isOrgAdmin) {
+    console.log('Permission granted via admin privileges');
     return <>{children}</>;
   }
 
@@ -128,8 +130,8 @@ function getRequiredRoleForPermission(permission: string): string {
   const permissionRoleMap: Record<string, string> = {
     'view_analytics': 'viewer',
     'export_data': 'analyst',
-    'manage_questions': 'analyst',
-    'manage_users': 'manager',
+    'manage_questions': 'admin',
+    'manage_users': 'admin',
     'manage_integrations': 'admin',
     'manage_organization': 'admin',
     'manage_billing': 'owner'
