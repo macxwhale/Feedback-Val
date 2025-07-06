@@ -1,4 +1,3 @@
-
 /**
  * Performance Collector
  * Collects various performance metrics from the browser
@@ -15,7 +14,17 @@ export interface PaintMetrics {
   'first-contentful-paint': number;
 }
 
+export interface PerformanceEntry {
+  name: string;
+  startTime: number;
+  duration: number;
+  entryType: string;
+  context?: Record<string, unknown>;
+}
+
 export class PerformanceCollector {
+  private entries: PerformanceEntry[] = [];
+
   collectNavigationMetrics(): NavigationMetrics | null {
     if (typeof window === 'undefined' || !window.performance?.timing) {
       return null;
@@ -50,6 +59,23 @@ export class PerformanceCollector {
     });
 
     return metrics;
+  }
+
+  addEntry(entry: PerformanceEntry): void {
+    this.entries.push(entry);
+    
+    // Keep only the last 1000 entries to prevent memory leaks
+    if (this.entries.length > 1000) {
+      this.entries = this.entries.slice(-1000);
+    }
+  }
+
+  getEntries(): PerformanceEntry[] {
+    return [...this.entries];
+  }
+
+  clearEntries(): void {
+    this.entries = [];
   }
 
   private getFirstContentfulPaint(): number {

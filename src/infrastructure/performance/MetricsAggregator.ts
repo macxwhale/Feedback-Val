@@ -1,3 +1,4 @@
+
 /**
  * Metrics Aggregator
  * Aggregates and stores performance metrics
@@ -12,6 +13,20 @@ export interface PerformanceSnapshot {
   };
   renderTime: number;
   componentCount: number;
+}
+
+export interface MetricsSummary {
+  averages: Record<string, number>;
+  totals: Record<string, number>;
+  counts: Record<string, number>;
+  percentiles: Record<string, number>;
+}
+
+export interface ComponentMetric {
+  componentName: string;
+  renderTime: number;
+  renderCount: number;
+  lastRender: number;
 }
 
 export class MetricsAggregator {
