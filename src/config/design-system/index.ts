@@ -5,6 +5,19 @@ export { typography } from './typography';
 export { spacing, componentSpacing } from './spacing';
 export { shadows } from './shadows';
 export { borderRadius } from './borderRadius';
+export { 
+  breakpoints, 
+  responsiveSpacing, 
+  layoutDensity, 
+  touchTargets,
+  responsiveTypography,
+  responsiveAnimations,
+  accessibilityFeatures,
+  responsiveUtils,
+  type Breakpoint,
+  type LayoutDensity,
+  type TouchTarget
+} from './responsive';
 
 // Import for internal use
 import { designSystemColors, semanticColors } from './colors';

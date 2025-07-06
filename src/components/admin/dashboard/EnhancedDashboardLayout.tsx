@@ -5,9 +5,7 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { DashboardHeader } from './DashboardHeader';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
-import { AccessibilityWrapper } from '@/components/ui/accessibility-wrapper';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
-import { MobileNavigation } from '@/components/ui/mobile-navigation';
+import { ResponsiveLayout, ResponsiveStack } from '@/components/ui/responsive-layout';
 import { cn } from '@/lib/utils';
 import { BarChart3, Users, MessageSquare, Settings } from 'lucide-react';
 
@@ -40,52 +38,118 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
   stats,
   isLoading = false
 }) => {
-  const { isMobile, isTablet, screenWidth } = useResponsiveDesign();
+  const { 
+    isMobile, 
+    isTablet, 
+    screenWidth, 
+    shouldUseCompactLayout,
+    prefersReducedMotion,
+    currentBreakpoint
+  } = useResponsiveDesign();
 
+  // Navigation items with enhanced responsive behavior
   const navigationItems = [
-    { id: 'overview', label: 'Analytics', icon: 'BarChart3', path: '', badge: stats?.growth_rate > 0 ? `+${stats.growth_rate}%` : undefined },
-    { id: 'members', label: 'Members', icon: 'Users', path: '/members', badge: stats?.active_members },
-    { id: 'feedback', label: 'Feedback', icon: 'MessageSquare', path: '/feedback', badge: stats?.total_responses },
-    { id: 'questions', label: 'Questions', icon: 'MessageSquare', path: '/questions', badge: stats?.total_questions },
-    { id: 'settings', label: 'Settings', icon: 'Settings', path: '/settings' }
+    { 
+      id: 'overview', 
+      label: shouldUseCompactLayout ? 'Analytics' : 'Dashboard Analytics', 
+      icon: 'BarChart3', 
+      path: '', 
+      badge: stats?.growth_rate > 0 ? `+${stats.growth_rate}%` : undefined 
+    },
+    { 
+      id: 'members', 
+      label: shouldUseCompactLayout ? 'Members' : 'Team Members', 
+      icon: 'Users', 
+      path: '/members', 
+      badge: stats?.active_members 
+    },
+    { 
+      id: 'feedback', 
+      label: shouldUseCompactLayout ? 'Feedback' : 'Customer Feedback', 
+      icon: 'MessageSquare', 
+      path: '/feedback', 
+      badge: stats?.total_responses 
+    },
+    { 
+      id: 'questions', 
+      label: shouldUseCompactLayout ? 'Questions' : 'Survey Questions', 
+      icon: 'MessageSquare', 
+      path: '/questions', 
+      badge: stats?.total_questions 
+    },
+    { 
+      id: 'settings', 
+      label: 'Settings', 
+      icon: 'Settings', 
+      path: '/settings' 
+    }
   ];
 
-  // Mobile Layout
+  // Mobile Layout with enhanced responsiveness
   if (isMobile) {
     return (
-      <AccessibilityWrapper announceChanges landmarks skipLink="#main-content">
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
-          <DashboardHeader
-            organizationName={organizationName}
-            organizationId={organizationId}
-            currentPage={activeTab}
-            onNavigate={() => {}}
-          />
-          
-          <ResponsiveContainer maxWidth="full" padding="sm">
-            <main id="main-content" className="py-4">
-              {children}
-            </main>
-          </ResponsiveContainer>
-          
-          <BottomNavigation
-            items={navigationItems.map(item => ({
-              ...item,
-              icon: iconMap[item.icon as keyof typeof iconMap] || MessageSquare,
-              path: item.path
-            }))}
-            organizationSlug={organizationSlug}
-          />
-        </div>
-      </AccessibilityWrapper>
+      <ResponsiveLayout
+        className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20"
+        padding="none"
+        maxWidth="full"
+        skipLink="#main-content"
+        ariaLabel="Dashboard Layout"
+      >
+        <DashboardHeader
+          organizationName={organizationName}
+          organizationId={organizationId}
+          currentPage={activeTab}
+          onNavigate={() => {}}
+        />
+        
+        <main 
+          id="main-content" 
+          className={cn(
+            'transition-all',
+            !prefersReducedMotion && 'duration-300 ease-out'
+          )}
+        >
+          <ResponsiveLayout 
+            maxWidth="full" 
+            padding="auto"
+            density="compact"
+            touchOptimized
+          >
+            {children}
+          </ResponsiveLayout>
+        </main>
+        
+        <BottomNavigation
+          items={navigationItems.map(item => ({
+            ...item,
+            icon: iconMap[item.icon as keyof typeof iconMap] || MessageSquare,
+            path: item.path
+          }))}
+          organizationSlug={organizationSlug}
+        />
+      </ResponsiveLayout>
     );
   }
 
-  // Desktop/Tablet Layout
+  // Desktop/Tablet Layout with adaptive density
   return (
-    <AccessibilityWrapper announceChanges landmarks skipLink="#main-content">
-      <SidebarProvider defaultOpen={!isTablet}>
-        <div className="min-h-screen flex w-full bg-slate-50 dark:bg-slate-900">
+    <ResponsiveLayout
+      className="min-h-screen"
+      padding="none"
+      maxWidth="full"
+      skipLink="#main-content"
+      ariaLabel="Dashboard Layout"
+    >
+      <SidebarProvider 
+        defaultOpen={!isTablet}
+        className="w-full"
+      >
+        <ResponsiveStack 
+          direction="horizontal"
+          spacing="sm"
+          align="stretch"
+          className="min-h-screen bg-slate-50 dark:bg-slate-900"
+        >
           <DashboardSidebar
             organizationName={organizationName}
             activeTab={activeTab}
@@ -94,7 +158,12 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
             isLoading={isLoading}
           />
           
-          <div className="flex-1 flex flex-col min-w-0">
+          <ResponsiveStack 
+            direction="vertical"
+            spacing="sm"
+            align="stretch"
+            className="flex-1 min-w-0"
+          >
             <DashboardHeader
               organizationName={organizationName}
               organizationId={organizationId}
@@ -105,17 +174,23 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
             <main 
               id="main-content"
               className={cn(
-                'flex-1 overflow-auto bg-white dark:bg-slate-900',
-                isTablet ? 'p-4' : 'p-8'
+                'flex-1 overflow-auto bg-white dark:bg-slate-900 transition-all',
+                !prefersReducedMotion && 'duration-300 ease-out'
               )}
             >
-              <ResponsiveContainer maxWidth="full" className="max-w-7xl">
+              <ResponsiveLayout 
+                maxWidth="full" 
+                className="max-w-7xl"
+                padding="auto"
+                density={currentBreakpoint === 'xl' ? 'spacious' : 'comfortable'}
+                touchOptimized={isTablet}
+              >
                 {children}
-              </ResponsiveContainer>
+              </ResponsiveLayout>
             </main>
-          </div>
-        </div>
+          </ResponsiveStack>
+        </ResponsiveStack>
       </SidebarProvider>
-    </AccessibilityWrapper>
+    </ResponsiveLayout>
   );
 };
