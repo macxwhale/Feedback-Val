@@ -15,14 +15,17 @@ export const themeConfig = {
     }
   },
   extend: {
-    // Typography
-    fontFamily: typography.fontFamily,
+    // Typography - Material Design 3
+    fontFamily: {
+      sans: ['Google Sans', 'Roboto', 'system-ui', 'sans-serif'],
+      mono: ['JetBrains Mono', 'Monaco', 'Cascadia Code', 'monospace'],
+    },
     fontSize: typography.fontSize,
     fontWeight: typography.fontWeight,
     lineHeight: typography.lineHeight,
     letterSpacing: typography.letterSpacing,
 
-    // Colors - Enhanced with our design system
+    // Colors - Material Design 3 System
     colors: {
       // Design System Colors
       ...designSystemColors,
@@ -33,25 +36,20 @@ export const themeConfig = {
       ui: semanticColors.ui,
       data: semanticColors.data,
 
-      // Legacy warm colors (maintained for backward compatibility)
-      'sunset': designSystemColors.primary,
-      'golden': designSystemColors.accent,
-      'coral': {
-        50: '#fdf2f8',
-        100: '#fce7f3',
-        200: '#fbcfe8',
-        300: '#f9a8d4',
-        400: '#F67280', // Primary warm coral
-        500: '#ec4899',
-        600: '#db2777',
-        700: '#be185d',
-        800: '#9d174d',
-        900: '#831843',
-      },
-      'warm-gray': designSystemColors.neutral,
-      'dark-warm': designSystemColors.secondary,
+      // Material Design 3 surface system
+      'surface': 'hsl(var(--surface))',
+      'surface-variant': 'hsl(var(--surface-variant))',
+      'surface-container': 'hsl(var(--surface-container))',
+      'surface-container-high': 'hsl(var(--surface-container-high))',
+      'surface-container-highest': 'hsl(var(--surface-container-highest))',
+      'on-surface': 'hsl(var(--on-surface))',
+      'on-surface-variant': 'hsl(var(--on-surface-variant))',
+      
+      // Outline system
+      'outline': 'hsl(var(--outline))',
+      'outline-variant': 'hsl(var(--outline-variant))',
 
-      // Shadcn UI colors (using our design system)
+      // Shadcn UI colors (using Material Design system)
       border: 'hsl(var(--border))',
       input: 'hsl(var(--input))',
       ring: 'hsl(var(--ring))',
@@ -97,13 +95,21 @@ export const themeConfig = {
       }
     },
 
-    // Spacing
+    // Spacing - Material Design grid
     spacing,
 
-    // Shadows
-    boxShadow: shadows,
+    // Shadows - Material Design elevation
+    boxShadow: {
+      ...shadows,
+      // Material Design 3 specific shadows
+      'elevation-1': '0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
+      'elevation-2': '0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
+      'elevation-3': '0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)',
+      'elevation-4': '0px 2px 3px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)',
+      'elevation-5': '0px 4px 4px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15)',
+    },
 
-    // Border Radius
+    // Border Radius - Material Design
     borderRadius: {
       ...borderRadius,
       lg: 'var(--radius)',
@@ -111,17 +117,30 @@ export const themeConfig = {
       sm: 'calc(var(--radius) - 4px)'
     },
 
-    // Background Images (maintained)
+    // Background Images - Updated for Material Design
     backgroundImage: {
-      'gradient-warm': `linear-gradient(135deg, ${designSystemColors.primary[500]}, ${designSystemColors.accent[400]}, ${designSystemColors.accent[500]})`,
-      'gradient-dark-warm': `linear-gradient(135deg, ${designSystemColors.primary[600]}, ${designSystemColors.accent[500]}, ${designSystemColors.accent[600]})`,
-      'fluid-1': `radial-gradient(ellipse at top, ${designSystemColors.primary[500]}, transparent)`,
-      'fluid-2': `radial-gradient(ellipse at bottom right, ${designSystemColors.accent[400]}, transparent)`,
-      'fluid-3': `radial-gradient(ellipse at center left, ${designSystemColors.accent[500]}, transparent)`,
+      'gradient-primary': `linear-gradient(135deg, ${designSystemColors.primary[500]}, ${designSystemColors.primary[600]})`,
+      'gradient-secondary': `linear-gradient(135deg, ${designSystemColors.secondary[500]}, ${designSystemColors.secondary[600]})`,
+      'gradient-surface': `linear-gradient(135deg, hsl(var(--surface)), hsl(var(--surface-variant)))`,
     },
 
-    // Animations
-    keyframes,
-    animation
+    // Animations - Material Design motion
+    keyframes: {
+      ...keyframes,
+      // Material Design specific animations
+      'material-enter': {
+        '0%': { opacity: '0', transform: 'scale(0.8)' },
+        '100%': { opacity: '1', transform: 'scale(1)' }
+      },
+      'material-exit': {
+        '0%': { opacity: '1', transform: 'scale(1)' },
+        '100%': { opacity: '0', transform: 'scale(0.8)' }
+      }
+    },
+    animation: {
+      ...animation,
+      'material-enter': 'material-enter 0.2s ease-out',
+      'material-exit': 'material-exit 0.2s ease-out'
+    }
   }
 };
