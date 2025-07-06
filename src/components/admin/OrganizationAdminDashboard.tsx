@@ -4,75 +4,167 @@ import { useParams } from 'react-router-dom';
 import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
+import { usePerformanceOptimization } from '@/hooks/usePerformanceOptimization';
 import { Plus } from 'lucide-react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorFallback } from '@/components/ui/error-fallback';
 
 // Data Provider
 import { DashboardDataProvider, useDashboardData } from './dashboard/DashboardDataProvider';
 
-// Content Components
-import { DashboardOverviewContent } from './dashboard/DashboardOverviewContent';
+// Lazy load tab components for better performance
+const DashboardOverviewContent = React.lazy(() => 
+  import('./dashboard/DashboardOverviewContent').then(module => ({ default: module.DashboardOverviewContent }))
+);
 
-// Tab components
-import MembersTab from './dashboard/tabs/MembersTab';
-import { FeedbackTab } from './dashboard/tabs/FeedbackTab';
-import { QuestionsTab } from './dashboard/tabs/QuestionsTab';
-import { SettingsTab } from './dashboard/tabs/SettingsTab';
-import { IntegrationsTab } from './dashboard/tabs/IntegrationsTab';
-import { SentimentTab } from './dashboard/tabs/SentimentTab';
-import { PerformanceTab } from './dashboard/tabs/PerformanceTab';
-import { CustomerInsightsTab } from './dashboard/tabs/CustomerInsightsTab';
+const MembersTab = React.lazy(() => 
+  import('./dashboard/tabs/MembersTab').then(module => ({ default: module.default }))
+);
+
+const FeedbackTab = React.lazy(() => 
+  import('./dashboard/tabs/FeedbackTab').then(module => ({ default: module.FeedbackTab }))
+);
+
+const QuestionsTab = React.lazy(() => 
+  import('./dashboard/tabs/QuestionsTab').then(module => ({ default: module.QuestionsTab }))
+);
+
+const SettingsTab = React.lazy(() => 
+  import('./dashboard/tabs/SettingsTab').then(module => ({ default: module.SettingsTab }))
+);
+
+const IntegrationsTab = React.lazy(() => 
+  import('./dashboard/tabs/IntegrationsTab').then(module => ({ default: module.IntegrationsTab }))
+);
+
+const SentimentTab = React.lazy(() => 
+  import('./dashboard/tabs/SentimentTab').then(module => ({ default: module.SentimentTab }))
+);
+
+const PerformanceTab = React.lazy(() => 
+  import('./dashboard/tabs/PerformanceTab').then(module => ({ default: module.PerformanceTab }))
+);
+
+const CustomerInsightsTab = React.lazy(() => 
+  import('./dashboard/tabs/CustomerInsightsTab').then(module => ({ default: module.CustomerInsightsTab }))
+);
 
 const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
   const { organization, stats, isLoading } = useDashboardData();
+  
+  // Performance optimization
+  const { createDebouncedFunction } = usePerformanceOptimization({
+    enableMemoryCleanup: true,
+    debounceDelay: 250
+  });
+
+  // Debounce tab changes to prevent rapid switching
+  const debouncedSetActiveTab = createDebouncedFunction(setActiveTab);
 
   const renderTabContent = () => {
+    const tabProps = {
+      organizationId: organization?.id || '',
+      organization
+    };
+
     switch (activeTab) {
       case 'members':
-        return <MembersTab organization={organization} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <MembersTab {...tabProps} />
+          </React.Suspense>
+        );
       case 'feedback':
-        return <FeedbackTab organizationId={organization.id} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <FeedbackTab organizationId={tabProps.organizationId} />
+          </React.Suspense>
+        );
       case 'questions':
-        return <QuestionsTab />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <QuestionsTab />
+          </React.Suspense>
+        );
       case 'settings':
-        return <SettingsTab organization={organization} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <SettingsTab {...tabProps} />
+          </React.Suspense>
+        );
       case 'integrations':
-        return <IntegrationsTab />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <IntegrationsTab />
+          </React.Suspense>
+        );
       case 'sentiment':
-        return <SentimentTab organizationId={organization.id} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <SentimentTab organizationId={tabProps.organizationId} />
+          </React.Suspense>
+        );
       case 'performance':
-        return <PerformanceTab organizationId={organization.id} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <PerformanceTab organizationId={tabProps.organizationId} />
+          </React.Suspense>
+        );
       case 'customer-insights':
-        return <CustomerInsightsTab organizationId={organization.id} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <CustomerInsightsTab organizationId={tabProps.organizationId} />
+          </React.Suspense>
+        );
       default:
-        return <DashboardOverviewContent onTabChange={setActiveTab} />;
+        return (
+          <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+            <DashboardOverviewContent onTabChange={debouncedSetActiveTab} />
+          </React.Suspense>
+        );
     }
   };
 
   if (!organization) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-300 rounded w-48"></div>
+          <div className="h-4 bg-gray-300 rounded w-32"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <>
+    <ErrorBoundary
+      FallbackComponent={(props) => (
+        <ErrorFallback 
+          {...props} 
+          title="Dashboard Error"
+          description="There was an error loading the dashboard. Please try refreshing the page."
+        />
+      )}
+    >
       <EnhancedDashboardLayout
         organizationName={organization.name}
         organizationId={organization.id}
         organizationSlug={slug || ''}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={debouncedSetActiveTab}
         stats={stats}
         isLoading={isLoading}
       >
         {renderTabContent()}
       </EnhancedDashboardLayout>
       
-      {/* Floating Action Button for mobile */}
+      {/* Floating Action Button for mobile quick actions */}
       {isMobile && activeTab === 'overview' && (
         <FloatingActionButton
-          onClick={() => setActiveTab('members')}
+          onClick={() => debouncedSetActiveTab('members')}
           extended
         >
           <Plus className="w-5 h-5" />
@@ -81,7 +173,7 @@ const DashboardContent: React.FC = () => {
       )}
       
       <ScrollToTopFAB />
-    </>
+    </ErrorBoundary>
   );
 };
 

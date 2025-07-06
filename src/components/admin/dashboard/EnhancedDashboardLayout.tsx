@@ -5,6 +5,9 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { DashboardHeader } from './DashboardHeader';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
+import { AccessibilityWrapper } from '@/components/ui/accessibility-wrapper';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { MobileNavigation } from '@/components/ui/mobile-navigation';
 import { cn } from '@/lib/utils';
 
 interface EnhancedDashboardLayoutProps {
@@ -28,7 +31,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
   stats,
   isLoading = false
 }) => {
-  const { isMobile, isTablet } = useResponsiveDesign();
+  const { isMobile, isTablet, screenWidth } = useResponsiveDesign();
 
   const navigationItems = [
     { id: 'overview', label: 'Analytics', icon: 'BarChart3', path: '', badge: stats?.growth_rate > 0 ? `+${stats.growth_rate}%` : undefined },
@@ -38,42 +41,11 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     { id: 'settings', label: 'Settings', icon: 'Settings', path: '/settings' }
   ];
 
+  // Mobile Layout
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
-        <DashboardHeader
-          organizationName={organizationName}
-          organizationId={organizationId}
-          currentPage={activeTab}
-          onNavigate={() => {}}
-        />
-        <main className="px-4 py-6">
-          {children}
-        </main>
-        <BottomNavigation
-          items={navigationItems.map(item => ({
-            ...item,
-            icon: require('lucide-react')[item.icon],
-            path: item.path
-          }))}
-          organizationSlug={organizationSlug}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <SidebarProvider defaultOpen={!isTablet}>
-      <div className="min-h-screen flex w-full bg-slate-50 dark:bg-slate-900">
-        <DashboardSidebar
-          organizationName={organizationName}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          stats={stats}
-          isLoading={isLoading}
-        />
-        
-        <div className="flex-1 flex flex-col min-w-0">
+      <AccessibilityWrapper announceChanges landmarks skipLink="#main-content">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
           <DashboardHeader
             organizationName={organizationName}
             organizationId={organizationId}
@@ -81,16 +53,60 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
             onNavigate={() => {}}
           />
           
-          <main className={cn(
-            'flex-1 p-8 overflow-auto bg-white dark:bg-slate-900',
-            isTablet && 'p-6'
-          )}>
-            <div className="max-w-7xl mx-auto">
+          <ResponsiveContainer maxWidth="full" padding="sm">
+            <main id="main-content" className="py-4">
               {children}
-            </div>
-          </main>
+            </main>
+          </ResponsiveContainer>
+          
+          <BottomNavigation
+            items={navigationItems.map(item => ({
+              ...item,
+              icon: require('lucide-react')[item.icon],
+              path: item.path
+            }))}
+            organizationSlug={organizationSlug}
+          />
         </div>
-      </div>
-    </SidebarProvider>
+      </AccessibilityWrapper>
+    );
+  }
+
+  // Desktop/Tablet Layout
+  return (
+    <AccessibilityWrapper announceChanges landmarks skipLink="#main-content">
+      <SidebarProvider defaultOpen={!isTablet}>
+        <div className="min-h-screen flex w-full bg-slate-50 dark:bg-slate-900">
+          <DashboardSidebar
+            organizationName={organizationName}
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            stats={stats}
+            isLoading={isLoading}
+          />
+          
+          <div className="flex-1 flex flex-col min-w-0">
+            <DashboardHeader
+              organizationName={organizationName}
+              organizationId={organizationId}
+              currentPage={activeTab}
+              onNavigate={() => {}}
+            />
+            
+            <main 
+              id="main-content"
+              className={cn(
+                'flex-1 overflow-auto bg-white dark:bg-slate-900',
+                isTablet ? 'p-4' : 'p-8'
+              )}
+            >
+              <ResponsiveContainer maxWidth="full" className="max-w-7xl">
+                {children}
+              </ResponsiveContainer>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    </AccessibilityWrapper>
   );
 };
