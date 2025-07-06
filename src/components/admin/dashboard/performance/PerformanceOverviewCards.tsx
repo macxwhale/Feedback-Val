@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Target, CheckCircle } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { getResponseTimeColor, getCompletionColor } from './performanceUtils';
 
 interface PerformanceOverviewCardsProps {
@@ -20,7 +20,7 @@ export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> =
   totalQuestions
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+    <div className="grid grid-cols-1 max-w-2xl mx-auto">
       <Card className="hover:shadow-lg transition-shadow duration-200">
         <CardContent className="p-8">
           <div className="flex items-center justify-between mb-6">
@@ -34,23 +34,6 @@ export const PerformanceOverviewCards: React.FC<PerformanceOverviewCardsProps> =
           </div>
           <div className="text-sm text-gray-500 leading-relaxed">
             Composite score measuring response speed, completion rates, and user engagement across all feedback sessions.
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="hover:shadow-lg transition-shadow duration-200">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-              <span className="text-base font-semibold text-gray-700">User Satisfaction</span>
-            </div>
-          </div>
-          <div className={`text-3xl font-bold mb-4 ${getCompletionColor(performanceInsights.avgCompletionRate)}`}>
-            {Math.round(performanceInsights.avgCompletionRate)}%
-          </div>
-          <div className="text-sm text-gray-500 leading-relaxed">
-            Measures user completion rates and engagement quality, indicating how satisfied users are with the feedback experience.
           </div>
         </CardContent>
       </Card>

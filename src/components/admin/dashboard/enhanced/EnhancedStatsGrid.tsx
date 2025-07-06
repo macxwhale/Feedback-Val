@@ -32,6 +32,12 @@ interface EnhancedStatsGridProps {
 const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, isLoading }) => {
   const Icon = stat.icon;
   
+  // Filter out unwanted cards
+  const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate'];
+  if (excludedCards.includes(stat.id)) {
+    return null;
+  }
+  
   const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
     switch (trend) {
       case 'up':
@@ -123,9 +129,15 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
   isLoading = false, 
   className = '' 
 }) => {
+  // Filter out excluded cards at grid level too
+  const filteredStats = stats.filter(stat => {
+    const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate'];
+    return !excludedCards.includes(stat.id);
+  });
+
   return (
-    <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${className}`}>
-      {stats.map((stat) => (
+    <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
+      {filteredStats.map((stat) => (
         <StatCardComponent
           key={stat.id}
           stat={stat}

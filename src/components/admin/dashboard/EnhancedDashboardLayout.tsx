@@ -47,7 +47,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     currentBreakpoint
   } = useResponsiveDesign();
 
-  // Navigation items with enhanced responsive behavior
+  // Navigation items with performance tab removed
   const navigationItems = [
     { 
       id: 'overview', 
@@ -124,7 +124,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     );
   }
 
-  // Desktop/Tablet Layout with improved spacing
+  // Desktop/Tablet Layout with improved spacing and content area optimization
   return (
     <ResponsiveLayout
       className="min-h-screen"
@@ -139,7 +139,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
       >
         <ResponsiveStack 
           direction="horizontal"
-          spacing="sm"
+          spacing="none"
           align="stretch"
           className="min-h-screen bg-slate-50 dark:bg-slate-900"
         >
@@ -153,9 +153,9 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           
           <ResponsiveStack 
             direction="vertical"
-            spacing="sm"
+            spacing="none"
             align="stretch"
-            className="flex-1 min-w-0 max-w-none"
+            className="flex-1 min-w-0 max-w-none overflow-hidden"
           >
             <DashboardHeader
               organizationName={organizationName}
@@ -172,7 +172,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
                 !prefersReducedMotion && 'duration-300 ease-out'
               )}
             >
-              <div className="max-w-7xl mx-auto w-full">
+              <div className="max-w-7xl mx-auto w-full space-y-6">
                 {children}
               </div>
             </main>

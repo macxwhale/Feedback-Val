@@ -13,8 +13,8 @@ export const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> =
   const { organization } = useDashboardData();
 
   return (
-    <div className="space-y-6">
-      {/* Simplified Header Section */}
+    <div className="space-y-8">
+      {/* Clean Header Section - Removed all badges and buttons */}
       <div className="flex items-center justify-between">
         <div>
           <H1 className="mb-2 flex items-center space-x-3">
@@ -29,7 +29,7 @@ export const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> =
         </div>
       </div>
       
-      {/* Dashboard Overview */}
+      {/* Dashboard Overview - Cards will be filtered in DashboardOverview */}
       <DashboardOverview 
         organizationId={organization?.id || ''} 
         onTabChange={onTabChange} 

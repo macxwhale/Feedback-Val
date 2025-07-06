@@ -46,11 +46,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
       return getResponsiveValue(responsiveSpacing.container);
     }
     
-    // Manual padding values
+    // Manual padding values optimized for dashboard content
     const paddingValues = {
-      sm: { xs: '0.5rem', sm: '0.75rem', md: '1rem', lg: '1.25rem', xl: '1.5rem' },
-      md: { xs: '0.75rem', sm: '1rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' },
-      lg: { xs: '1rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
+      sm: { xs: '1rem', sm: '1rem', md: '1.25rem', lg: '1.5rem', xl: '1.75rem' },
+      md: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '2rem', xl: '2.25rem' },
+      lg: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
     };
     
     return getResponsiveValue(paddingValues[padding]);
@@ -73,8 +73,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           shouldUseCompactLayout && 'space-y-4',
         ],
         
-        // Standard spacing with improved gaps
+        // Improved spacing for dashboard content
         !shouldUseCompactLayout && 'space-y-6',
+        
+        // Ensure content fits properly
+        'min-h-0 overflow-hidden',
         
         className
       )}
