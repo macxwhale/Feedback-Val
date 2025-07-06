@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +6,6 @@ import { Progress } from '@/components/ui/progress';
 import { 
   TrendingUp, 
   TrendingDown, 
-  MoreVertical, 
   ExternalLink, 
   AlertTriangle, 
   CheckCircle,
@@ -16,6 +14,7 @@ import {
   Minus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ContextualActionMenu, createMetricActions } from './ContextualActionMenu';
 
 interface SecondaryMetric {
   label: string;
@@ -111,6 +110,13 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
     }
   };
 
+  // Enhanced contextual actions
+  const metricActions = createMetricActions(
+    () => onDrillDown?.(),
+    () => console.log('Export metric data'),
+    () => console.log('Share metric')
+  );
+
   return (
     <Card 
       variant="elevated"
@@ -177,15 +183,13 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
           </div>
         </div>
         
-        {/* Enhanced Contextual Actions */}
+        {/* Enhanced Contextual Actions Menu */}
         <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 h-10 w-10 hover:bg-gray-100 rounded-xl"
-          >
-            <MoreVertical className="w-5 h-5 text-gray-500" />
-          </Button>
+          <ContextualActionMenu 
+            actions={metricActions}
+            title={`${title} Actions`}
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          />
         </div>
       </CardHeader>
       
@@ -194,19 +198,35 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
         {secondaryMetrics.length > 0 && (
           <div className="grid grid-cols-2 gap-6">
             {secondaryMetrics.map((metric, index) => (
-              <div key={index} className="space-y-3 p-4 bg-white/70 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div key={index} className="space-y-3 p-4 bg-white/70 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group/metric">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-gray-600">{metric.label}</span>
-                  {metric.trend && (
-                    <div className="flex items-center space-x-2">
-                      {getTrendIcon(metric.trend)}
-                      {metric.change && (
-                        <span className={cn("text-sm font-bold", getMetricStatusColor(metric.status || 'good'))}>
-                          {metric.change.value > 0 ? '+' : ''}{metric.change.value}%
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {metric.trend && (
+                      <div className="flex items-center space-x-2">
+                        {getTrendIcon(metric.trend)}
+                        {metric.change && (
+                          <span className={cn("text-sm font-bold", getMetricStatusColor(metric.status || 'good'))}>
+                            {metric.change.value > 0 ? '+' : ''}{metric.change.value}%
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {/* Mini contextual menu for secondary metrics */}
+                    <ContextualActionMenu 
+                      actions={[
+                        {
+                          id: 'view-metric',
+                          label: 'View Details',
+                          icon: ExternalLink,
+                          onClick: () => console.log(`View ${metric.label} details`)
+                        }
+                      ]}
+                      title={`${metric.label} Actions`}
+                      className="opacity-0 group-hover/metric:opacity-100 transition-opacity"
+                      buttonSize="sm"
+                    />
+                  </div>
                 </div>
                 
                 <div className="flex items-baseline space-x-3">

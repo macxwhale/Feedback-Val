@@ -1,13 +1,14 @@
 
 import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { DashboardBreadcrumb } from './DashboardBreadcrumb';
+import { EnhancedNavigationBreadcrumb } from './EnhancedNavigationBreadcrumb';
 import { NotificationDropdown } from './NotificationDropdown';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, User, Search, Plus, Settings, Download } from 'lucide-react';
+import { Bell, User, Search, Plus, Settings, Download, Command } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useOrganization } from '@/context/OrganizationContext';
+import { ContextualActionMenu, createDashboardActions } from './ContextualActionMenu';
 
 interface DashboardHeaderProps {
   organizationName: string;
@@ -29,16 +30,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     switch (currentPage) {
       case 'overview':
         return [
-          { icon: Plus, label: 'Quick Add', variant: 'default' as const },
-          { icon: Download, label: 'Export', variant: 'outline' as const }
+          { label: 'Quick Add', icon: Plus, variant: 'default' as const, onClick: () => console.log('Quick add') },
+          { label: 'Export', icon: Download, variant: 'outline' as const, onClick: () => console.log('Export') }
         ];
       case 'members':
         return [
-          { icon: Plus, label: 'Invite Members', variant: 'default' as const }
+          { label: 'Invite Members', icon: Plus, variant: 'default' as const, onClick: () => console.log('Invite') }
         ];
       case 'feedback':
         return [
-          { icon: Download, label: 'Export Feedback', variant: 'outline' as const }
+          { label: 'Export Feedback', icon: Download, variant: 'outline' as const, onClick: () => console.log('Export feedback') }
         ];
       default:
         return [];
@@ -46,93 +47,106 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   const pageActions = getPageActions();
+  const dashboardActions = createDashboardActions(
+    () => console.log('Refresh dashboard'),
+    () => console.log('Open settings')
+  );
 
   return (
-    <div className="flex items-center justify-between h-16 px-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-      {/* Left section with sidebar trigger and enhanced breadcrumb */}
-      <div className="flex items-center space-x-4">
-        <SidebarTrigger />
-        <div className="hidden md:block">
-          <DashboardBreadcrumb 
-            organizationName={organizationName}
-            currentPage={currentPage}
-          />
+    <div className="flex flex-col space-y-4 p-6 bg-gradient-to-r from-white via-orange-50/30 to-amber-50/20 border-b border-gray-100 shadow-sm backdrop-blur-sm">
+      {/* Top Navigation Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <SidebarTrigger />
+          <div className="hidden md:block">
+            <EnhancedNavigationBreadcrumb 
+              organizationName={organizationName}
+              currentPage={currentPage}
+              lastUpdated="2 min ago"
+              actions={pageActions}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Center section with organization info and status */}
-      <div className="flex-1 flex justify-center items-center">
+        {/* Right section with enhanced user controls */}
         <div className="flex items-center space-x-3">
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {organization?.name || organizationName}
-            </h2>
-            <div className="flex items-center justify-center space-x-2 mt-1">
-              <Badge variant="secondary" className="text-xs">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                Active
-              </Badge>
-              {currentPage === 'overview' && (
-                <Badge variant="outline" className="text-xs">
-                  Last updated: 2 min ago
-                </Badge>
-              )}
+          {/* Global search with keyboard shortcut */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden lg:flex items-center space-x-2 min-w-[200px] justify-start text-gray-500 hover:text-gray-700"
+          >
+            <Search className="w-4 h-4" />
+            <span>Search dashboard...</span>
+            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <Command className="w-3 h-3" />
+              K
+            </kbd>
+          </Button>
+
+          {/* Divider */}
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+
+          {/* Notifications with enhanced indicator */}
+          <div className="relative">
+            <NotificationDropdown organizationId={organizationId} />
+          </div>
+
+          {/* Enhanced user menu with contextual actions */}
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 px-3 py-2 bg-white/70 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-sm">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <div className="hidden sm:block">
+                  <div className="text-sm font-medium text-gray-700">
+                    {user?.email?.split('@')[0] || 'User'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Administrator
+                  </div>
+                </div>
+              </div>
+              <ContextualActionMenu 
+                actions={dashboardActions}
+                title="Dashboard Settings"
+                buttonVariant="ghost"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right section with contextual actions, search, notifications, and user menu */}
-      <div className="flex items-center space-x-2">
-        {/* Contextual Page Actions */}
-        {pageActions.map((action, index) => (
-          <Button
-            key={index}
-            variant={action.variant}
-            size="sm"
-            className="hidden md:flex items-center"
-          >
-            <action.icon className="w-4 h-4 mr-2" />
-            {action.label}
-          </Button>
-        ))}
+      {/* Mobile breadcrumb */}
+      <div className="md:hidden">
+        <EnhancedNavigationBreadcrumb 
+          organizationName={organizationName}
+          currentPage={currentPage}
+          lastUpdated="2 min ago"
+          actions={pageActions}
+        />
+      </div>
 
-        {/* Search Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden lg:flex"
-        >
-          <Search className="w-4 h-4" />
-        </Button>
-
-        {/* Divider */}
-        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2" />
-
-        {/* Notifications with enhanced indicator */}
-        <div className="relative">
-          <NotificationDropdown organizationId={organizationId} />
-        </div>
-
-        {/* User menu with enhanced display */}
-        <div className="flex items-center space-x-2 pl-2">
-          <div className="flex items-center space-x-3 px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {user?.email?.split('@')[0] || 'User'}
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-500">
-                  Administrator
-                </div>
-              </div>
+      {/* Organization Status Bar */}
+      <div className="flex items-center justify-center">
+        <div className="flex items-center space-x-6 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {organization?.name || organizationName}
+            </h2>
+            <div className="flex items-center justify-center space-x-3 mt-1">
+              <Badge variant="secondary" className="text-xs flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Active</span>
+              </Badge>
+              {currentPage === 'overview' && (
+                <Badge variant="outline" className="text-xs">
+                  Live monitoring
+                </Badge>
+              )}
             </div>
-            <Button variant="ghost" size="sm" className="p-1">
-              <Settings className="w-4 h-4 text-slate-500" />
-            </Button>
           </div>
         </div>
       </div>

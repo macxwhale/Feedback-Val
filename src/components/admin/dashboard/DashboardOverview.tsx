@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Activity } from 'lucide-react';
 import { useOrganizationStats } from '@/hooks/useOrganizationStats';
 import { InformationRichDashboard } from './InformationRichDashboard';
-import { QuickActionPanel } from './QuickActionPanel';
+import { SmartQuickActions } from './SmartQuickActions';
 import { DashboardErrorBoundary, DashboardErrorFallback } from './DashboardErrorBoundary';
 
 interface DashboardOverviewProps {
@@ -31,8 +31,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           onTabChange={onTabChange}
         />
 
-        {/* Enhanced Quick Actions Panel with contextual information */}
-        <QuickActionPanel 
+        {/* Enhanced Smart Quick Actions Panel */}
+        <SmartQuickActions 
           onTabChange={onTabChange}
           stats={{
             pending_invitations: 2,
