@@ -39,6 +39,22 @@ const bodyVariants = cva(
   }
 )
 
+const captionVariants = cva(
+  "text-xs text-muted-foreground",
+  {
+    variants: {
+      variant: {
+        default: "text-xs text-muted-foreground",
+        small: "text-xs text-gray-500",
+        muted: "text-xs text-gray-400",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
 export interface HeadingProps
   extends React.HTMLAttributes<HTMLHeadingElement>,
     VariantProps<typeof headingVariants> {}
@@ -46,6 +62,10 @@ export interface HeadingProps
 export interface BodyProps
   extends React.HTMLAttributes<HTMLParagraphElement>,
     VariantProps<typeof bodyVariants> {}
+
+export interface CaptionProps
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof captionVariants> {}
 
 const H1 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
   ({ className, variant = "h1", ...props }, ref) => {
@@ -112,4 +132,17 @@ const Body = React.forwardRef<HTMLParagraphElement, BodyProps>(
 )
 Body.displayName = "Body"
 
-export { H1, H2, H3, H4, Body, headingVariants, bodyVariants }
+const Caption = React.forwardRef<HTMLSpanElement, CaptionProps>(
+  ({ className, variant, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn(captionVariants({ variant, className }))}
+        {...props}
+      />
+    )
+  }
+)
+Caption.displayName = "Caption"
+
+export { H1, H2, H3, H4, Body, Caption, headingVariants, bodyVariants, captionVariants }
