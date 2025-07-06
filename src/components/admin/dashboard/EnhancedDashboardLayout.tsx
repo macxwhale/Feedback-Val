@@ -105,18 +105,11 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
         <main 
           id="main-content" 
           className={cn(
-            'transition-all',
+            'transition-all px-4 py-6',
             !prefersReducedMotion && 'duration-300 ease-out'
           )}
         >
-          <ResponsiveLayout 
-            maxWidth="full" 
-            padding="auto"
-            density="compact"
-            touchOptimized
-          >
-            {children}
-          </ResponsiveLayout>
+          {children}
         </main>
         
         <BottomNavigation
@@ -131,7 +124,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     );
   }
 
-  // Desktop/Tablet Layout with adaptive density
+  // Desktop/Tablet Layout with improved spacing
   return (
     <ResponsiveLayout
       className="min-h-screen"
@@ -162,7 +155,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
             direction="vertical"
             spacing="sm"
             align="stretch"
-            className="flex-1 min-w-0"
+            className="flex-1 min-w-0 max-w-none"
           >
             <DashboardHeader
               organizationName={organizationName}
@@ -175,18 +168,13 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
               id="main-content"
               className={cn(
                 'flex-1 overflow-auto bg-white dark:bg-slate-900 transition-all',
+                'px-6 py-6 max-w-full',
                 !prefersReducedMotion && 'duration-300 ease-out'
               )}
             >
-              <ResponsiveLayout 
-                maxWidth="full" 
-                className="max-w-7xl"
-                padding="auto"
-                density={currentBreakpoint === 'xl' ? 'spacious' : 'comfortable'}
-                touchOptimized={isTablet}
-              >
+              <div className="max-w-7xl mx-auto w-full">
                 {children}
-              </ResponsiveLayout>
+              </div>
             </main>
           </ResponsiveStack>
         </ResponsiveStack>

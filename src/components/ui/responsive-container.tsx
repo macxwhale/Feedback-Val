@@ -16,7 +16,7 @@ interface ResponsiveContainerProps {
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   children,
   className,
-  maxWidth = 'xl',
+  maxWidth = 'full',
   padding = 'auto',
   centerContent = true,
   touchOptimized = false
@@ -69,12 +69,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         
         // Touch optimizations
         effectiveTouchOptimized && [
-          'touch-pan-y touch-pan-x', // Better touch scrolling
-          shouldUseCompactLayout && 'space-y-3', // Tighter spacing on mobile
+          'touch-pan-y touch-pan-x',
+          shouldUseCompactLayout && 'space-y-4',
         ],
         
-        // Standard spacing
-        !shouldUseCompactLayout && 'space-y-4',
+        // Standard spacing with improved gaps
+        !shouldUseCompactLayout && 'space-y-6',
         
         className
       )}

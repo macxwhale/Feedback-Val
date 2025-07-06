@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { H1, Body } from '@/components/ui/typography';
-import { Badge } from '@/components/ui/badge';
-import { Activity, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { DashboardOverview } from './DashboardOverview';
 import { useDashboardData } from './DashboardDataProvider';
 
@@ -15,7 +14,7 @@ export const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> =
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header Section */}
+      {/* Simplified Header Section */}
       <div className="flex items-center justify-between">
         <div>
           <H1 className="mb-2 flex items-center space-x-3">
@@ -28,18 +27,9 @@ export const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> =
             Comprehensive insights and performance metrics for <span className="font-semibold text-orange-600">{organization?.name}</span>
           </Body>
         </div>
-        <div className="flex items-center space-x-3">
-          <Badge variant="outline" className="flex items-center space-x-2 px-3 py-1">
-            <Activity className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium">Real-time Data</span>
-          </Badge>
-          <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            Enhanced Dashboard
-          </Badge>
-        </div>
       </div>
       
-      {/* Information-Rich Dashboard */}
+      {/* Dashboard Overview */}
       <DashboardOverview 
         organizationId={organization?.id || ''} 
         onTabChange={onTabChange} 

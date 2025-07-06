@@ -1,7 +1,7 @@
 
 /**
  * Enhanced Stats Grid Component
- * Optimized statistics display with proper memoization
+ * Optimized statistics display with proper memoization and improved spacing
  */
 
 import React, { memo } from 'react';
@@ -20,7 +20,7 @@ export interface StatCard {
   };
   icon?: React.ComponentType<{ className?: string }>;
   description?: string;
-  explanation?: string; // New field for detailed explanations
+  explanation?: string;
 }
 
 interface EnhancedStatsGridProps {
@@ -56,8 +56,8 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Card className="hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm font-medium">
             <div className="h-4 w-24 bg-muted animate-pulse rounded" />
           </CardTitle>
@@ -65,7 +65,7 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
             <div className="h-4 w-4 bg-muted animate-pulse rounded" />
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <div className="h-8 w-16 bg-muted animate-pulse rounded mb-2" />
           <div className="h-3 w-20 bg-muted animate-pulse rounded" />
         </CardContent>
@@ -74,40 +74,40 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
   }
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {stat.title}
         </CardTitle>
         {Icon && (
-          <Icon className="h-4 w-4 text-muted-foreground" />
+          <Icon className="h-5 w-5 text-muted-foreground" />
         )}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold tracking-tight">
+      <CardContent className="pt-0">
+        <div className="text-3xl font-bold tracking-tight mb-2">
           {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
         </div>
         
         {stat.change && (
-          <div className="flex items-center space-x-1 mt-2">
+          <div className="flex items-center space-x-1 mb-3">
             {getTrendIcon(stat.change.trend)}
-            <span className={`text-xs font-medium ${getTrendColor(stat.change.trend)}`}>
+            <span className={`text-sm font-medium ${getTrendColor(stat.change.trend)}`}>
               {stat.change.value > 0 ? '+' : ''}{stat.change.value}%
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               vs {stat.change.period}
             </span>
           </div>
         )}
         
         {stat.explanation && (
-          <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {stat.explanation}
           </p>
         )}
         
         {stat.description && !stat.explanation && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground">
             {stat.description}
           </p>
         )}
@@ -124,7 +124,7 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
   className = '' 
 }) => {
   return (
-    <div className={`grid gap-4 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
+    <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${className}`}>
       {stats.map((stat) => (
         <StatCardComponent
           key={stat.id}
