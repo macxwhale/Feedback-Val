@@ -4,6 +4,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -11,13 +12,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import {
-  BarChart3,
+  LayoutDashboard,
   Users,
   MessageSquare,
-  Settings,
+  HelpCircle,
   TrendingUp,
   Brain,
-  Webhook,
+  Zap,
+  Settings,
   LogOut,
 } from 'lucide-react';
 import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
@@ -51,65 +53,76 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     navigate('/auth');
   };
 
-  // Main navigation items with enhanced structure
-  const navigationItems = [
-    { 
-      id: 'overview', 
-      label: 'Dashboard', 
-      icon: BarChart3, 
-      badge: stats?.growth_metrics?.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined,
-      description: 'Overview and analytics'
+  // Organized navigation with logical grouping and consistent labeling
+  const navigationGroups = [
+    {
+      label: 'Overview',
+      items: [
+        { 
+          id: 'overview', 
+          label: 'Dashboard', 
+          icon: LayoutDashboard, 
+          badge: stats?.growth_metrics?.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined
+        }
+      ]
     },
-    { 
-      id: 'members', 
-      label: 'Team Members', 
-      icon: Users, 
-      badge: stats?.active_members || 0,
-      description: 'Manage team access'
+    {
+      label: 'Analytics',
+      items: [
+        { 
+          id: 'feedback', 
+          label: 'Feedback', 
+          icon: MessageSquare, 
+          badge: stats?.total_responses || 0
+        },
+        { 
+          id: 'customer-insights', 
+          label: 'Insights', 
+          icon: TrendingUp
+        },
+        { 
+          id: 'sentiment', 
+          label: 'Sentiment', 
+          icon: Brain
+        }
+      ]
     },
-    { 
-      id: 'feedback', 
-      label: 'Customer Feedback', 
-      icon: MessageSquare, 
-      badge: stats?.total_responses || 0,
-      description: 'Reviews and responses'
+    {
+      label: 'Management',
+      items: [
+        { 
+          id: 'questions', 
+          label: 'Questions', 
+          icon: HelpCircle, 
+          badge: stats?.total_questions || 0
+        },
+        { 
+          id: 'members', 
+          label: 'Team', 
+          icon: Users, 
+          badge: stats?.active_members || 0
+        }
+      ]
     },
-    { 
-      id: 'questions', 
-      label: 'Survey Questions', 
-      icon: MessageSquare, 
-      badge: stats?.total_questions || 0,
-      description: 'Question management'
-    },
-    { 
-      id: 'customer-insights', 
-      label: 'Customer Insights', 
-      icon: TrendingUp,
-      description: 'Advanced analytics'
-    },
-    { 
-      id: 'sentiment', 
-      label: 'Sentiment Analysis', 
-      icon: Brain,
-      description: 'AI-powered insights'
-    },
-    { 
-      id: 'performance', 
-      label: 'Performance Metrics', 
-      icon: BarChart3,
-      description: 'System performance'
-    },
-    { 
-      id: 'integrations', 
-      label: 'Integrations', 
-      icon: Webhook,
-      description: 'Third-party connections'
-    },
-    { 
-      id: 'settings', 
-      label: 'Settings', 
-      icon: Settings,
-      description: 'Organization settings'
+    {
+      label: 'System',
+      items: [
+        { 
+          id: 'integrations', 
+          label: 'Integrations', 
+          icon: Zap
+        },
+        { 
+          id: 'performance', 
+          label: 'Performance', 
+          icon: TrendingUp
+        },
+        { 
+          id: 'settings', 
+          label: 'Settings', 
+          icon: Settings
+        }
+      ]
     }
   ];
 
@@ -129,71 +142,62 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {navigationItems.map((item) => {
-                const isActive = activeTab === item.id;
-                return (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      onClick={() => onTabChange(item.id)}
-                      className={cn(
-                        "w-full h-12 px-3 rounded-lg transition-all duration-200 group relative",
-                        "flex items-center justify-between",
-                        "hover:bg-orange-50 dark:hover:bg-orange-950/20",
-                        "focus:bg-orange-50 dark:focus:bg-orange-950/20",
-                        "focus:outline-none focus:ring-2 focus:ring-orange-200/50 dark:focus:ring-orange-800/50",
-                        isActive && [
-                          "bg-orange-100/70 dark:bg-orange-950/40",
-                          "text-orange-700 dark:text-orange-300",
-                          "shadow-sm shadow-orange-100/50 dark:shadow-orange-900/20",
-                          "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
-                          "before:w-1 before:h-8 before:bg-orange-500 before:rounded-r-full"
-                        ]
-                      )}
-                    >
-                      <div className="flex items-center min-w-0 flex-1">
-                        <item.icon 
-                          className={cn(
-                            "w-5 h-5 mr-3 shrink-0 transition-colors",
-                            isActive 
-                              ? "text-orange-600 dark:text-orange-400" 
-                              : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
-                          )} 
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className={cn(
-                            "text-sm font-medium truncate",
+      <SidebarContent className="px-3 py-2 space-y-6">
+        {navigationGroups.map((group, groupIndex) => (
+          <SidebarGroup key={group.label} className="space-y-2">
+            <SidebarGroupLabel className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3 py-1">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = activeTab === item.id;
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => onTabChange(item.id)}
+                        className={cn(
+                          "w-full h-10 px-3 rounded-md transition-all duration-200 group relative",
+                          "flex items-center justify-between gap-3",
+                          "hover:bg-orange-50 dark:hover:bg-orange-950/20",
+                          "focus:bg-orange-50 dark:focus:bg-orange-950/20",
+                          "focus:outline-none focus:ring-2 focus:ring-orange-200/50 dark:focus:ring-orange-800/50",
+                          isActive && [
+                            "bg-orange-100/70 dark:bg-orange-950/40",
+                            "text-orange-700 dark:text-orange-300",
+                            "shadow-sm shadow-orange-100/50 dark:shadow-orange-900/20",
+                            "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
+                            "before:w-0.5 before:h-6 before:bg-orange-500 before:rounded-r-full"
+                          ]
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <item.icon 
+                            className={cn(
+                              "w-4 h-4 shrink-0 transition-colors",
+                              isActive 
+                                ? "text-orange-600 dark:text-orange-400" 
+                                : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                            )} 
+                          />
+                          <span className={cn(
+                            "text-sm font-medium",
                             isActive 
                               ? "text-orange-700 dark:text-orange-300" 
                               : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100"
                           )}>
                             {item.label}
-                          </div>
-                          {!isMobile && (
-                            <div className={cn(
-                              "text-xs truncate mt-0.5",
-                              isActive 
-                                ? "text-orange-600/80 dark:text-orange-400/80" 
-                                : "text-slate-500 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400"
-                            )}>
-                              {item.description}
-                            </div>
-                          )}
+                          </span>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center ml-2">
-                        {isLoading ? (
-                          <EnhancedLoadingSpinner size="sm" text="" className="w-4 h-4" />
+                        
+                        {(isLoading && activeTab === item.id) ? (
+                          <EnhancedLoadingSpinner size="sm" text="" className="w-4 h-4 shrink-0" />
                         ) : (
                           item.badge && (
                             <Badge 
                               variant="secondary" 
                               className={cn(
-                                "text-xs px-2 py-0.5 min-w-0 shrink-0",
+                                "text-xs px-1.5 py-0.5 min-w-0 shrink-0 font-medium",
                                 isActive 
                                   ? "bg-orange-200/80 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200" 
                                   : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
@@ -203,14 +207,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                             </Badge>
                           )
                         )}
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       {/* Footer with logout */}
