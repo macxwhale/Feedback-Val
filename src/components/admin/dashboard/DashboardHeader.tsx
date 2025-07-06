@@ -4,7 +4,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { NotificationDropdown } from './NotificationDropdown';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, User, Search, Plus, Settings, Download, Command, RefreshCw } from 'lucide-react';
+import { Bell, User, Search, Plus, Settings, Download, Command } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useOrganization } from '@/context/OrganizationContext';
 
@@ -76,10 +76,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     });
   };
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
   return (
     <div className="border-b border-gray-100 bg-white">
       {/* Top Navigation Bar */}
@@ -111,17 +107,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
             <span>{getCurrentTime()}</span>
           </div>
-
-          {/* Refresh button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="flex items-center space-x-2 hover:bg-gray-50"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span className="hidden sm:inline">Refresh</span>
-          </Button>
 
           {/* Notifications */}
           <NotificationDropdown organizationId={organizationId} />

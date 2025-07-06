@@ -33,7 +33,7 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
   const Icon = stat.icon;
   
   // Filter out unwanted cards
-  const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate'];
+  const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate', 'operational-efficiency'];
   if (excludedCards.includes(stat.id)) {
     return null;
   }
@@ -131,7 +131,7 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
 }) => {
   // Filter out excluded cards at grid level too
   const filteredStats = stats.filter(stat => {
-    const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate'];
+    const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate', 'operational-efficiency'];
     return !excludedCards.includes(stat.id);
   });
 

@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, RefreshCw, MoreHorizontal, Zap, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, MoreHorizontal, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SummaryMetric {
@@ -105,22 +106,6 @@ export const DataSummaryBar: React.FC<DataSummaryBarProps> = ({
           </div>
           
           <div className="flex items-center space-x-4">
-            <Badge variant="outline" className="text-sm font-semibold border-orange-200 text-orange-700 bg-orange-50 px-4 py-2">
-              <Target className="w-4 h-4 mr-2" />
-              Performance Tracking
-            </Badge>
-            {onRefresh && (
-              <Button
-                variant="outline"
-                size="default"
-                onClick={onRefresh}
-                disabled={isRefreshing}
-                className="h-10 px-6 hover:bg-orange-50 hover:border-orange-200 shadow-sm"
-              >
-                <RefreshCw className={cn("w-5 h-5 mr-2", isRefreshing && "animate-spin")} />
-                <span>Refresh</span>
-              </Button>
-            )}
             <Button variant="ghost" size="default" className="h-10 w-10 p-0 hover:bg-gray-100">
               <MoreHorizontal className="w-5 h-5" />
             </Button>
