@@ -10,7 +10,6 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { cn } from '@/lib/utils';
 import { BarChart3, Users, MessageSquare, Settings } from 'lucide-react';
 
-// Icon mapping for dynamic icon resolution
 const iconMap = {
   BarChart3,
   Users,
@@ -48,7 +47,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     currentBreakpoint
   } = useResponsiveDesign();
 
-  // Navigation items - Performance tab removed
+  // Updated navigation items - Performance tab completely removed
   const navigationItems = [
     { 
       id: 'overview', 
@@ -86,11 +85,11 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     }
   ];
 
-  // Mobile Layout with enhanced responsiveness
+  // Mobile Layout with consistent styling
   if (isMobile) {
     return (
       <ResponsiveContainer
-        className="min-h-screen bg-slate-50 dark:bg-slate-900"
+        className="min-h-screen bg-gray-50 dark:bg-gray-900"
         padding="none"
         maxWidth="full"
       >
@@ -104,7 +103,8 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
         <main 
           id="main-content" 
           className={cn(
-            'transition-all px-4 py-4 pb-24 min-h-0 overflow-x-hidden',
+            'transition-all px-4 py-6 pb-24 min-h-0 overflow-x-hidden',
+            'bg-white dark:bg-gray-900',
             !prefersReducedMotion && 'duration-300 ease-out'
           )}
         >
@@ -125,10 +125,10 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     );
   }
 
-  // Desktop/Tablet Layout with improved spacing and content area optimization
+  // Desktop/Tablet Layout with consistent styling
   return (
     <ResponsiveContainer
-      className="min-h-screen"
+      className="min-h-screen bg-gray-50 dark:bg-gray-900"
       padding="none"
       maxWidth="full"
     >
@@ -140,7 +140,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           direction="horizontal"
           spacing="none"
           align="stretch"
-          className="min-h-screen bg-slate-50 dark:bg-slate-900"
+          className="min-h-screen"
         >
           <DashboardSidebar
             organizationName={organizationName}
@@ -166,12 +166,12 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
             <main 
               id="main-content"
               className={cn(
-                'flex-1 overflow-auto bg-white dark:bg-slate-900 transition-all',
-                'px-4 sm:px-6 py-4 sm:py-6 max-w-full',
+                'flex-1 overflow-auto bg-white dark:bg-gray-900 transition-all',
+                'p-6 lg:p-8 max-w-full',
                 !prefersReducedMotion && 'duration-300 ease-out'
               )}
             >
-              <div className="max-w-7xl mx-auto w-full space-y-4 sm:space-y-6 overflow-hidden">
+              <div className="max-w-7xl mx-auto w-full space-y-6 overflow-hidden">
                 {children}
               </div>
             </main>

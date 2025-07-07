@@ -1,9 +1,4 @@
 
-/**
- * Enhanced Stats Grid Component
- * Optimized statistics display with proper memoization and improved spacing
- */
-
 import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,8 +30,17 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
   const Icon = stat.icon;
   const { isMobile } = useResponsiveDesign();
   
-  // Filter out unwanted cards
-  const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate', 'operational-efficiency'];
+  // Exclude unwanted cards
+  const excludedCards = [
+    'quality-score', 
+    'team-performance', 
+    'system-health', 
+    'bounce-rate', 
+    'operational-efficiency',
+    'performance-tracking',
+    'enhanced-dashboard'
+  ];
+  
   if (excludedCards.includes(stat.id)) {
     return null;
   }
@@ -85,38 +89,38 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground`}>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {stat.title}
         </CardTitle>
         {Icon && (
-          <Icon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-muted-foreground`} />
+          <Icon className="h-5 w-5 text-muted-foreground" />
         )}
       </CardHeader>
       <CardContent className="pt-0">
-        <div className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold tracking-tight mb-2`}>
+        <div className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">
           {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
         </div>
         
         {stat.change && (
           <div className="flex items-center space-x-1 mb-3">
             {getTrendIcon(stat.change.trend)}
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium ${getTrendColor(stat.change.trend)}`}>
+            <span className={`text-sm font-medium ${getTrendColor(stat.change.trend)}`}>
               {stat.change.value > 0 ? '+' : ''}{stat.change.value}%
             </span>
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+            <span className="text-sm text-muted-foreground">
               vs {stat.change.period}
             </span>
           </div>
         )}
         
         {stat.explanation && (
-          <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground leading-relaxed`}>
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {stat.explanation}
           </p>
         )}
         
         {stat.description && !stat.explanation && (
-          <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+          <p className="text-sm text-muted-foreground">
             {stat.description}
           </p>
         )}
@@ -134,22 +138,34 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
 }) => {
   const { isMobile, isTablet } = useResponsiveDesign();
   
-  // Filter out excluded cards at grid level too
+  // Filter out excluded cards
   const filteredStats = stats.filter(stat => {
-    const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate', 'operational-efficiency'];
+    const excludedCards = [
+      'quality-score', 
+      'team-performance', 
+      'system-health', 
+      'bounce-rate', 
+      'operational-efficiency',
+      'performance-tracking',
+      'enhanced-dashboard'
+    ];
     return !excludedCards.includes(stat.id);
   });
+
+  if (filteredStats.length === 0) {
+    return null;
+  }
 
   return (
     <ResponsiveGrid
       columns={{ 
         xs: 1, 
-        sm: isMobile ? 1 : 2, 
+        sm: 1, 
         md: 2, 
         lg: Math.min(3, filteredStats.length), 
-        xl: Math.min(3, filteredStats.length) 
+        xl: Math.min(4, filteredStats.length) 
       }}
-      gap={isMobile ? 'sm' : 'md'}
+      gap="lg"
       className={`w-full ${className}`}
     >
       {filteredStats.map((stat) => (
