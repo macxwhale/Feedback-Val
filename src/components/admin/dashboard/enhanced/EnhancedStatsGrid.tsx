@@ -8,6 +8,8 @@ import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
+import { ResponsiveGrid } from '@/components/ui/responsive-layout';
 
 export interface StatCard {
   id: string;
@@ -31,6 +33,7 @@ interface EnhancedStatsGridProps {
 
 const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, isLoading }) => {
   const Icon = stat.icon;
+  const { isMobile } = useResponsiveDesign();
   
   // Filter out unwanted cards
   const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate', 'operational-efficiency'];
@@ -82,38 +85,38 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground`}>
           {stat.title}
         </CardTitle>
         {Icon && (
-          <Icon className="h-5 w-5 text-muted-foreground" />
+          <Icon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-muted-foreground`} />
         )}
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-3xl font-bold tracking-tight mb-2">
+        <div className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold tracking-tight mb-2`}>
           {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
         </div>
         
         {stat.change && (
           <div className="flex items-center space-x-1 mb-3">
             {getTrendIcon(stat.change.trend)}
-            <span className={`text-sm font-medium ${getTrendColor(stat.change.trend)}`}>
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium ${getTrendColor(stat.change.trend)}`}>
               {stat.change.value > 0 ? '+' : ''}{stat.change.value}%
             </span>
-            <span className="text-sm text-muted-foreground">
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
               vs {stat.change.period}
             </span>
           </div>
         )}
         
         {stat.explanation && (
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground leading-relaxed`}>
             {stat.explanation}
           </p>
         )}
         
         {stat.description && !stat.explanation && (
-          <p className="text-sm text-muted-foreground">
+          <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
             {stat.description}
           </p>
         )}
@@ -129,6 +132,8 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
   isLoading = false, 
   className = '' 
 }) => {
+  const { isMobile, isTablet } = useResponsiveDesign();
+  
   // Filter out excluded cards at grid level too
   const filteredStats = stats.filter(stat => {
     const excludedCards = ['quality-score', 'team-performance', 'system-health', 'bounce-rate', 'operational-efficiency'];
@@ -136,7 +141,17 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
   });
 
   return (
-    <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
+    <ResponsiveGrid
+      columns={{ 
+        xs: 1, 
+        sm: isMobile ? 1 : 2, 
+        md: 2, 
+        lg: Math.min(3, filteredStats.length), 
+        xl: Math.min(3, filteredStats.length) 
+      }}
+      gap={isMobile ? 'sm' : 'md'}
+      className={`w-full ${className}`}
+    >
       {filteredStats.map((stat) => (
         <StatCardComponent
           key={stat.id}
@@ -144,7 +159,7 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
           isLoading={isLoading}
         />
       ))}
-    </div>
+    </ResponsiveGrid>
   );
 });
 

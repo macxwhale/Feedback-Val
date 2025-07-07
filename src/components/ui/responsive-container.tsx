@@ -26,7 +26,9 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
     shouldUseCompactLayout, 
     shouldUseTouch,
     getResponsiveValue,
-    prefersReducedMotion
+    prefersReducedMotion,
+    isMobile,
+    isTablet
   } = useResponsiveDesign();
 
   const maxWidthClasses = {
@@ -35,22 +37,47 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
-    full: 'max-w-full'
+    full: 'w-full max-w-full'
   };
 
-  // Get responsive padding based on current breakpoint
+  // Get responsive padding based on current breakpoint with mobile optimization
   const containerPadding = React.useMemo(() => {
     if (padding === 'none') return '0';
     
     if (padding === 'auto') {
-      return getResponsiveValue(responsiveSpacing.container);
+      const paddingValues = {
+        xs: '1rem',      // 16px on mobile
+        sm: '1.25rem',   // 20px on small tablets
+        md: '1.5rem',    // 24px on tablets
+        lg: '2rem',      // 32px on desktop
+        xl: '2.5rem',    // 40px on large screens
+      };
+      return getResponsiveValue(paddingValues);
     }
     
     // Manual padding values optimized for dashboard content
     const paddingValues = {
-      sm: { xs: '1rem', sm: '1rem', md: '1.25rem', lg: '1.5rem', xl: '1.75rem' },
-      md: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '2rem', xl: '2.25rem' },
-      lg: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
+      sm: { 
+        xs: '0.75rem',   // 12px on mobile
+        sm: '1rem',      // 16px on small tablets
+        md: '1.25rem',   // 20px on tablets
+        lg: '1.5rem',    // 24px on desktop
+        xl: '1.75rem'    // 28px on large screens
+      },
+      md: { 
+        xs: '1rem',      // 16px on mobile
+        sm: '1.25rem',   // 20px on small tablets
+        md: '1.5rem',    // 24px on tablets
+        lg: '2rem',      // 32px on desktop
+        xl: '2.25rem'    // 36px on large screens
+      },
+      lg: { 
+        xs: '1.25rem',   // 20px on mobile
+        sm: '1.5rem',    // 24px on small tablets
+        md: '2rem',      // 32px on tablets
+        lg: '2.5rem',    // 40px on desktop
+        xl: '3rem'       // 48px on large screens
+      }
     };
     
     return getResponsiveValue(paddingValues[padding]);
@@ -65,19 +92,21 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         'w-full transition-all',
         !prefersReducedMotion && 'duration-300 ease-out',
         maxWidthClasses[maxWidth],
-        centerContent && maxWidth !== 'full' && 'mx-auto',
+        centerContent && maxWidth !== 'full' && !isMobile && 'mx-auto',
         
         // Touch optimizations
         effectiveTouchOptimized && [
           'touch-pan-y touch-pan-x',
-          shouldUseCompactLayout && 'space-y-4',
+          shouldUseCompactLayout && 'space-y-3',
         ],
         
-        // Improved spacing for dashboard content
-        !shouldUseCompactLayout && 'space-y-6',
+        // Improved spacing for dashboard content with mobile optimization
+        isMobile && 'space-y-3',
+        isTablet && 'space-y-4',
+        !isMobile && !isTablet && 'space-y-6',
         
-        // Ensure content fits properly
-        'min-h-0 overflow-hidden',
+        // Ensure content fits properly with mobile handling
+        'min-h-0 overflow-x-hidden',
         
         className
       )}

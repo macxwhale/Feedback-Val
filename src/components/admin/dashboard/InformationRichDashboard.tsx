@@ -4,13 +4,10 @@ import {
   Users, 
   MessageSquare, 
   TrendingUp, 
-  Clock,
-  CheckCircle,
-  AlertTriangle,
+  Activity,
   BarChart3,
   Target,
-  Zap,
-  Activity
+  Zap
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +16,8 @@ import { useOrganizationStats } from '@/hooks/useOrganizationStats';
 import { EnhancedMetricCard } from './EnhancedMetricCard';
 import { DataSummaryBar } from './DataSummaryBar';
 import { DashboardErrorBoundary, DashboardErrorFallback } from './DashboardErrorBoundary';
+import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
+import { ResponsiveGrid } from '@/components/ui/responsive-layout';
 
 interface InformationRichDashboardProps {
   organizationId: string;
@@ -31,6 +30,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
 }) => {
   const { data: stats, isLoading, error, refetch } = useOrganizationStats(organizationId);
   const [activeSection, setActiveSection] = useState('overview');
+  const { isMobile, isTablet } = useResponsiveDesign();
 
   if (error) {
     return <DashboardErrorFallback onRetry={() => refetch()} />;
@@ -136,7 +136,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
     }
   ];
 
-  // Enhanced summary metrics with only essential metrics (removed Operational Efficiency)
+  // Enhanced summary metrics with only essential metrics
   const summaryMetrics = [
     {
       label: 'Overall Performance Score',
@@ -167,7 +167,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
 
   return (
     <DashboardErrorBoundary>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-w-full overflow-hidden">
         {/* Enhanced System Health Overview */}
         <DataSummaryBar 
           metrics={summaryMetrics}
@@ -179,23 +179,23 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
 
         {/* Section Navigation */}
         <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-          <div className="flex items-center justify-between mb-6">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'max-w-md grid-cols-3'}`}>
+              <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs sm:text-sm">Insights</TabsTrigger>
             </TabsList>
-            <Badge variant="outline" className="flex items-center space-x-2">
+            <Badge variant="outline" className="flex items-center space-x-2 self-start sm:self-auto">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Real-time Data</span>
+              <span className="text-xs">Real-time Data</span>
             </Badge>
           </div>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Information-Rich Metrics Grid - Updated for 2 columns */}
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            {/* Information-Rich Metrics Grid */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Key Performance Indicators</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Key Performance Indicators</h2>
                 <div className="flex items-center space-x-2">
                   <Badge variant="secondary" className="text-xs font-medium">
                     <TrendingUp className="w-3 h-3 mr-1" />
@@ -204,75 +204,79 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
                 </div>
               </div>
               
-              {/* Updated grid layout for 2 cards with proper spacing */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              {/* Optimized responsive grid for 2 cards */}
+              <ResponsiveGrid 
+                columns={{ xs: 1, sm: 1, md: 2, lg: 2, xl: 2 }}
+                gap="md"
+                className="w-full"
+              >
                 {performanceMetrics.map((metric, index) => (
                   <EnhancedMetricCard 
                     key={index}
                     {...metric}
                   />
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
-            <div className="text-center py-12">
-              <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Detailed Performance Analytics</h3>
-              <p className="text-gray-600 mb-4">Advanced performance metrics and trend analysis</p>
-              <Button onClick={() => onTabChange('performance')}>
+            <div className="text-center py-8 sm:py-12">
+              <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Detailed Performance Analytics</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 px-4">Advanced performance metrics and trend analysis</p>
+              <Button onClick={() => onTabChange('performance')} size={isMobile ? "sm" : "default"}>
                 View Performance Dashboard
               </Button>
             </div>
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6">
-            <div className="text-center py-12">
-              <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Powered Insights</h3>
-              <p className="text-gray-600 mb-4">Intelligent recommendations and predictive analytics</p>
-              <Button onClick={() => onTabChange('customer-insights')}>
+            <div className="text-center py-8 sm:py-12">
+              <Target className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">AI-Powered Insights</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 px-4">Intelligent recommendations and predictive analytics</p>
+              <Button onClick={() => onTabChange('customer-insights')} size={isMobile ? "sm" : "default"}>
                 Explore Insights
               </Button>
             </div>
           </TabsContent>
         </Tabs>
 
-        {/* Overall Performance Summary */}
+        {/* Overall Performance Summary - Mobile Optimized */}
         {!isLoading && stats && stats.total_sessions > 0 && (
-          <div className="flex justify-center">
-            <div className="flex items-center space-x-8 p-6 bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 rounded-2xl border border-green-200 shadow-sm">
+          <div className="flex justify-center px-2 sm:px-0">
+            <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'items-center space-x-8'} p-4 sm:p-6 bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 rounded-2xl border border-green-200 shadow-sm w-full max-w-4xl`}>
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Zap className="w-6 h-6 text-green-600" />
+                <div className="p-2 sm:p-3 bg-green-100 rounded-full">
+                  <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-green-900">
+                  <div className="text-base sm:text-lg font-bold text-green-900">
                     Excellence Score: 94%
                   </div>
-                  <div className="text-sm text-green-700">Exceeding industry benchmarks</div>
+                  <div className="text-xs sm:text-sm text-green-700">Exceeding industry benchmarks</div>
                 </div>
               </div>
-              <div className="h-12 w-px bg-green-200"></div>
-              <div className="grid grid-cols-3 gap-6 text-center">
+              {!isMobile && <div className="h-12 w-px bg-green-200"></div>}
+              <div className={`grid grid-cols-3 ${isMobile ? 'gap-4' : 'gap-6'} text-center w-full ${isMobile ? '' : 'max-w-md'}`}>
                 <div>
-                  <div className="text-xl font-bold text-green-900">
+                  <div className="text-base sm:text-xl font-bold text-green-900">
                     {stats.total_responses.toLocaleString()}
                   </div>
-                  <div className="text-sm text-green-700">Total Responses</div>
+                  <div className="text-xs sm:text-sm text-green-700">Total Responses</div>
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-green-900">
+                  <div className="text-base sm:text-xl font-bold text-green-900">
                     {Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%
                   </div>
-                  <div className="text-sm text-green-700">Success Rate</div>
+                  <div className="text-xs sm:text-sm text-green-700">Success Rate</div>
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-green-900">
+                  <div className="text-base sm:text-xl font-bold text-green-900">
                     {stats.active_members || 0}
                   </div>
-                  <div className="text-sm text-green-700">Active Team</div>
+                  <div className="text-xs sm:text-sm text-green-700">Active Team</div>
                 </div>
               </div>
             </div>

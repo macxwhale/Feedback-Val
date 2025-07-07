@@ -48,23 +48,33 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     shouldUseCompactLayout,
     shouldUseTouch,
     getResponsiveValue,
-    prefersReducedMotion
+    prefersReducedMotion,
+    isMobile,
+    isTablet
   } = useResponsiveDesign();
 
   // Determine layout density
   const effectiveDensity = React.useMemo(() => {
     if (density !== 'auto') return density;
     
-    if (shouldUseCompactLayout) return 'compact';
+    if (shouldUseCompactLayout || isMobile) return 'compact';
     if (currentBreakpoint === 'xl') return 'spacious';
     return 'comfortable';
-  }, [density, shouldUseCompactLayout, currentBreakpoint]);
+  }, [density, shouldUseCompactLayout, currentBreakpoint, isMobile]);
 
-  // Get responsive padding
+  // Get responsive padding with better mobile optimization
   const containerPadding = React.useMemo(() => {
     if (padding === 'none') return '';
     
-    return getResponsiveValue(responsiveSpacing.container);
+    const paddingValues = {
+      xs: '1rem',      // 16px on mobile
+      sm: '1.25rem',   // 20px on small tablets  
+      md: '1.5rem',    // 24px on tablets
+      lg: '2rem',      // 32px on desktop
+      xl: '2.5rem',    // 40px on large screens
+    };
+    
+    return getResponsiveValue(paddingValues);
   }, [padding, getResponsiveValue]);
 
   // Get max width classes
@@ -75,13 +85,13 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
-    full: 'max-w-full'
+    full: 'w-full max-w-full'
   };
 
   // Touch target styles
   const touchStyles = shouldUseTouch || touchOptimized ? {
-    minHeight: touchTargets.comfortable.height,
-    minWidth: touchTargets.comfortable.width,
+    minHeight: isMobile ? touchTargets.comfortable.height : touchTargets.minimum.height,
+    minWidth: isMobile ? touchTargets.comfortable.width : touchTargets.minimum.width,
   } : {};
 
   return (
@@ -90,16 +100,19 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
         'w-full transition-all',
         !prefersReducedMotion && 'duration-300 ease-out',
         
-        // Max width
+        // Max width with proper mobile handling
         maxWidthClasses[maxWidth],
         
-        // Centering
-        centerContent && maxWidth !== 'full' && 'mx-auto',
+        // Centering with mobile considerations
+        centerContent && maxWidth !== 'full' && !isMobile && 'mx-auto',
         
-        // Density-based spacing
-        effectiveDensity === 'compact' && 'space-y-3',
-        effectiveDensity === 'comfortable' && 'space-y-4',
-        effectiveDensity === 'spacious' && 'space-y-6',
+        // Density-based spacing with mobile optimization
+        effectiveDensity === 'compact' && 'space-y-2 sm:space-y-3',
+        effectiveDensity === 'comfortable' && 'space-y-3 sm:space-y-4 md:space-y-5',
+        effectiveDensity === 'spacious' && 'space-y-4 sm:space-y-5 md:space-y-6',
+        
+        // Mobile-specific classes
+        isMobile && 'min-h-0 overflow-x-hidden',
         
         className
       )}
@@ -129,7 +142,7 @@ interface ResponsiveGridProps {
   children: React.ReactNode;
   className?: string;
   
-  // Grid configuration
+  // Grid configuration with improved mobile defaults
   columns?: {
     xs?: number;
     sm?: number;
@@ -149,7 +162,7 @@ interface ResponsiveGridProps {
 export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   children,
   className,
-  columns = { xs: 1, sm: 2, md: 3, lg: 4, xl: 4 },
+  columns = { xs: 1, sm: 1, md: 2, lg: 2, xl: 2 }, // Better mobile-first defaults
   gap = 'auto',
   alignItems = 'stretch',
   justifyContent = 'start'
@@ -158,22 +171,26 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
     currentBreakpoint, 
     getResponsiveValue,
     shouldUseCompactLayout,
-    prefersReducedMotion 
+    prefersReducedMotion,
+    isMobile,
+    isTablet
   } = useResponsiveDesign();
 
   // Get current column count
   const currentColumns = getResponsiveValue(columns);
   
-  // Get responsive gap
+  // Get responsive gap with mobile optimization
   const gridGap = React.useMemo(() => {
     if (gap !== 'auto') return gap;
-    return shouldUseCompactLayout ? 'sm' : 'md';
-  }, [gap, shouldUseCompactLayout]);
+    if (isMobile) return 'sm';
+    if (isTablet) return 'md';
+    return 'lg';
+  }, [gap, isMobile, isTablet]);
 
   const gapClasses = {
-    sm: 'gap-3',
-    md: 'gap-4', 
-    lg: 'gap-6'
+    sm: 'gap-3 sm:gap-4',
+    md: 'gap-4 sm:gap-5 md:gap-6', 
+    lg: 'gap-5 sm:gap-6 md:gap-8'
   };
 
   const alignClasses = {
@@ -195,11 +212,15 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   return (
     <div
       className={cn(
-        'grid transition-all',
+        'grid transition-all w-full',
         !prefersReducedMotion && 'duration-300 ease-out',
         gapClasses[gridGap],
         alignClasses[alignItems],
         justifyClasses[justifyContent],
+        
+        // Mobile-specific optimizations
+        isMobile && 'min-w-0 overflow-hidden',
+        
         className
       )}
       style={{
@@ -218,7 +239,7 @@ interface ResponsiveStackProps {
   // Stack direction
   direction?: 'vertical' | 'horizontal' | 'auto';
   
-  // Spacing - Updated to include 'none'
+  // Spacing
   spacing?: 'none' | 'sm' | 'md' | 'lg' | 'auto';
   
   // Alignment
@@ -242,10 +263,12 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
     currentBreakpoint, 
     shouldUseCompactLayout,
     isBreakpointDown,
-    prefersReducedMotion 
+    prefersReducedMotion,
+    isMobile,
+    isTablet
   } = useResponsiveDesign();
 
-  // Determine if should stack
+  // Determine if should stack with better mobile handling
   const shouldStack = React.useMemo(() => {
     if (direction === 'vertical') return true;
     if (direction === 'horizontal') return false;
@@ -254,18 +277,20 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
     return isBreakpointDown(stackAt);
   }, [direction, stackAt, isBreakpointDown]);
 
-  // Get spacing value - Updated to handle 'none'
+  // Get spacing value with mobile optimization
   const stackSpacing = React.useMemo(() => {
     if (spacing === 'none') return 'none';
     if (spacing !== 'auto') return spacing;
-    return shouldUseCompactLayout ? 'sm' : 'md';
-  }, [spacing, shouldUseCompactLayout]);
+    if (isMobile) return 'sm';
+    if (isTablet) return 'md';
+    return 'lg';
+  }, [spacing, isMobile, isTablet]);
 
   const spacingClasses = {
     none: '',
-    sm: shouldStack ? 'space-y-2' : 'space-x-2',
-    md: shouldStack ? 'space-y-4' : 'space-x-4',
-    lg: shouldStack ? 'space-y-6' : 'space-x-6',
+    sm: shouldStack ? 'space-y-2 sm:space-y-3' : 'space-x-2 sm:space-x-3',
+    md: shouldStack ? 'space-y-3 sm:space-y-4 md:space-y-5' : 'space-x-3 sm:space-x-4 md:space-x-5',
+    lg: shouldStack ? 'space-y-4 sm:space-y-5 md:space-y-6' : 'space-x-4 sm:space-x-5 md:space-x-6',
   };
 
   const alignClasses = {
@@ -287,12 +312,16 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
   return (
     <div
       className={cn(
-        'flex transition-all',
+        'flex transition-all w-full',
         !prefersReducedMotion && 'duration-300 ease-out',
-        shouldStack ? 'flex-col' : 'flex-row',
+        shouldStack ? 'flex-col' : 'flex-row flex-wrap',
         spacingClasses[stackSpacing],
         alignClasses[align],
         justifyClasses[justify],
+        
+        // Mobile optimizations
+        isMobile && 'min-w-0',
+        
         className
       )}
     >

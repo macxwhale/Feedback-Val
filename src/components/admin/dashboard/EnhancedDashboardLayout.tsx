@@ -90,7 +90,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
   if (isMobile) {
     return (
       <ResponsiveContainer
-        className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20"
+        className="min-h-screen bg-slate-50 dark:bg-slate-900"
         padding="none"
         maxWidth="full"
       >
@@ -104,11 +104,13 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
         <main 
           id="main-content" 
           className={cn(
-            'transition-all px-4 py-6',
+            'transition-all px-4 py-4 pb-24 min-h-0 overflow-x-hidden',
             !prefersReducedMotion && 'duration-300 ease-out'
           )}
         >
-          {children}
+          <div className="w-full max-w-full overflow-hidden">
+            {children}
+          </div>
         </main>
         
         <BottomNavigation
@@ -165,11 +167,11 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
               id="main-content"
               className={cn(
                 'flex-1 overflow-auto bg-white dark:bg-slate-900 transition-all',
-                'px-6 py-6 max-w-full',
+                'px-4 sm:px-6 py-4 sm:py-6 max-w-full',
                 !prefersReducedMotion && 'duration-300 ease-out'
               )}
             >
-              <div className="max-w-7xl mx-auto w-full space-y-6">
+              <div className="max-w-7xl mx-auto w-full space-y-4 sm:space-y-6 overflow-hidden">
                 {children}
               </div>
             </main>
