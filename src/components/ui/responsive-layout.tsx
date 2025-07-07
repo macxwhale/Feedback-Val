@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
@@ -217,8 +218,8 @@ interface ResponsiveStackProps {
   // Stack direction
   direction?: 'vertical' | 'horizontal' | 'auto';
   
-  // Spacing
-  spacing?: 'sm' | 'md' | 'lg' | 'auto';
+  // Spacing - Updated to include 'none'
+  spacing?: 'none' | 'sm' | 'md' | 'lg' | 'auto';
   
   // Alignment
   align?: 'start' | 'center' | 'end' | 'stretch';
@@ -253,13 +254,15 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
     return isBreakpointDown(stackAt);
   }, [direction, stackAt, isBreakpointDown]);
 
-  // Get spacing value
+  // Get spacing value - Updated to handle 'none'
   const stackSpacing = React.useMemo(() => {
+    if (spacing === 'none') return 'none';
     if (spacing !== 'auto') return spacing;
     return shouldUseCompactLayout ? 'sm' : 'md';
   }, [spacing, shouldUseCompactLayout]);
 
   const spacingClasses = {
+    none: '',
     sm: shouldStack ? 'space-y-2' : 'space-x-2',
     md: shouldStack ? 'space-y-4' : 'space-x-4',
     lg: shouldStack ? 'space-y-6' : 'space-x-6',

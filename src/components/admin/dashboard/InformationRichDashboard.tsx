@@ -36,7 +36,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
     return <DashboardErrorFallback onRetry={() => refetch()} />;
   }
 
-  // Enhanced metrics with rich secondary data
+  // Enhanced metrics with only Response Collection and User Engagement cards
   const performanceMetrics = [
     {
       title: 'Response Collection',
@@ -54,12 +54,6 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
           value: Math.round((stats?.total_responses || 0) * 0.18), 
           trend: 'up' as const,
           change: { value: 12, period: 'week' },
-          status: 'good' as const
-        },
-        { 
-          label: 'Quality Score', 
-          value: '4.8/5', 
-          trend: 'up' as const,
           status: 'good' as const
         },
         {
@@ -139,109 +133,10 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
         { label: 'User Journey', onClick: () => console.log('User journey') },
         { label: 'Engagement Report', onClick: () => console.log('Engagement report') }
       ]
-    },
-    {
-      title: 'Team Performance',
-      value: stats?.active_members || 0,
-      previousValue: stats?.active_members ? Math.max(0, stats.active_members - 2) : 0,
-      icon: Users,
-      change: {
-        value: 8,
-        period: 'this quarter',
-        trend: 'up' as const
-      },
-      secondaryMetrics: [
-        { 
-          label: 'Active Contributors', 
-          value: Math.round((stats?.active_members || 0) * 0.85), 
-          trend: 'up' as const,
-          status: 'good' as const
-        },
-        { 
-          label: 'Collaboration Score', 
-          value: '92%', 
-          trend: 'up' as const,
-          target: 100,
-          status: 'good' as const
-        },
-        {
-          label: 'Response Time',
-          value: '2.1hrs',
-          trend: 'down' as const,
-          status: 'good' as const
-        },
-        {
-          label: 'Task Completion',
-          value: '96%',
-          trend: 'up' as const,
-          status: 'good' as const
-        }
-      ],
-      status: 'success' as const,
-      insights: [
-        'Team productivity increased 15% this quarter',
-        'Cross-team collaboration metrics improved',
-        '2 new high-performing team members added'
-      ],
-      actionLabel: 'Manage Team',
-      onAction: () => onTabChange('members'),
-      contextualActions: [
-        { label: 'Performance Review', onClick: () => console.log('Performance review') },
-        { label: 'Team Analytics', onClick: () => console.log('Team analytics') }
-      ]
-    },
-    {
-      title: 'System Health',
-      value: '99.2%',
-      previousValue: '98.8%',
-      icon: CheckCircle,
-      change: {
-        value: 0.4,
-        period: 'last 30 days',
-        trend: 'up' as const
-      },
-      secondaryMetrics: [
-        { 
-          label: 'Uptime', 
-          value: '99.9%', 
-          trend: 'up' as const,
-          target: 100,
-          status: 'good' as const
-        },
-        { 
-          label: 'Response Time', 
-          value: '245ms', 
-          trend: 'down' as const,
-          status: 'good' as const
-        },
-        {
-          label: 'Error Rate',
-          value: '0.03%',
-          trend: 'down' as const,
-          status: 'good' as const
-        },
-        {
-          label: 'Data Accuracy',
-          value: '99.7%',
-          trend: 'up' as const,
-          status: 'good' as const
-        }
-      ],
-      status: 'success' as const,
-      insights: [
-        'System performance exceeds SLA targets',
-        'Zero critical incidents this month',
-        'Database optimization reduced query time by 23%'
-      ],
-      actionLabel: 'System Status',
-      contextualActions: [
-        { label: 'Health Report', onClick: () => console.log('Health report') },
-        { label: 'Performance Logs', onClick: () => console.log('Performance logs') }
-      ]
     }
   ];
 
-  // Enhanced summary metrics for the overview bar
+  // Enhanced summary metrics with only essential metrics (removed Operational Efficiency)
   const summaryMetrics = [
     {
       label: 'Overall Performance Score',
@@ -267,15 +162,6 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
       trend: 'up' as const,
       description: 'Month-over-month growth rate',
       change: { value: 12, period: 'acceleration' }
-    },
-    {
-      label: 'Operational Efficiency',
-      value: '97%',
-      status: 'good' as const,
-      trend: 'stable' as const,
-      target: 100,
-      description: 'System reliability and performance',
-      change: { value: 2, period: 'this quarter' }
     }
   ];
 
@@ -306,7 +192,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
           </div>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Information-Rich Metrics Grid */}
+            {/* Information-Rich Metrics Grid - Updated for 2 columns */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900">Key Performance Indicators</h2>
@@ -318,7 +204,8 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Updated grid layout for 2 cards with proper spacing */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
                 {performanceMetrics.map((metric, index) => (
                   <EnhancedMetricCard 
                     key={index}

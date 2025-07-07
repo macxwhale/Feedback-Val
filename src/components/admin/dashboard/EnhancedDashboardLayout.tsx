@@ -48,7 +48,7 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
     currentBreakpoint
   } = useResponsiveDesign();
 
-  // Navigation items with performance tab removed
+  // Navigation items - Performance tab removed
   const navigationItems = [
     { 
       id: 'overview', 
