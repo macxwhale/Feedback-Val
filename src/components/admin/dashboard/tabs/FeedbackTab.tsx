@@ -1,6 +1,6 @@
 
 import React from "react";
-import { OrganizationSpecificStats } from '../../OrganizationSpecificStats';
+import { EnhancedFeedbackAnalytics } from '../EnhancedFeedbackAnalytics';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 interface FeedbackTabProps {
@@ -21,7 +21,7 @@ export const FeedbackTab: React.FC<FeedbackTabProps> = ({ organizationId }) => (
       </div>
     }
   >
-    <OrganizationSpecificStats organizationId={organizationId} />
+    <EnhancedFeedbackAnalytics organizationId={organizationId} />
   </PermissionGuard>
 );
 
