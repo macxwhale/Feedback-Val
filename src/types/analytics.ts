@@ -38,6 +38,9 @@ export interface AnalyticsTableData {
     total_questions: number;
     total_responses: number;
     overall_completion_rate: number;
+    total_sessions: number;
+    completed_sessions: number;
+    avg_score: number;
   };
   trendData: TrendDataPoint[];
 }

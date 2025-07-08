@@ -155,6 +155,13 @@ export const useAnalyticsTableData = (organizationId: string) => {
         });
       });
 
+      // Calculate session metrics for summary
+      const totalSessions = (sessionsData || []).length;
+      const completedSessions = (sessionsData || []).filter(s => s.status === 'completed').length;
+      const avgScore = sessionsData && sessionsData.length > 0 
+        ? sessionsData.reduce((sum, s) => sum + (s.total_score || 0), 0) / sessionsData.length 
+        : 0;
+
       return {
         questions,
         categories,
@@ -163,7 +170,10 @@ export const useAnalyticsTableData = (organizationId: string) => {
           total_responses: questions.reduce((sum, q) => sum + q.total_responses, 0),
           overall_completion_rate: Math.round(
             questions.reduce((sum, q) => sum + q.completion_rate, 0) / questions.length
-          )
+          ),
+          total_sessions: totalSessions,
+          completed_sessions: completedSessions,
+          avg_score: Math.round(avgScore * 100) / 100
         },
         trendData
       };
