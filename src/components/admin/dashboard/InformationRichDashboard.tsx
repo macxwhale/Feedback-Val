@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Users, 
@@ -38,7 +37,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
 
   // Calculate real metrics from analytics data
   const calculatePerformanceScore = () => {
-    if (!analyticsData?.summary) return 0;
+    if (!analyticsData?.summary || analyticsData.summary.total_sessions === 0) return 0;
     const { overall_completion_rate, user_satisfaction_rate, response_rate } = analyticsData.summary;
     
     // Weighted calculation: completion rate (40%), user satisfaction (40%), response rate (20%)
@@ -51,6 +50,24 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
     return analyticsData.summary.growth_rate || 0;
   };
 
+  // Helper function to get trend indicator with neutral option
+  const getTrendIndicator = (value: number): 'up' | 'down' | 'neutral' => {
+    if (value > 5) return 'up';
+    if (value < -5) return 'down';
+    return 'neutral';
+  };
+
+  // Helper function to normalize average score to 1-5 scale
+  const normalizeAverageScore = (score: number): number => {
+    if (score <= 5) return score; // Already in 1-5 range
+    if (score <= 100) return (score / 100) * 5; // Convert percentage to 1-5
+    return Math.min(5, score / 20); // Scale down very high values
+  };
+
+  const normalizedAvgScore = analyticsData?.summary?.avg_score 
+    ? normalizeAverageScore(analyticsData.summary.avg_score)
+    : 0;
+
   // Clean metrics with real data
   const performanceMetrics = [
     {
@@ -59,30 +76,28 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
       previousValue: Math.max(0, (analyticsData?.summary?.total_responses || 0) - 45),
       icon: MessageSquare,
       change: {
-        value: calculateGrowthRate(),
+        value: Math.abs(calculateGrowthRate()),
         period: 'last 30 days',
-        trend: calculateGrowthRate() >= 0 ? 'up' as const : 'down' as const
+        trend: getTrendIndicator(calculateGrowthRate())
       },
       secondaryMetrics: [
         { 
           label: 'This Week', 
           value: Math.round((analyticsData?.summary?.total_responses || 0) * 0.18), 
-          trend: 'up' as const,
-          change: { value: 12, period: 'week' },
+          trend: getTrendIndicator(12),
           status: 'good' as const
         },
         {
           label: 'Completion Rate',
           value: `${analyticsData?.summary?.overall_completion_rate || 0}%`,
-          trend: analyticsData?.summary?.overall_completion_rate >= 80 ? 'up' as const : 'down' as const,
-          target: 100,
-          status: analyticsData?.summary?.overall_completion_rate >= 80 ? 'good' as const : 'warning' as const
+          trend: getTrendIndicator(analyticsData?.summary?.overall_completion_rate >= 80 ? 10 : -10),
+          status: (analyticsData?.summary?.overall_completion_rate || 0) >= 80 ? 'good' as const : 'warning' as const
         },
         {
           label: 'Response Rate',
           value: `${analyticsData?.summary?.response_rate || 0}%`,
-          trend: analyticsData?.summary?.response_rate >= 70 ? 'up' as const : 'down' as const,
-          status: analyticsData?.summary?.response_rate >= 70 ? 'good' as const : 'warning' as const
+          trend: getTrendIndicator(analyticsData?.summary?.response_rate >= 70 ? 10 : -10),
+          status: (analyticsData?.summary?.response_rate || 0) >= 70 ? 'good' as const : 'warning' as const
         }
       ],
       status: 'success' as const,
@@ -90,12 +105,6 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
         `${analyticsData?.summary?.total_responses || 0} total responses collected`,
         `${analyticsData?.summary?.overall_completion_rate || 0}% completion rate achieved`,
         `Growth rate: ${calculateGrowthRate() >= 0 ? '+' : ''}${calculateGrowthRate()}% this month`
-      ],
-      actionLabel: 'View Response Analytics',
-      onAction: () => onTabChange('feedback'),
-      contextualActions: [
-        { label: 'Export Data', onClick: () => console.log('Export responses') },
-        { label: 'Quality Report', onClick: () => console.log('Quality report') }
       ]
     },
     {
@@ -106,38 +115,33 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
       change: {
         value: Math.abs(calculateGrowthRate()),
         period: 'last 30 days',
-        trend: calculateGrowthRate() >= 0 ? 'up' as const : 'down' as const
+        trend: getTrendIndicator(calculateGrowthRate())
       },
       secondaryMetrics: [
         { 
           label: 'Completed Sessions', 
           value: analyticsData?.summary?.completed_sessions || 0, 
-          trend: 'up' as const,
+          trend: getTrendIndicator(5),
           status: 'good' as const
         },
         { 
           label: 'User Satisfaction', 
           value: `${analyticsData?.summary?.user_satisfaction_rate || 0}%`, 
-          trend: analyticsData?.summary?.user_satisfaction_rate >= 80 ? 'up' as const : 'down' as const,
-          status: analyticsData?.summary?.user_satisfaction_rate >= 80 ? 'good' as const : 'warning' as const
+          trend: getTrendIndicator(analyticsData?.summary?.user_satisfaction_rate >= 80 ? 10 : -10),
+          status: (analyticsData?.summary?.user_satisfaction_rate || 0) >= 80 ? 'good' as const : 'warning' as const
         },
         {
           label: 'Avg Score',
-          value: `${analyticsData?.summary?.avg_score || 0}/5`,
-          trend: analyticsData?.summary?.avg_score >= 4 ? 'up' as const : 'down' as const,
-          status: analyticsData?.summary?.avg_score >= 4 ? 'good' as const : 'warning' as const
+          value: `${normalizedAvgScore.toFixed(1)}/5`,
+          trend: getTrendIndicator(normalizedAvgScore >= 4 ? 10 : normalizedAvgScore >= 3 ? 0 : -10),
+          status: normalizedAvgScore >= 4 ? 'good' as const : normalizedAvgScore >= 3 ? 'warning' as const : 'critical' as const
         }
       ],
       status: 'success' as const,
       insights: [
         `${analyticsData?.summary?.completed_sessions || 0} sessions completed successfully`,
         `${analyticsData?.summary?.user_satisfaction_rate || 0}% user satisfaction rate`,
-        `Average score: ${analyticsData?.summary?.avg_score || 0}/5 stars`
-      ],
-      actionLabel: 'View Session Details',
-      contextualActions: [
-        { label: 'User Journey', onClick: () => console.log('User journey') },
-        { label: 'Engagement Report', onClick: () => console.log('Engagement report') }
+        `Average score: ${normalizedAvgScore.toFixed(1)}/5 stars`
       ]
     }
   ];
@@ -148,7 +152,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
       label: 'Overall Performance Score',
       value: `${calculatePerformanceScore()}%`,
       status: calculatePerformanceScore() >= 80 ? 'good' as const : calculatePerformanceScore() >= 60 ? 'warning' as const : 'critical' as const,
-      trend: calculateGrowthRate() >= 0 ? 'up' as const : 'down' as const,
+      trend: getTrendIndicator(calculateGrowthRate()),
       target: 100,
       description: 'Composite performance across all metrics',
       change: { value: Math.abs(calculateGrowthRate()), period: 'this month' }
@@ -157,7 +161,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
       label: 'User Satisfaction',
       value: `${analyticsData?.summary?.user_satisfaction_rate || 0}%`,
       status: (analyticsData?.summary?.user_satisfaction_rate || 0) >= 80 ? 'good' as const : 'warning' as const,
-      trend: 'up' as const,
+      trend: getTrendIndicator(8),
       description: 'Percentage of users rating 4+ stars',
       change: { value: 8, period: 'vs last month' }
     },
@@ -165,7 +169,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
       label: 'Growth Trajectory',
       value: `${calculateGrowthRate() >= 0 ? '+' : ''}${calculateGrowthRate()}%`,
       status: calculateGrowthRate() >= 0 ? 'good' as const : 'warning' as const,
-      trend: calculateGrowthRate() >= 0 ? 'up' as const : 'down' as const,
+      trend: getTrendIndicator(calculateGrowthRate()),
       description: 'Month-over-month growth rate',
       change: { value: Math.abs(calculateGrowthRate()), period: 'acceleration' }
     }
@@ -217,6 +221,7 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
                   <EnhancedMetricCard 
                     key={index}
                     {...metric}
+                    hideActions={true}
                   />
                 ))}
               </ResponsiveGrid>
