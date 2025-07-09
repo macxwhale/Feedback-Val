@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Users, 
@@ -50,11 +51,11 @@ export const InformationRichDashboard: React.FC<InformationRichDashboardProps> =
     return analyticsData.summary.growth_rate || 0;
   };
 
-  // Helper function to get trend indicator with neutral option
-  const getTrendIndicator = (value: number): 'up' | 'down' | 'neutral' => {
+  // Helper function to get trend indicator with stable option
+  const getTrendIndicator = (value: number): 'up' | 'down' | 'stable' => {
     if (value > 5) return 'up';
     if (value < -5) return 'down';
-    return 'neutral';
+    return 'stable';
   };
 
   // Helper function to normalize average score to 1-5 scale
