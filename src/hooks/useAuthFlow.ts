@@ -27,6 +27,10 @@ export function useAuthFlow() {
     
     console.log('Starting sign in process for:', email);
     
+    // Check if this is an invitation flow
+    const isInvitation = searchParams.get('invitation') === 'true';
+    const orgSlug = searchParams.get('org');
+    
     const { error: signInError } = await signIn(email, password);
     
     if (signInError) {
@@ -50,6 +54,15 @@ export function useAuthFlow() {
         
         if (session?.user) {
           console.log('Session found, determining redirect path...');
+          
+          // If this is an invitation flow, skip the default redirect
+          // The invitation processing will handle the redirect
+          if (isInvitation && orgSlug) {
+            console.log('Invitation flow detected, skipping default redirect');
+            setLoading(false);
+            return;
+          }
+          
           const redirectPath = await AuthService.handlePostAuthRedirect(session.user);
           console.log('Redirecting to:', redirectPath);
           navigate(redirectPath);
@@ -201,6 +214,9 @@ export function useAuthFlow() {
             console.log('User already in organization');
           }
 
+          // Add a delay to ensure database consistency before redirect
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Redirect to organization dashboard
           console.log('Redirecting to organization dashboard:', orgSlug);
           navigate(`/admin/${orgSlug}`);
