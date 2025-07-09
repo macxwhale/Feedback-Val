@@ -20,7 +20,7 @@ import { ContextualActionMenu, createMetricActions } from './ContextualActionMen
 interface SecondaryMetric {
   label: string;
   value: string | number;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: 'up' | 'down' | 'stable';
   target?: number;
   change?: {
     value: number;
@@ -36,7 +36,7 @@ interface EnhancedMetricCardProps {
   change?: {
     value: number;
     period: string;
-    trend: 'up' | 'down' | 'neutral';
+    trend: 'up' | 'down' | 'stable';
   };
   secondaryMetrics?: SecondaryMetric[];
   icon: React.ComponentType<{ className?: string }>;
@@ -88,7 +88,7 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
     }
   };
 
-  const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
+  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
       case 'up': return <ArrowUpRight className="w-3 h-3 text-green-600" />;
       case 'down': return <ArrowDownRight className="w-3 h-3 text-red-600" />;
@@ -96,7 +96,7 @@ export const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
     }
   };
 
-  const getTrendColor = (trend: 'up' | 'down' | 'neutral') => {
+  const getTrendColor = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
       case 'up': return 'text-green-700 bg-green-100 border-green-200';
       case 'down': return 'text-red-700 bg-red-100 border-red-200';
