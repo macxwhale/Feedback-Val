@@ -24,7 +24,7 @@ export const useAnalyticsTableData = (organizationId: string) => {
 
       if (questionsError) throw questionsError;
 
-      // Fetch responses data
+      // Fetch responses data with proper filtering
       const { data: responsesData, error: responsesError } = await supabase
         .from('feedback_responses')
         .select(`
@@ -33,51 +33,107 @@ export const useAnalyticsTableData = (organizationId: string) => {
           score,
           response_time_ms,
           created_at,
-          question_category
+          question_category,
+          session_id,
+          response_value
         `)
         .eq('organization_id', organizationId);
 
       if (responsesError) throw responsesError;
 
-      // Fetch sessions data for trend analysis
+      // Fetch sessions data for comprehensive analytics
       const { data: sessionsData, error: sessionsError } = await supabase
         .from('feedback_sessions')
         .select(`
           id,
           status,
           total_score,
-          created_at
+          created_at,
+          completed_at,
+          started_at,
+          user_id
         `)
         .eq('organization_id', organizationId)
-        .order('created_at', { ascending: false })
-        .limit(30);
+        .order('created_at', { ascending: false });
 
       if (sessionsError) throw sessionsError;
+
+      // Calculate accurate metrics
+      const totalSessions = (sessionsData || []).length;
+      const completedSessions = (sessionsData || []).filter(s => s.status === 'completed').length;
+      const inProgressSessions = (sessionsData || []).filter(s => s.status === 'in_progress').length;
+      const abandonedSessions = totalSessions - completedSessions - inProgressSessions;
+
+      // Calculate completion rate accurately
+      const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
+      // Calculate average session score from completed sessions only
+      const completedSessionsWithScores = (sessionsData || []).filter(s => 
+        s.status === 'completed' && s.total_score !== null
+      );
+      const avgSessionScore = completedSessionsWithScores.length > 0 
+        ? completedSessionsWithScores.reduce((sum, s) => sum + (s.total_score || 0), 0) / completedSessionsWithScores.length 
+        : 0;
+
+      // Calculate user satisfaction based on scores
+      const highSatisfactionSessions = completedSessionsWithScores.filter(s => (s.total_score || 0) >= 4).length;
+      const userSatisfactionRate = completedSessionsWithScores.length > 0 
+        ? Math.round((highSatisfactionSessions / completedSessionsWithScores.length) * 100) 
+        : 0;
+
+      // Calculate growth metrics
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+      const currentPeriodSessions = (sessionsData || []).filter(s => 
+        new Date(s.created_at) >= thirtyDaysAgo
+      ).length;
+      const previousPeriodSessions = (sessionsData || []).filter(s => 
+        new Date(s.created_at) >= sixtyDaysAgo && new Date(s.created_at) < thirtyDaysAgo
+      ).length;
+
+      const growthRate = previousPeriodSessions > 0 
+        ? Math.round(((currentPeriodSessions - previousPeriodSessions) / previousPeriodSessions) * 100)
+        : 0;
 
       // Process questions analytics
       const questions: QuestionAnalytics[] = (questionsData || []).map(question => {
         const questionResponses = (responsesData || []).filter(r => r.question_id === question.id);
         const totalResponses = questionResponses.length;
-        const avgScore = totalResponses > 0 
-          ? questionResponses.reduce((sum, r) => sum + (r.score || 0), 0) / totalResponses 
-          : 0;
-        const avgResponseTime = totalResponses > 0 
-          ? questionResponses.reduce((sum, r) => sum + (r.response_time_ms || 0), 0) / totalResponses 
+        
+        // Get unique sessions that responded to this question
+        const uniqueSessions = new Set(questionResponses.map(r => r.session_id));
+        const questionCompletionRate = totalSessions > 0 
+          ? Math.round((uniqueSessions.size / totalSessions) * 100) 
           : 0;
 
-        // Calculate completion rate (simplified - based on responses vs expected)
-        const completionRate = Math.min(100, Math.max(0, totalResponses > 0 ? 85 + Math.random() * 15 : 0));
+        // Calculate average score for this question
+        const scoredResponses = questionResponses.filter(r => r.score !== null);
+        const avgScore = scoredResponses.length > 0 
+          ? scoredResponses.reduce((sum, r) => sum + (r.score || 0), 0) / scoredResponses.length 
+          : 0;
+
+        // Calculate average response time
+        const timedResponses = questionResponses.filter(r => r.response_time_ms !== null);
+        const avgResponseTime = timedResponses.length > 0 
+          ? timedResponses.reduce((sum, r) => sum + (r.response_time_ms || 0), 0) / timedResponses.length 
+          : 0;
 
         // Generate insights based on performance
         const insights: string[] = [];
-        if (completionRate > 90) {
+        if (questionCompletionRate > 90) {
           insights.push("High engagement - users complete this question consistently");
         }
-        if (completionRate < 70) {
+        if (questionCompletionRate < 70) {
           insights.push("Low completion - consider simplifying or repositioning");
         }
         if (avgScore > 4) {
           insights.push("Positive sentiment - high satisfaction scores");
+        }
+        if (avgScore < 2.5) {
+          insights.push("Negative sentiment - requires attention");
         }
         if (avgResponseTime > 30000) {
           insights.push("Long response time - may indicate complexity");
@@ -89,12 +145,12 @@ export const useAnalyticsTableData = (organizationId: string) => {
           question_type: question.question_type || 'text',
           category: question.category || 'General',
           total_responses: totalResponses,
-          completion_rate: Math.round(completionRate),
+          completion_rate: questionCompletionRate,
           avg_score: Math.round(avgScore * 100) / 100,
           avg_response_time_ms: Math.round(avgResponseTime),
-          response_distribution: {}, // Could be enhanced based on question type
+          response_distribution: {}, // Enhanced in separate processor
           insights,
-          trend: avgScore > 3 ? 'positive' : avgScore < 2 ? 'negative' : 'neutral' as 'positive' | 'negative' | 'neutral' | 'mixed'
+          trend: avgScore > 3.5 ? 'positive' : avgScore < 2.5 ? 'negative' : 'neutral' as 'positive' | 'negative' | 'neutral' | 'mixed'
         };
       });
 
@@ -110,9 +166,15 @@ export const useAnalyticsTableData = (organizationId: string) => {
 
       const categories: CategoryAnalytics[] = Array.from(categoryMap.entries()).map(([category, categoryQuestions]) => {
         const totalResponses = categoryQuestions.reduce((sum, q) => sum + q.total_responses, 0);
-        const avgCompletionRate = categoryQuestions.reduce((sum, q) => sum + q.completion_rate, 0) / categoryQuestions.length;
-        const avgScore = categoryQuestions.reduce((sum, q) => sum + q.avg_score, 0) / categoryQuestions.length;
-        const avgResponseTime = categoryQuestions.reduce((sum, q) => sum + (q.avg_response_time_ms || 0), 0) / categoryQuestions.length;
+        const avgCompletionRate = categoryQuestions.length > 0
+          ? categoryQuestions.reduce((sum, q) => sum + q.completion_rate, 0) / categoryQuestions.length
+          : 0;
+        const avgScore = categoryQuestions.length > 0
+          ? categoryQuestions.reduce((sum, q) => sum + q.avg_score, 0) / categoryQuestions.length
+          : 0;
+        const avgResponseTime = categoryQuestions.length > 0
+          ? categoryQuestions.reduce((sum, q) => sum + (q.avg_response_time_ms || 0), 0) / categoryQuestions.length
+          : 0;
 
         return {
           category,
@@ -125,15 +187,15 @@ export const useAnalyticsTableData = (organizationId: string) => {
         };
       });
 
-      // Generate trend data from sessions
+      // Generate trend data from sessions (last 30 days)
       const trendData: TrendDataPoint[] = [];
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const last30Days = Array.from({ length: 30 }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - i);
         return date;
       }).reverse();
 
-      last7Days.forEach(date => {
+      last30Days.forEach(date => {
         const dateStr = date.toISOString().split('T')[0];
         const daySessions = (sessionsData || []).filter(s => 
           s.created_at.startsWith(dateStr)
@@ -155,25 +217,22 @@ export const useAnalyticsTableData = (organizationId: string) => {
         });
       });
 
-      // Calculate session metrics for summary
-      const totalSessions = (sessionsData || []).length;
-      const completedSessions = (sessionsData || []).filter(s => s.status === 'completed').length;
-      const avgScore = sessionsData && sessionsData.length > 0 
-        ? sessionsData.reduce((sum, s) => sum + (s.total_score || 0), 0) / sessionsData.length 
-        : 0;
-
       return {
         questions,
         categories,
         summary: {
           total_questions: questions.length,
           total_responses: questions.reduce((sum, q) => sum + q.total_responses, 0),
-          overall_completion_rate: Math.round(
-            questions.reduce((sum, q) => sum + q.completion_rate, 0) / questions.length
-          ),
+          overall_completion_rate: completionRate,
           total_sessions: totalSessions,
           completed_sessions: completedSessions,
-          avg_score: Math.round(avgScore * 100) / 100
+          avg_score: Math.round(avgSessionScore * 100) / 100,
+          user_satisfaction_rate: userSatisfactionRate,
+          growth_rate: growthRate,
+          abandoned_sessions: abandonedSessions,
+          response_rate: questions.length > 0 
+            ? Math.round((questions.reduce((sum, q) => sum + q.total_responses, 0) / (questions.length * totalSessions)) * 100)
+            : 0
         },
         trendData
       };
