@@ -122,10 +122,98 @@ export function useAuthFlow() {
     const isInvitation = searchParams.get('invitation') === 'true';
     const orgSlug = searchParams.get('org');
     
-    if (isInvitation && orgSlug) {
-      // For invited users, redirect to login page so they can sign in with their new password
-      console.log('Password reset for invited user, redirecting to login');
-      navigate('/auth?message=' + encodeURIComponent('Password updated successfully! Please sign in with your new password.'));
+    if (isInvitation && orgSlug && email) {
+      // For invited users, process the invitation after password is set
+      console.log('Processing invitation after password reset for:', email, 'to org:', orgSlug);
+      
+      try {
+        // Get the current session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Get organization details
+          const { data: organization } = await supabase
+            .from('organizations')
+            .select('id, name, slug')
+            .eq('slug', orgSlug)
+            .single();
+
+          if (!organization) {
+            console.error('Organization not found:', orgSlug);
+            setError('Organization not found');
+            setLoading(false);
+            return;
+          }
+
+          // Check if user is already in organization
+          const { data: existingMembership } = await supabase
+            .from('organization_users')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('organization_id', organization.id)
+            .maybeSingle();
+
+          if (!existingMembership) {
+            // Get invitation details to determine role
+            const { data: invitation } = await supabase
+              .from('user_invitations')
+              .select('role, enhanced_role')
+              .eq('email', email.toLowerCase().trim())
+              .eq('organization_id', organization.id)
+              .eq('status', 'pending')
+              .single();
+
+            const role = invitation?.role || 'member';
+            const enhancedRole = invitation?.enhanced_role || role;
+
+            // Add user to organization
+            const { error: addError } = await supabase
+              .from('organization_users')
+              .insert({
+                user_id: session.user.id,
+                organization_id: organization.id,
+                email: email,
+                role: role,
+                enhanced_role: enhancedRole,
+                status: 'active',
+                accepted_at: new Date().toISOString()
+              });
+
+            if (addError) {
+              console.error('Error adding user to organization:', addError);
+              setError('Failed to join organization');
+              setLoading(false);
+              return;
+            }
+
+            // Mark invitation as accepted
+            await supabase
+              .from('user_invitations')
+              .update({ 
+                status: 'accepted',
+                updated_at: new Date().toISOString()
+              })
+              .eq('email', email.toLowerCase().trim())
+              .eq('organization_id', organization.id);
+
+            console.log('User successfully added to organization');
+          } else {
+            console.log('User already in organization');
+          }
+
+          // Redirect to organization dashboard
+          console.log('Redirecting to organization dashboard:', orgSlug);
+          navigate(`/admin/${orgSlug}`);
+        } else {
+          console.error('No session found after password reset');
+          setError('Authentication error. Please try signing in.');
+          navigate('/auth');
+        }
+      } catch (error) {
+        console.error('Error processing invitation:', error);
+        setError('Failed to process invitation');
+        navigate('/auth?error=' + encodeURIComponent('Failed to process invitation'));
+      }
     } else {
       // For regular password reset, redirect to dashboard
       console.log('Regular password reset, redirecting to dashboard');
