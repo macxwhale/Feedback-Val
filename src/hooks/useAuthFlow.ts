@@ -164,9 +164,9 @@ export function useAuthFlow() {
               .single();
 
             const role = invitation?.role || 'member';
-            const enhancedRole = invitation?.enhanced_role || role;
+            const enhancedRole = invitation?.enhanced_role || 'member';
 
-            // Add user to organization
+            // Add user to organization with proper typing
             const { error: addError } = await supabase
               .from('organization_users')
               .insert({
@@ -174,7 +174,7 @@ export function useAuthFlow() {
                 organization_id: organization.id,
                 email: email,
                 role: role,
-                enhanced_role: enhancedRole,
+                enhanced_role: enhancedRole as "owner" | "admin" | "manager" | "analyst" | "member" | "viewer",
                 status: 'active',
                 accepted_at: new Date().toISOString()
               });
