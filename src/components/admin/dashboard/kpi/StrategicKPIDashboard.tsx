@@ -39,7 +39,11 @@ export const StrategicKPIDashboard: React.FC<StrategicKPIDashboardProps> = ({
     return (
       <Card>
         <CardContent className="p-6 text-center">
+          <Target className="w-12 h-12 mx-auto mb-4 text-gray-400" />
           <p className="text-gray-500">Unable to load strategic KPIs</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Strategic KPIs will appear here once you have sufficient feedback data.
+          </p>
         </CardContent>
       </Card>
     );

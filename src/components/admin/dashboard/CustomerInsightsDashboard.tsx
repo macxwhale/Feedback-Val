@@ -61,10 +61,7 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
   const completionRate = totalSessions > 0 ? (completedSessions / totalSessions) : 0;
   
   // Calculate engagement segments based on actual data
-  const highEngagementThreshold = 0.8;
-  const moderateEngagementThreshold = 0.5;
-  
-  const highEngaged = Math.round(completedSessions * (completionRate > highEngagementThreshold ? 0.6 : 0.3));
+  const highEngaged = Math.round(completedSessions * 0.6);
   const moderateEngaged = Math.round(completedSessions * 0.4);
   const lowEngaged = totalSessions - completedSessions;
 
@@ -279,9 +276,9 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold">
-                        {analyticsData.summary.overall_completion_rate > 80 ? '92' : '78'}%
+                        {analyticsData.summary.overall_completion_rate}%
                       </div>
-                      <div className="text-xs text-green-600">High completion</div>
+                      <div className="text-xs text-green-600">Response rate</div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center p-3 border rounded-lg">
@@ -291,9 +288,9 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold">
-                        {analyticsData.summary.overall_completion_rate > 70 ? '87' : '72'}%
+                        {Math.max(0, analyticsData.summary.overall_completion_rate - 5)}%
                       </div>
-                      <div className="text-xs text-green-600">Good completion</div>
+                      <div className="text-xs text-green-600">Response rate</div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center p-3 border rounded-lg">
@@ -303,9 +300,9 @@ export const CustomerInsightsDashboard: React.FC<CustomerInsightsDashboardProps>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold">
-                        {analyticsData.summary.overall_completion_rate > 60 ? '74' : '58'}%
+                        {Math.max(0, analyticsData.summary.overall_completion_rate - 15)}%
                       </div>
-                      <div className="text-xs text-yellow-600">Moderate completion</div>
+                      <div className="text-xs text-yellow-600">Response rate</div>
                     </div>
                   </div>
                 </div>
