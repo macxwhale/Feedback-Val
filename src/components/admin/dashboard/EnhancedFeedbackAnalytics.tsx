@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useOrganizationStats } from '@/hooks/useOrganizationStats';
+import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ interface EnhancedFeedbackAnalyticsProps {
 export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps> = ({ 
   organizationId 
 }) => {
-  const { data: stats, isLoading, error, refetch } = useOrganizationStats(organizationId);
+  const { data: analyticsData, isLoading, error, refetch } = useAnalyticsTableData(organizationId);
   const [timeRange, setTimeRange] = useState('30d');
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -80,28 +80,44 @@ export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps>
     );
   }
 
+  if (!analyticsData) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          No analytics data available for this organization.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Calculate average response time from analytics data
+  const avgResponseTime = analyticsData.questions.length > 0 
+    ? analyticsData.questions.reduce((sum, q) => sum + (q.avg_response_time_ms || 0), 0) / analyticsData.questions.length
+    : 0;
+  
+  const avgResponseTimeMinutes = Math.round(avgResponseTime / 60000 * 10) / 10; // Convert to minutes with 1 decimal
+
   const metrics = [
     {
       title: 'Total Responses',
-      value: stats?.total_responses || 0,
-      change: 12,
-      trend: 'up' as const,
+      value: analyticsData.summary.total_responses,
+      change: analyticsData.summary.growth_rate,
+      trend: analyticsData.summary.growth_rate >= 0 ? 'up' as const : 'down' as const,
       icon: MessageSquare,
       description: 'All time feedback responses'
     },
     {
       title: 'Active Sessions',
-      value: stats?.total_sessions || 0,
-      change: 8,
-      trend: 'up' as const,
+      value: analyticsData.summary.total_sessions,
+      change: Math.abs(analyticsData.summary.growth_rate),
+      trend: analyticsData.summary.growth_rate >= 0 ? 'up' as const : 'down' as const,
       icon: Activity,
-      description: 'Current feedback sessions'
+      description: 'Total feedback sessions'
     },
     {
       title: 'Completion Rate',
-      value: stats && stats.total_sessions > 0 
-        ? `${Math.round((stats.completed_sessions / stats.total_sessions) * 100)}%`
-        : '0%',
+      value: `${analyticsData.summary.overall_completion_rate}%`,
       change: 5,
       trend: 'up' as const,
       icon: Target,
@@ -109,7 +125,7 @@ export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps>
     },
     {
       title: 'Avg. Response Time',
-      value: '2.4min',
+      value: avgResponseTimeMinutes > 0 ? `${avgResponseTimeMinutes}min` : '0min',
       change: -8,
       trend: 'down' as const,
       icon: Clock,
@@ -211,24 +227,14 @@ export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium">Multiple Choice</span>
-                    <Badge variant="secondary">
-                      {Math.round((stats?.total_responses || 0) * 0.4)}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium">Rating Scale</span>
-                    <Badge variant="secondary">
-                      {Math.round((stats?.total_responses || 0) * 0.35)}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium">Open Text</span>
-                    <Badge variant="secondary">
-                      {Math.round((stats?.total_responses || 0) * 0.25)}
-                    </Badge>
-                  </div>
+                  {analyticsData.categories.map((category, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium">{category.category}</span>
+                      <Badge variant="secondary">
+                        {category.total_responses}
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -249,27 +255,36 @@ export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps>
                     <span className="text-sm text-gray-600">Response Rate</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="w-3/4 h-full bg-green-500 rounded-full"></div>
+                        <div 
+                          className="h-full bg-green-500 rounded-full"
+                          style={{ width: `${Math.min(analyticsData.summary.response_rate, 100)}%` }}
+                        ></div>
                       </div>
-                      <span className="text-sm font-medium">75%</span>
+                      <span className="text-sm font-medium">{analyticsData.summary.response_rate}%</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Engagement Score</span>
+                    <span className="text-sm text-gray-600">User Satisfaction</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="w-4/5 h-full bg-blue-500 rounded-full"></div>
+                        <div 
+                          className="h-full bg-purple-500 rounded-full"
+                          style={{ width: `${Math.min(analyticsData.summary.user_satisfaction_rate, 100)}%` }}
+                        ></div>
                       </div>
-                      <span className="text-sm font-medium">8.2/10</span>
+                      <span className="text-sm font-medium">{analyticsData.summary.user_satisfaction_rate}%</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Satisfaction Index</span>
+                    <span className="text-sm text-gray-600">Average Score</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="w-5/6 h-full bg-purple-500 rounded-full"></div>
+                        <div 
+                          className="h-full bg-blue-500 rounded-full"
+                          style={{ width: `${(analyticsData.summary.avg_score / 5) * 100}%` }}
+                        ></div>
                       </div>
-                      <span className="text-sm font-medium">4.1/5</span>
+                      <span className="text-sm font-medium">{analyticsData.summary.avg_score}/5</span>
                     </div>
                   </div>
                 </div>
@@ -309,21 +324,25 @@ export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800">
-                      ✓ Response rate increased by 12% this month
-                    </p>
-                  </div>
+                  {analyticsData.summary.growth_rate > 0 && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm font-medium text-green-800">
+                        ✓ Response rate increased by {analyticsData.summary.growth_rate}% this month
+                      </p>
+                    </div>
+                  )}
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm font-medium text-blue-800">
-                      ℹ Peak response time: 2-4 PM weekdays
+                      ℹ {analyticsData.summary.completed_sessions} sessions completed successfully
                     </p>
                   </div>
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-sm font-medium text-amber-800">
-                      ⚠ Mobile completion rate needs attention
-                    </p>
-                  </div>
+                  {analyticsData.summary.overall_completion_rate < 70 && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <p className="text-sm font-medium text-amber-800">
+                        ⚠ Completion rate needs attention ({analyticsData.summary.overall_completion_rate}%)
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -337,22 +356,26 @@ export const EnhancedFeedbackAnalytics: React.FC<EnhancedFeedbackAnalyticsProps>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
+                  {analyticsData.summary.overall_completion_rate < 70 && (
+                    <div className="p-3 border rounded-lg">
+                      <p className="text-sm font-medium mb-1">Optimize Form Length</p>
+                      <p className="text-xs text-gray-600">
+                        Consider shorter forms to improve completion rates
+                      </p>
+                    </div>
+                  )}
+                  {analyticsData.summary.user_satisfaction_rate < 75 && (
+                    <div className="p-3 border rounded-lg">
+                      <p className="text-sm font-medium mb-1">Improve User Experience</p>
+                      <p className="text-xs text-gray-600">
+                        Focus on enhancing the feedback collection process
+                      </p>
+                    </div>
+                  )}
                   <div className="p-3 border rounded-lg">
-                    <p className="text-sm font-medium mb-1">Optimize Mobile Experience</p>
+                    <p className="text-sm font-medium mb-1">Monitor Performance</p>
                     <p className="text-xs text-gray-600">
-                      Consider shorter forms for mobile users
-                    </p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <p className="text-sm font-medium mb-1">Schedule Follow-ups</p>
-                    <p className="text-xs text-gray-600">
-                      Send reminders during peak hours
-                    </p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <p className="text-sm font-medium mb-1">A/B Test Questions</p>
-                    <p className="text-xs text-gray-600">
-                      Test different question formats
+                      Regular tracking of key metrics for continuous improvement
                     </p>
                   </div>
                 </div>
