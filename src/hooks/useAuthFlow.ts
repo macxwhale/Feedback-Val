@@ -118,8 +118,20 @@ export function useAuthFlow() {
       description: "Your password has been successfully updated.",
     });
     
-    // Redirect to dashboard
-    navigate('/');
+    // Check if this is an invitation flow
+    const isInvitation = searchParams.get('invitation') === 'true';
+    const orgSlug = searchParams.get('org');
+    
+    if (isInvitation && orgSlug) {
+      // For invited users, redirect to login page so they can sign in with their new password
+      console.log('Password reset for invited user, redirecting to login');
+      navigate('/auth?message=' + encodeURIComponent('Password updated successfully! Please sign in with your new password.'));
+    } else {
+      // For regular password reset, redirect to dashboard
+      console.log('Regular password reset, redirecting to dashboard');
+      navigate('/');
+    }
+    
     setLoading(false);
   };
 
