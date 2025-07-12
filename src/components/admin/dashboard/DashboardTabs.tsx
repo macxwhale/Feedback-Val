@@ -99,7 +99,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
         </TabsContent>
         <TabsContent value="questions">
           <React.Suspense fallback={<div>Loading questions…</div>}>
-            <QuestionsTab />
+            <QuestionsTab organization={organization} />
           </React.Suspense>
         </TabsContent>
         <TabsContent value="settings">
@@ -111,7 +111,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           <React.Suspense fallback={<div>Loading integrations…</div>}>
             <IntegrationsTab />
           </React.Suspense>
-        </TabsContent>
+        </TabsContent>     
       </Tabs>
     </div>
   );

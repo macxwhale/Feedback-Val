@@ -1,11 +1,20 @@
 
 import React from "react";
-import { QuestionsManagement } from '@/components/admin/QuestionsManagement';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 interface QuestionsTabProps {
   organization: any;
 }
+
+const QuestionsManagement: React.FC<{ organizationId: string }> = ({ organizationId }) => {
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Questions Management</h2>
+      <p className="text-gray-600">Manage your organization's questions here.</p>
+      <p className="text-sm text-gray-500 mt-2">Organization ID: {organizationId}</p>
+    </div>
+  );
+};
 
 export const QuestionsTab: React.FC<QuestionsTabProps> = ({ organization }) => (
   <PermissionGuard 

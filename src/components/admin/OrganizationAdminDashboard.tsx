@@ -5,22 +5,26 @@ import { useAuth } from '@/components/auth/AuthWrapper';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useDashboard } from '@/context/DashboardContext';
 import { useRBAC } from '@/hooks/useRBAC';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { DashboardDataProvider } from '@/components/admin/dashboard/DashboardDataProvider';
+import { DashboardTabs } from '@/components/admin/dashboard/DashboardTabs';
+import { DashboardHeader } from '@/components/admin/dashboard/DashboardHeader';
 
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user, isAdmin, loading } = useAuth();
-  const { organization, loading: orgLoading, error: orgError, fetchOrganization } = useOrganization();
+  const { organization, loading: orgLoading, error: orgError, refreshOrganization } = useOrganization();
   const { hasPermission, userRole, isLoading: rbacLoading } = useRBAC(organization?.id);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isLiveActivity, setIsLiveActivity] = useState(false);
 
   useEffect(() => {
     if (slug && !orgLoading) {
-      fetchOrganization(slug);
+      refreshOrganization();
     }
-  }, [slug, fetchOrganization, orgLoading]);
+  }, [slug, refreshOrganization, orgLoading]);
 
   console.log('OrganizationAdminDashboard:', {
     slug,
@@ -52,7 +56,7 @@ export const OrganizationAdminDashboard: React.FC = () => {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Failed to load organization: {orgError.message}
+            Failed to load organization: {orgError}
           </AlertDescription>
         </Alert>
       </div>
@@ -89,10 +93,19 @@ export const OrganizationAdminDashboard: React.FC = () => {
               </AlertDescription>
             </Alert>
           }
-        />
+        >
+          <div></div>
+        </PermissionGuard>
       </div>
     );
   }
+
+  const handleQuickActions = {
+    onCreateQuestion: () => setActiveTab('questions'),
+    onInviteUser: () => setActiveTab('members'),
+    onExportData: () => console.log('Export data'),
+    onViewSettings: () => setActiveTab('settings')
+  };
 
   return (
     <PermissionGuard 
@@ -100,7 +113,21 @@ export const OrganizationAdminDashboard: React.FC = () => {
       organizationId={organization.id}
       showRequiredRole={true}
     >
-      <AdminLayout />
+      <DashboardDataProvider>
+        <div className="min-h-screen bg-gray-50">
+          <DashboardHeader />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <DashboardTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              organization={organization}
+              isLiveActivity={isLiveActivity}
+              setIsLiveActivity={setIsLiveActivity}
+              handleQuickActions={handleQuickActions}
+            />
+          </main>
+        </div>
+      </DashboardDataProvider>
     </PermissionGuard>
   );
 };

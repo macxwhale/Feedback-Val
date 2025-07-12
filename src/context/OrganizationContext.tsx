@@ -8,6 +8,7 @@ interface OrganizationContextType {
   loading: boolean;
   error: string | null;
   refreshOrganization: () => void;
+  fetchOrganization: (slug: string) => void;
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
@@ -47,19 +48,11 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
 
-  const fetchOrganization = async () => {
+  const fetchOrganizationBySlug = async (slug: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      const slug = extractSlugFromPath(location.pathname);
-
-      if (!slug) {
-        setOrganization(null);
-        setLoading(false);
-        return;
-      }
-
       const { data, error: fetchError } = await supabase
         .from("organizations")
         .select("*")
@@ -85,6 +78,22 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const fetchOrganization = async () => {
+    const slug = extractSlugFromPath(location.pathname);
+
+    if (!slug) {
+      setOrganization(null);
+      setLoading(false);
+      return;
+    }
+
+    await fetchOrganizationBySlug(slug);
+  };
+
+  const refreshOrganization = () => {
+    fetchOrganization();
+  };
+
   useEffect(() => {
     fetchOrganization();
   }, [location.pathname]);
@@ -94,7 +103,8 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       organization,
       loading,
       error,
-      refreshOrganization: fetchOrganization,
+      refreshOrganization,
+      fetchOrganization: fetchOrganizationBySlug,
     }}>
       {children}
     </OrganizationContext.Provider>
