@@ -16,31 +16,16 @@ export const DashboardUserMenu: React.FC = () => {
     toast.success("Successfully signed out.");
   };
 
-  // Determine role display with proper precedence
+  // Determine role display
   let role = "Member";
   let roleConfig = null;
 
   if (isAdmin) {
     role = "System Admin";
-    // Use a crown icon for system admin
-    roleConfig = { 
-      icon: ({ className }: { className?: string }) => (
-        <div className={`${className} text-red-600`}>👑</div>
-      ),
-      label: "System Admin"
-    };
   } else if (userRole) {
     roleConfig = getRoleConfig(userRole);
     role = roleConfig.label;
   }
-
-  console.log('DashboardUserMenu role display:', {
-    isAdmin,
-    userRole,
-    role,
-    currentOrganization,
-    isLoading
-  });
 
   return (
     <div className="flex items-center gap-3 ml-3">
@@ -51,7 +36,7 @@ export const DashboardUserMenu: React.FC = () => {
             {user?.email || "—"}
           </span>
           <div className="flex items-center gap-1">
-            {roleConfig?.icon && <roleConfig.icon className="w-3 h-3" />}
+            {roleConfig?.icon && <roleConfig.icon className="w-3 h-3 text-orange-600" />}
             <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
               {isLoading ? "Loading..." : role}
             </span>

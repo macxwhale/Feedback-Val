@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,7 +8,6 @@ interface OrganizationContextType {
   loading: boolean;
   error: string | null;
   refreshOrganization: () => void;
-  fetchOrganization: (slug: string) => void;
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
@@ -46,20 +45,21 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [organization, setOrganization] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const location = useLocation();
 
-  const fetchOrganizationBySlug = useCallback(async (slug: string) => {
-    // Don't fetch if we already have this organization
-    if (organization && organization.slug === slug) {
-      setLoading(false);
-      return;
-    }
-
+  const fetchOrganization = async () => {
     setLoading(true);
     setError(null);
     
     try {
+      const slug = extractSlugFromPath(location.pathname);
+
+      if (!slug) {
+        setOrganization(null);
+        setLoading(false);
+        return;
+      }
+
       const { data, error: fetchError } = await supabase
         .from("organizations")
         .select("*")
@@ -83,43 +83,18 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setLoading(false);
     }
-  }, [organization]);
-
-  const fetchOrganization = useCallback(async () => {
-    const slug = extractSlugFromPath(location.pathname);
-
-    if (!slug) {
-      setOrganization(null);
-      setLoading(false);
-      setCurrentSlug(null);
-      return;
-    }
-
-    // Only fetch if the slug has changed
-    if (slug !== currentSlug) {
-      setCurrentSlug(slug);
-      await fetchOrganizationBySlug(slug);
-    }
-  }, [location.pathname, currentSlug, fetchOrganizationBySlug]);
-
-  const refreshOrganization = useCallback(() => {
-    const slug = extractSlugFromPath(location.pathname);
-    if (slug) {
-      fetchOrganizationBySlug(slug);
-    }
-  }, [location.pathname, fetchOrganizationBySlug]);
+  };
 
   useEffect(() => {
     fetchOrganization();
-  }, [fetchOrganization]);
+  }, [location.pathname]);
 
   return (
     <OrganizationContext.Provider value={{
       organization,
       loading,
       error,
-      refreshOrganization,
-      fetchOrganization: fetchOrganizationBySlug,
+      refreshOrganization: fetchOrganization,
     }}>
       {children}
     </OrganizationContext.Provider>
