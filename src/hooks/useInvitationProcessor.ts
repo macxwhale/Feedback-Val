@@ -39,13 +39,17 @@ export function useInvitationProcessor() {
         .maybeSingle();
 
       if (existingMembership) {
-        console.log('User already in organization:', existingMembership);
+        console.log('=== USER ALREADY IN ORGANIZATION ===');
+        console.log('Existing membership:', existingMembership);
         
+        // Don't show this as an error - just redirect to the org
         toast({
           title: "Welcome back!",
           description: `You're already a member of ${organization.name}`,
         });
         
+        // Add delay for UI feedback, then redirect
+        await new Promise(resolve => setTimeout(resolve, 1500));
         navigate(`/admin/${orgSlug}`);
         return { success: true, message: 'Already a member' };
       }
@@ -65,6 +69,7 @@ export function useInvitationProcessor() {
       const role = invitation?.role || 'member';
       const enhancedRole = invitation?.enhanced_role || 'member';
 
+      console.log('=== ADDING USER TO ORGANIZATION ===');
       console.log('Adding user to organization with role:', role, 'enhanced_role:', enhancedRole);
 
       // Add user to organization
@@ -82,6 +87,19 @@ export function useInvitationProcessor() {
 
       if (addError) {
         console.error('Error adding user to organization:', addError);
+        
+        // Check if it's a duplicate key error (user already exists)
+        if (addError.code === '23505') {
+          console.log('User already exists in organization - treating as success');
+          toast({
+            title: "Welcome back!",
+            description: `You're already a member of ${organization.name}`,
+          });
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          navigate(`/admin/${orgSlug}`);
+          return { success: true, message: 'Already a member' };
+        }
+        
         throw new Error('Failed to join organization: ' + addError.message);
       }
 
@@ -111,8 +129,8 @@ export function useInvitationProcessor() {
         description: `You've successfully joined ${organization.name}`,
       });
 
-      // Add a delay to ensure database consistency before redirect
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Add a delay to ensure database consistency and show the toast
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Redirect to organization dashboard
       console.log('Redirecting to organization dashboard:', orgSlug);
