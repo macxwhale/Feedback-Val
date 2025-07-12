@@ -1,52 +1,107 @@
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/sonner';
-import { AuthProvider } from '@/components/auth/AuthWrapper';
-import { OrganizationProvider } from '@/context/OrganizationContext';
-import Home from '@/pages/Home';
-import Auth from '@/pages/Auth';
-import Admin from '@/pages/Admin';
-import { OrganizationAdmin } from '@/pages/OrganizationAdmin';
-import CreateOrganization from '@/pages/CreateOrganization';
-import Pricing from '@/pages/Pricing';
-import AuthCallback from '@/pages/AuthCallback';
-import ResetPassword from '@/pages/ResetPassword';
-import { InvitationAccept } from '@/pages/InvitationAccept';
+import React from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { OrganizationProvider } from "@/context/OrganizationContext";
+import { DashboardProvider } from "@/context/DashboardContext";
+import { AuthProvider } from "@/components/auth/AuthWrapper";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import LoginPage from "@/components/auth/LoginPage";
+import { AdminLoginPage } from "@/components/auth/AdminLoginPage";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { CreateOrganizationPage } from "@/components/org/CreateOrganizationPage";
+import { initializeServices } from "@/infrastructure/di/ServiceRegistry";
+import Landing from "./pages/Landing";
+import Index from "./pages/Index";
+import Admin from "./pages/Admin";
+import NotFound from "./pages/NotFound";
+import { ThemeManager } from "@/components/ThemeManager";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import AuthCallback from './pages/AuthCallback';
+import ResetPassword from './pages/ResetPassword';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
+
+// Initialize services on app start
+initializeServices();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <OrganizationProvider>
-          <Router>
-            <div className="min-h-screen bg-background">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ThemeManager />
+          <AuthProvider>
+            <OrganizationProvider>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth-callback" element={<AuthCallback />} />
+                {/* Landing page */}
+                <Route path="/" element={<Landing />} />
+
+                {/* Static pages */}
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                
+                {/* System admin routes */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Organization user authentication */}
+                <Route path="/auth" element={<LoginPage />} />
+                
+                {/* Password reset page */}
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/create-organization" element={<CreateOrganization />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/:slug" element={<OrganizationAdmin />} />
-                <Route path="/invitation/accept" element={<InvitationAccept />} />
+                
+                {/* Auth callback - FIXED route */}
+                <Route path="/auth-callback" element={<AuthCallback />} />
+                
+                {/* Organization creation */}
+                <Route 
+                  path="/create-organization" 
+                  element={
+                    <ProtectedRoute>
+                      <CreateOrganizationPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Organization admin routes - wrapped with DashboardProvider */}
+                <Route 
+                  path="/admin/:slug" 
+                  element={
+                    <ProtectedRoute requireOrgAdmin>
+                      <DashboardProvider>
+                        <Admin />
+                      </DashboardProvider>
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Organization feedback routes */}
+                <Route path="/:orgSlug" element={<Index />} />
+                
+                {/* Legacy org routes for compatibility */}
+                <Route path="/org/:slug" element={<Index />} />
+                
+                {/* Catch-all route - MUST be last */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
-              <Toaster />
-            </div>
-          </Router>
-        </OrganizationProvider>
-      </AuthProvider>
+            </OrganizationProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
