@@ -30,19 +30,24 @@ export function useInvitationProcessor() {
 
       console.log('Found organization:', organization);
 
-      // Check if user is already in organization
-      const { data: existingMembership } = await supabase
+      // Check if user is already in organization FIRST
+      const { data: existingMembership, error: membershipCheckError } = await supabase
         .from('organization_users')
-        .select('id, role, status')
+        .select('id, role, enhanced_role, status')
         .eq('user_id', userId)
         .eq('organization_id', organization.id)
         .maybeSingle();
+
+      if (membershipCheckError) {
+        console.error('Error checking membership:', membershipCheckError);
+        // Don't throw here, continue with the process
+      }
 
       if (existingMembership) {
         console.log('=== USER ALREADY IN ORGANIZATION ===');
         console.log('Existing membership:', existingMembership);
         
-        // Don't show this as an error - just redirect to the org
+        // User already exists, just redirect them
         toast({
           title: "Welcome back!",
           description: `You're already a member of ${organization.name}`,
@@ -60,6 +65,7 @@ export function useInvitationProcessor() {
         .select('id, role, enhanced_role, status')
         .eq('email', email.toLowerCase().trim())
         .eq('organization_id', organization.id)
+        .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -72,8 +78,8 @@ export function useInvitationProcessor() {
       console.log('=== ADDING USER TO ORGANIZATION ===');
       console.log('Adding user to organization with role:', role, 'enhanced_role:', enhancedRole);
 
-      // Add user to organization
-      const { error: addError } = await supabase
+      // Try to add user to organization with proper error handling
+      const { data: insertedUser, error: addError } = await supabase
         .from('organization_users')
         .insert({
           user_id: userId,
@@ -83,18 +89,23 @@ export function useInvitationProcessor() {
           enhanced_role: enhancedRole as "owner" | "admin" | "manager" | "analyst" | "member" | "viewer",
           status: 'active',
           accepted_at: new Date().toISOString()
-        });
+        })
+        .select()
+        .single();
 
       if (addError) {
         console.error('Error adding user to organization:', addError);
         
         // Check if it's a duplicate key error (user already exists)
-        if (addError.code === '23505') {
-          console.log('User already exists in organization - treating as success');
+        if (addError.code === '23505' || addError.message?.includes('duplicate key')) {
+          console.log('=== DUPLICATE KEY ERROR - USER ALREADY EXISTS ===');
+          
+          // User already exists, treat as success and redirect
           toast({
             title: "Welcome back!",
             description: `You're already a member of ${organization.name}`,
           });
+          
           await new Promise(resolve => setTimeout(resolve, 1500));
           navigate(`/admin/${orgSlug}`);
           return { success: true, message: 'Already a member' };
@@ -103,7 +114,7 @@ export function useInvitationProcessor() {
         throw new Error('Failed to join organization: ' + addError.message);
       }
 
-      console.log('Successfully added user to organization');
+      console.log('Successfully added user to organization:', insertedUser);
 
       // Mark invitation as accepted if it exists
       if (invitation) {
