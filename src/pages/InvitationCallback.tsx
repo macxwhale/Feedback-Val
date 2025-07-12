@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/components/auth/AuthWrapper';
+import { useAuth } from '@/hooks/useAuth';
 import { useInvitationAcceptance } from '@/hooks/useInvitationAcceptance';
 
 export const InvitationCallback: React.FC = () => {
