@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -46,9 +46,16 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [organization, setOrganization] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const location = useLocation();
 
-  const fetchOrganizationBySlug = async (slug: string) => {
+  const fetchOrganizationBySlug = useCallback(async (slug: string) => {
+    // Don't fetch if we already have this organization
+    if (organization && organization.slug === slug) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
@@ -76,27 +83,35 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setLoading(false);
     }
-  };
+  }, [organization]);
 
-  const fetchOrganization = async () => {
+  const fetchOrganization = useCallback(async () => {
     const slug = extractSlugFromPath(location.pathname);
 
     if (!slug) {
       setOrganization(null);
       setLoading(false);
+      setCurrentSlug(null);
       return;
     }
 
-    await fetchOrganizationBySlug(slug);
-  };
+    // Only fetch if the slug has changed
+    if (slug !== currentSlug) {
+      setCurrentSlug(slug);
+      await fetchOrganizationBySlug(slug);
+    }
+  }, [location.pathname, currentSlug, fetchOrganizationBySlug]);
 
-  const refreshOrganization = () => {
-    fetchOrganization();
-  };
+  const refreshOrganization = useCallback(() => {
+    const slug = extractSlugFromPath(location.pathname);
+    if (slug) {
+      fetchOrganizationBySlug(slug);
+    }
+  }, [location.pathname, fetchOrganizationBySlug]);
 
   useEffect(() => {
     fetchOrganization();
-  }, [location.pathname]);
+  }, [fetchOrganization]);
 
   return (
     <OrganizationContext.Provider value={{

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useOrganization } from '@/context/OrganizationContext';
@@ -15,16 +15,10 @@ import { DashboardHeader } from '@/components/admin/dashboard/DashboardHeader';
 export const OrganizationAdminDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user, isAdmin, loading } = useAuth();
-  const { organization, loading: orgLoading, error: orgError, refreshOrganization } = useOrganization();
+  const { organization, loading: orgLoading, error: orgError } = useOrganization();
   const { hasPermission, userRole, isLoading: rbacLoading } = useRBAC(organization?.id);
   const [activeTab, setActiveTab] = useState('overview');
   const [isLiveActivity, setIsLiveActivity] = useState(false);
-
-  useEffect(() => {
-    if (slug && !orgLoading) {
-      refreshOrganization();
-    }
-  }, [slug, refreshOrganization, orgLoading]);
 
   console.log('OrganizationAdminDashboard:', {
     slug,
@@ -115,7 +109,11 @@ export const OrganizationAdminDashboard: React.FC = () => {
     >
       <DashboardDataProvider>
         <div className="min-h-screen bg-gray-50">
-          <DashboardHeader />
+          <DashboardHeader 
+            organizationName={organization.name}
+            organizationId={organization.id}
+            currentPage={activeTab}
+          />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <DashboardTabs
               activeTab={activeTab}
