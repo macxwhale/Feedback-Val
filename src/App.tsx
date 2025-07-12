@@ -1,12 +1,13 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-import { AuthWrapper } from '@/components/auth/AuthWrapper';
+import { AuthProvider } from '@/components/auth/AuthWrapper';
 import { Home } from '@/pages/Home';
 import { Auth } from '@/pages/Auth';
 import { AuthCallback } from '@/pages/AuthCallback';
-import { Admin } from '@/pages/Admin';
+import Admin from '@/pages/Admin';
 import { OrganizationAdmin } from '@/pages/OrganizationAdmin';
 import { ResetPassword } from '@/pages/ResetPassword';
 import { Pricing } from '@/pages/Pricing';
@@ -27,7 +28,7 @@ function App() {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <AuthWrapper>
+        <AuthProvider>
           <Toaster />
           <Routes>
             <Route path="/" element={<Home />} />
@@ -38,13 +39,13 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pricing" element={<Pricing />} />
             
-            {/* New invitation-specific routes */}
+            {/* Invitation-specific routes */}
             <Route path="/invitation/accept" element={<InvitationAccept />} />
             <Route path="/invitation/signup" element={<InvitationSignup />} />
             <Route path="/invitation/callback" element={<InvitationCallback />} />
             
           </Routes>
-        </AuthWrapper>
+        </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
   );
