@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -64,10 +65,10 @@ function App() {
                 {/* Password reset page */}
                 <Route path="/reset-password" element={<ResetPassword />} />
                 
-                {/* Invitation acceptance - NEW ROUTE */}
+                {/* Invitation acceptance */}
                 <Route path="/invitation/accept/:token" element={<InvitationAccept />} />
                 
-                {/* Auth callback - FIXED route */}
+                {/* Auth callback */}
                 <Route path="/auth-callback" element={<AuthCallback />} />
                 
                 {/* Organization creation */}
@@ -80,11 +81,13 @@ function App() {
                   } 
                 />
                 
-                {/* Organization admin routes - wrapped with DashboardProvider */}
+                {/* Organization admin routes - now with enhanced RBAC */}
                 <Route 
                   path="/admin/:slug" 
                   element={
-                    <ProtectedRoute requireOrgAdmin>
+                    <ProtectedRoute 
+                      requiredPermission="view_analytics"
+                    >
                       <DashboardProvider>
                         <Admin />
                       </DashboardProvider>

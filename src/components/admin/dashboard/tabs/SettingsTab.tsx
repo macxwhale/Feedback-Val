@@ -1,6 +1,6 @@
 
 import React from "react";
-import { OrganizationSettingsTab } from '../../OrganizationSettingsTab';
+import { OrganizationSettings } from '@/components/admin/OrganizationSettings';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 interface SettingsTabProps {
@@ -21,7 +21,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ organization }) => (
       </div>
     }
   >
-    <OrganizationSettingsTab organization={organization} />
+    <OrganizationSettings organizationId={organization.id} />
   </PermissionGuard>
 );
 
