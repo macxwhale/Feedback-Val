@@ -192,8 +192,8 @@ serve(async (req: Request) => {
       .maybeSingle();
 
     if (!existingOrgUser) {
-      // Add user to organization
-      console.log('Adding user to organization');
+      // Add user to organization with enhanced role
+      console.log('Adding user to organization with enhanced role:', invitation.enhanced_role);
       
       const { error: orgUserError } = await supabaseAdmin
         .from('organization_users')
@@ -202,7 +202,7 @@ serve(async (req: Request) => {
           organization_id: invitation.organization_id,
           email: invitation.email,
           role: invitation.role,
-          enhanced_role: invitation.enhanced_role,
+          enhanced_role: invitation.enhanced_role, // Make sure enhanced role is set
           status: 'active',
           invited_by_user_id: invitation.invited_by_user_id,
           accepted_at: new Date().toISOString()
@@ -251,7 +251,7 @@ serve(async (req: Request) => {
       data: {
         organization: invitation.organizations,
         user_id: userId,
-        redirect_url: `/admin/${invitation.organizations.slug}`
+        redirect_url: `/auth` // Changed from admin dashboard to auth page
       }
     });
 
