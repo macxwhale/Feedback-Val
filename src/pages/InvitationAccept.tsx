@@ -54,21 +54,22 @@ const InvitationAccept: React.FC = () => {
         p_token: token
       });
 
-      if (error || !data || !data.is_valid) {
-        setError(data?.error_message || 'Invalid or expired invitation');
+      if (error || !data || data.length === 0 || !data[0].is_valid) {
+        setError(data?.[0]?.error_message || 'Invalid or expired invitation');
         return;
       }
 
+      const validationData = data[0];
       setInvitation({
-        id: data.invitation_id,
-        email: data.email,
-        organization_id: data.organization_id,
-        role: data.role,
-        enhanced_role: data.enhanced_role,
+        id: validationData.invitation_id,
+        email: validationData.email,
+        organization_id: validationData.organization_id,
+        role: validationData.role,
+        enhanced_role: validationData.enhanced_role,
         organizations: {
-          id: data.organization_id,
-          name: data.organization_name,
-          slug: data.organization_slug
+          id: validationData.organization_id,
+          name: validationData.organization_name,
+          slug: validationData.organization_slug
         }
       });
     } catch (err) {
