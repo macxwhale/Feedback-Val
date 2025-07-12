@@ -66,6 +66,7 @@ serve(async (req: Request) => {
     // Validate invitation token and get invitation details
     console.log('Validating invitation token:', token);
     
+    // Accept invitations in valid statuses (pending, sent, delivered, opened, resent)
     const { data: invitation, error: invitationError } = await supabaseAdmin
       .from('user_invitations')
       .select(`
@@ -80,7 +81,7 @@ serve(async (req: Request) => {
         organizations!inner(id, name, slug)
       `)
       .eq('invitation_token', token)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'sent', 'delivered', 'opened', 'resent'])
       .maybeSingle();
 
     if (invitationError) {
@@ -93,6 +94,29 @@ serve(async (req: Request) => {
 
     if (!invitation) {
       console.error('No invitation found for token:', token);
+      
+      // Let's also check if there's an invitation with this token but different status
+      const { data: anyInvitation, error: checkError } = await supabaseAdmin
+        .from('user_invitations')
+        .select('id, status, expires_at')
+        .eq('invitation_token', token)
+        .maybeSingle();
+      
+      if (anyInvitation) {
+        console.error('Found invitation with invalid status or expired:', anyInvitation);
+        if (new Date(anyInvitation.expires_at) < new Date()) {
+          return createResponse({ 
+            success: false, 
+            error: 'This invitation has expired' 
+          }, 400);
+        } else {
+          return createResponse({ 
+            success: false, 
+            error: 'This invitation is no longer valid' 
+          }, 400);
+        }
+      }
+      
       return createResponse({ 
         success: false, 
         error: 'Invalid or expired invitation token' 
