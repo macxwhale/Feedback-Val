@@ -7,7 +7,7 @@ import {
   Navigate,
   useLocation,
 } from 'react-router-dom';
-import { useAuth } from './components/auth/AuthWrapper';
+import { useAuth, AuthProvider } from './components/auth/AuthWrapper';
 import { AuthenticationRequired } from './components/auth/AuthenticationRequired';
 import { OrganizationAdminDashboard } from './components/admin/OrganizationAdminDashboard';
 import { OrganizationProvider } from './context/OrganizationContext';
@@ -22,9 +22,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 };
 
