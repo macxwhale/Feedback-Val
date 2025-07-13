@@ -4,35 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAnalyticsTableData } from '@/hooks/useAnalyticsTableData';
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
+import { 
+  calculateSafePerformanceScore, 
+  formatSafeTrendValue, 
+  calculateSafePercentageChange 
+} from '@/utils/metricCalculations';
 
 interface StrategicKPIDashboardProps {
   organizationId: string;
 }
-
-// Helper function to safely format trend percentages
-const formatTrendPercentage = (value: number): string => {
-  const cappedValue = Math.max(0, Math.min(999, Math.abs(value)));
-  return `${cappedValue}%`;
-};
-
-// Helper function to calculate performance score with proper bounds
-const calculatePerformanceScore = (summary: any): number => {
-  if (!summary || summary.total_sessions === 0) return 0;
-  
-  const completionWeight = 0.4;
-  const satisfactionWeight = 0.4;
-  const responseWeight = 0.2;
-  
-  const completionScore = Math.min(100, Math.max(0, summary.overall_completion_rate || 0));
-  const satisfactionScore = Math.min(100, Math.max(0, summary.user_satisfaction_rate || 0));
-  const responseScore = Math.min(100, Math.max(0, summary.response_rate || 0));
-  
-  const score = (completionScore * completionWeight) +
-                (satisfactionScore * satisfactionWeight) +
-                (responseScore * responseWeight);
-  
-  return Math.round(Math.min(100, Math.max(0, score)));
-};
 
 export const StrategicKPIDashboard: React.FC<StrategicKPIDashboardProps> = ({
   organizationId
@@ -96,9 +76,17 @@ export const StrategicKPIDashboard: React.FC<StrategicKPIDashboardProps> = ({
 
   const summary = analyticsData.summary;
   
-  const performanceScore = calculatePerformanceScore(summary);
+  // Use safe performance score calculation
+  const performanceScore = calculateSafePerformanceScore({
+    completionRate: summary.overall_completion_rate,
+    satisfactionRate: summary.user_satisfaction_rate,
+    responseRate: summary.response_rate
+  });
+
   const userSatisfaction = `${Math.round((summary.avg_score || 0) * 10) / 10}/5`;
-  const growthRate = Math.max(-100, Math.min(500, summary.growth_rate || 0)); // Cap growth rate
+  
+  // Use safe growth rate (already calculated in the hook)
+  const growthRate = summary.growth_rate;
 
   console.log('Strategic KPI calculations:', {
     performanceScore,
@@ -141,7 +129,7 @@ export const StrategicKPIDashboard: React.FC<StrategicKPIDashboardProps> = ({
             </span>
             <Badge variant="outline" className={`text-${performanceStatus.color}-700`}>
               <performanceStatus.icon className="w-3 h-3 mr-1" />
-              {formatTrendPercentage(performanceScore >= 80 ? 5 : performanceScore >= 60 ? 0 : -3)}
+              {formatSafeTrendValue(performanceScore >= 80 ? 5 : performanceScore >= 60 ? 2 : -3)}
             </Badge>
           </div>
           <div className={`text-2xl font-bold text-${performanceStatus.color}-700 mb-1`}>
@@ -162,7 +150,7 @@ export const StrategicKPIDashboard: React.FC<StrategicKPIDashboardProps> = ({
             </span>
             <Badge variant="outline" className={`text-${satisfactionStatus.color}-700`}>
               <satisfactionStatus.icon className="w-3 h-3 mr-1" />
-              {formatTrendPercentage((summary.avg_score || 0) >= 4 ? 8 : (summary.avg_score || 0) >= 3 ? 2 : -5)}
+              {formatSafeTrendValue((summary.avg_score || 0) >= 4 ? 8 : (summary.avg_score || 0) >= 3 ? 2 : -5)}
             </Badge>
           </div>
           <div className={`text-2xl font-bold text-${satisfactionStatus.color}-700 mb-1`}>
@@ -183,11 +171,11 @@ export const StrategicKPIDashboard: React.FC<StrategicKPIDashboardProps> = ({
             </span>
             <Badge variant="outline" className={`text-${growthStatus.color}-700`}>
               <growthStatus.icon className="w-3 h-3 mr-1" />
-              {formatTrendPercentage(growthRate > 0 ? 12 : growthRate === 0 ? 0 : 8)} acceleration
+              {formatSafeTrendValue(Math.abs(growthRate))} {growthRate > 0 ? 'growth' : 'change'}
             </Badge>
           </div>
           <div className={`text-2xl font-bold text-${growthStatus.color}-700 mb-1`}>
-            {growthRate > 0 ? '+' : ''}{formatTrendPercentage(growthRate)}
+            {growthRate > 0 ? '+' : ''}{formatSafeTrendValue(growthRate)}
           </div>
           <p className={`text-xs text-${growthStatus.color}-600`}>
             Month-over-month growth rate

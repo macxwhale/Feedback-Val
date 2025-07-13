@@ -1,6 +1,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  calculateSafePercentageChange, 
+  normalizeScore, 
+  validateSessionData 
+} from '@/utils/metricCalculations';
 
 export interface StrategicKPIs {
   nps: {
@@ -31,14 +36,6 @@ export interface StrategicKPIs {
     };
   };
 }
-
-// Helper function to safely calculate percentage change with caps
-const calculateTrendPercentage = (current: number, previous: number): number => {
-  if (previous === 0) return 0;
-  const change = ((current - previous) / previous) * 100;
-  // Cap extreme values to prevent unrealistic percentages
-  return Math.max(-100, Math.min(500, Math.round(change)));
-};
 
 export const useStrategicKPIs = (organizationId: string) => {
   return useQuery({
@@ -90,8 +87,14 @@ export const useStrategicKPIs = (organizationId: string) => {
         previous: previousResponses.length
       });
 
-      // Calculate NPS (assuming 1-5 scale, converting to 0-10 NPS scale)
-      const npsResponses = responses.filter(r => r.score !== null);
+      // Normalize all scores to 1-5 scale
+      const normalizedResponses = responses.map(r => ({
+        ...r,
+        score: normalizeScore(r.score)
+      }));
+
+      // Calculate NPS (convert normalized 1-5 scale to 0-10 NPS scale)
+      const npsResponses = normalizedResponses.filter(r => r.score !== null);
       const npsScores = npsResponses.map(r => {
         // Convert 1-5 scale to 0-10 NPS scale
         return Math.round(((r.score - 1) / 4) * 10);
@@ -106,29 +109,32 @@ export const useStrategicKPIs = (organizationId: string) => {
         ? Math.round(((promoters - detractors) / totalNPS) * 100)
         : 0;
 
-      // Calculate CSAT (percentage of 4-5 star ratings)
-      const csatResponses = responses.filter(r => r.score !== null);
+      // Calculate CSAT (percentage of 4-5 star ratings on normalized scale)
+      const csatResponses = normalizedResponses.filter(r => r.score !== null);
       const satisfiedResponses = csatResponses.filter(r => r.score >= 4).length;
       const csatScore = csatResponses.length > 0 
         ? Math.round((satisfiedResponses / csatResponses.length) * 100)
         : 0;
 
       // Calculate CES (simplified - using inverse of satisfaction for demonstration)
-      const cesScore = responses.length > 0
-        ? Math.round(7 - (responses.reduce((sum, r) => sum + r.score, 0) / responses.length) * 1.4)
+      const cesScore = normalizedResponses.length > 0
+        ? Math.round(7 - (normalizedResponses.reduce((sum, r) => sum + r.score, 0) / normalizedResponses.length) * 1.4)
         : 3;
 
-      // Calculate trends with proper bounds
-      const recentAvg = recentResponses.length > 0
-        ? recentResponses.reduce((sum, r) => sum + r.score, 0) / recentResponses.length
+      // Calculate trends with safe percentage changes
+      const recentNormalized = recentResponses.map(r => normalizeScore(r.score));
+      const previousNormalized = previousResponses.map(r => normalizeScore(r.score));
+      
+      const recentAvg = recentNormalized.length > 0
+        ? recentNormalized.reduce((sum, score) => sum + score, 0) / recentNormalized.length
         : 0;
-      const previousAvg = previousResponses.length > 0
-        ? previousResponses.reduce((sum, r) => sum + r.score, 0) / previousResponses.length
+      const previousAvg = previousNormalized.length > 0
+        ? previousNormalized.reduce((sum, score) => sum + score, 0) / previousNormalized.length
         : recentAvg;
 
-      const trendValue = calculateTrendPercentage(recentAvg, previousAvg);
+      const trendValue = calculateSafePercentageChange(recentAvg, previousAvg, 50); // Cap at 50%
 
-      console.log('Calculated trends:', {
+      console.log('Calculated trends with safe bounds:', {
         recentAvg,
         previousAvg,
         trendValue
