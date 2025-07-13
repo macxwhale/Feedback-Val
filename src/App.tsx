@@ -1,3 +1,4 @@
+
 import React, { Suspense, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -13,7 +14,7 @@ import { OrganizationAdminDashboard } from './components/admin/OrganizationAdmin
 import { OrganizationProvider } from './context/OrganizationContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { SystemAdminRequired } from './components/auth/SystemAdminRequired';
-import { LandingPage } from './components/LandingPage';
+import { LandingPage } from './components/landing/LandingPage';
 import { TermsOfService } from './components/legal/TermsOfService';
 import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
 import { CreateOrganization } from './components/org-admin/CreateOrganization';
@@ -58,7 +59,7 @@ const AppContent: React.FC = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/upgrade" element={<Upgrade />} />
-        <Route path="/access-denied" element={<AccessDeniedPage type="default" />} />
+        <Route path="/access-denied" element={<AccessDeniedPage type="authentication" />} />
         
         <Route
           path="/"
