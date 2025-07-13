@@ -9,17 +9,13 @@ import {
 } from 'react-router-dom';
 import { useAuth } from './components/auth/AuthWrapper';
 import { AuthenticationRequired } from './components/auth/AuthenticationRequired';
-import { SystemAdminDashboard } from './components/admin/SystemAdminDashboard';
 import { OrganizationAdminDashboard } from './components/admin/OrganizationAdminDashboard';
 import { OrganizationProvider } from './context/OrganizationContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { SystemAdminRequired } from './components/auth/SystemAdminRequired';
 import { LandingPage } from './components/landing/LandingPage';
-import { TermsOfService } from './components/legal/TermsOfService';
-import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
-import { CreateOrganization } from './components/org-admin/CreateOrganization';
-import { Upgrade } from './components/admin/Upgrade';
-import { Pricing } from './components/admin/Pricing';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { AccessDeniedPage } from './components/auth/AccessDeniedPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -57,8 +53,6 @@ const AppContent: React.FC = () => {
       <Routes>
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/access-denied" element={<AccessDeniedPage type="authentication" />} />
         
         <Route
@@ -77,24 +71,6 @@ const AppContent: React.FC = () => {
         <Route
           path="/auth"
           element={user ? <Navigate to="/" replace state={{ from: location }} /> : <AuthenticationRequired />}
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requireAdmin={true}>
-              <SystemAdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/create-organization"
-          element={
-            <ProtectedRoute requireAdmin={true}>
-              <CreateOrganization />
-            </ProtectedRoute>
-          }
         />
 
         <Route 
