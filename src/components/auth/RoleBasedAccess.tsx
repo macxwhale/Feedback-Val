@@ -3,9 +3,11 @@ import React from 'react';
 import { useRBAC } from '@/hooks/useRBAC';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Lock, Loader2 } from 'lucide-react';
+import { AlertTriangle, Lock, Loader2, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getRoleConfig } from '@/utils/roleManagement';
+import { useOrganization } from '@/context/OrganizationContext';
 
 interface RoleBasedAccessProps {
   children: React.ReactNode;
@@ -14,6 +16,7 @@ interface RoleBasedAccessProps {
   organizationId?: string;
   fallback?: React.ReactNode;
   showAccessDenied?: boolean;
+  onRequestAccess?: () => void;
 }
 
 export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
@@ -22,10 +25,12 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
   requiredPermission,
   organizationId,
   fallback,
-  showAccessDenied = true
+  showAccessDenied = true,
+  onRequestAccess
 }) => {
   const { hasPermission, userRole, isLoading, isAdmin } = useRBAC(organizationId);
   const { isOrgAdmin } = useAuth();
+  const { organization } = useOrganization();
 
   console.log('RoleBasedAccess check:', {
     requiredRole,
@@ -82,6 +87,15 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
               </span>
             </div>
             
+            {/* Organization context */}
+            {organization && (
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Organization:</span> {organization.name}
+                </p>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">Required role:</span>
@@ -98,6 +112,20 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
                   {userRoleConfig.label}
                 </Badge>
               </div>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex flex-col space-y-2">
+              {onRequestAccess && (
+                <Button onClick={onRequestAccess} size="sm" className="w-full">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Request Role Upgrade
+                </Button>
+              )}
+              
+              <p className="text-xs text-gray-500 text-center">
+                Contact your organization administrator to request a role upgrade.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -121,12 +149,46 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
             Permission Required
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="w-4 h-4 text-amber-500" />
             <span className="text-sm text-gray-600">
               You don't have the required permission: {requiredPermission}
             </span>
+          </div>
+          
+          {/* Organization context */}
+          {organization && (
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Organization:</span> {organization.name}
+              </p>
+            </div>
+          )}
+          
+          {/* Current role display */}
+          {userRole && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Your role:</span>
+              <Badge variant={getRoleConfig(userRole).variant} className="flex items-center gap-1">
+                <getRoleConfig(userRole).icon className="w-3 h-3" />
+                {getRoleConfig(userRole).label}
+              </Badge>
+            </div>
+          )}
+          
+          {/* Action buttons */}
+          <div className="flex flex-col space-y-2">
+            {onRequestAccess && (
+              <Button onClick={onRequestAccess} size="sm" className="w-full">
+                <Mail className="w-4 h-4 mr-2" />
+                Request Access
+              </Button>
+            )}
+            
+            <p className="text-xs text-gray-500 text-center">
+              Contact your organization administrator for assistance.
+            </p>
           </div>
         </CardContent>
       </Card>
