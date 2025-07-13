@@ -80,14 +80,12 @@ const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
-  const { organization, isCurrentUserOrgAdmin, loading: orgLoading } = useOrganization();
-  const { user, isAdmin } = useAuth();
+  const { organization, loading: orgLoading } = useOrganization();
+  const { user } = useAuth();
   
   console.log('DashboardContent rendering with:', {
     slug,
     user: !!user,
-    isAdmin,
-    isCurrentUserOrgAdmin,
     organization: !!organization,
     orgLoading
   });
@@ -111,24 +109,6 @@ const DashboardContent: React.FC = () => {
     console.error('Error getting dashboard data:', error);
     stats = null;
     isLoading = false;
-  }
-
-  // Check access permissions
-  if (!orgLoading && organization && !isCurrentUserOrgAdmin && !isAdmin) {
-    console.log('Access denied: User is not org admin', {
-      isCurrentUserOrgAdmin,
-      isAdmin,
-      organization: organization?.name
-    });
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold">Access Denied</h2>
-          <p className="text-gray-600">You don't have permission to access this organization's admin dashboard.</p>
-          <p className="text-sm text-gray-500">Contact your organization administrator for access.</p>
-        </div>
-      </div>
-    );
   }
 
   const renderTabContent = () => {

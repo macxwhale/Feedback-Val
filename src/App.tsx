@@ -1,112 +1,137 @@
-import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { OrganizationProvider } from "@/context/OrganizationContext";
-import { DashboardProvider } from "@/context/DashboardContext";
-import { AuthProvider } from "@/components/auth/AuthWrapper";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import LoginPage from "@/components/auth/LoginPage";
-import { AdminLoginPage } from "@/components/auth/AdminLoginPage";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { CreateOrganizationPage } from "@/components/org/CreateOrganizationPage";
-import { initializeServices } from "@/infrastructure/di/ServiceRegistry";
-import Landing from "./pages/Landing";
-import Index from "./pages/Index";
-import Admin from "./pages/Admin";
-import NotFound from "./pages/NotFound";
-import { ThemeManager } from "@/components/ThemeManager";
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import AuthCallback from './pages/AuthCallback';
-import ResetPassword from './pages/ResetPassword';
-import InvitationAccept from './pages/InvitationAccept';
+import React, { Suspense, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from 'react-router-dom';
+import { useAuth } from './components/auth/AuthWrapper';
+import { AuthenticationRequired } from './components/auth/AuthenticationRequired';
+import { SystemAdminDashboard } from './components/admin/SystemAdminDashboard';
+import { OrganizationAdminDashboard } from './components/admin/OrganizationAdminDashboard';
+import { OrganizationProvider } from './context/OrganizationContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { SystemAdminRequired } from './components/auth/SystemAdminRequired';
+import { LandingPage } from './components/LandingPage';
+import { TermsOfService } from './components/legal/TermsOfService';
+import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
+import { CreateOrganization } from './components/org-admin/CreateOrganization';
+import { Upgrade } from './components/admin/Upgrade';
+import { Pricing } from './components/admin/Pricing';
+import { AccessDeniedPage } from './components/auth/AccessDeniedPage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const queryClient = new QueryClient();
-
-// Initialize services on app start
-initializeServices();
-
-function App() {
+const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ThemeManager />
-          <AuthProvider>
-            <OrganizationProvider>
-              <Routes>
-                {/* Landing page */}
-                <Route path="/" element={<Landing />} />
-
-                {/* Static pages */}
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                
-                {/* System admin routes */}
-                <Route path="/admin/login" element={<AdminLoginPage />} />
-                <Route 
-                  path="/admin" 
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Organization user authentication */}
-                <Route path="/auth" element={<LoginPage />} />
-                
-                {/* Password reset page */}
-                <Route path="/reset-password" element={<ResetPassword />} />
-                
-                {/* Invitation acceptance - NEW ROUTE */}
-                <Route path="/invitation/accept/:token" element={<InvitationAccept />} />
-                
-                {/* Auth callback - FIXED route */}
-                <Route path="/auth-callback" element={<AuthCallback />} />
-                
-                {/* Organization creation */}
-                <Route 
-                  path="/create-organization" 
-                  element={
-                    <ProtectedRoute>
-                      <CreateOrganizationPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Organization admin routes - wrapped with DashboardProvider */}
-                <Route 
-                  path="/admin/:slug" 
-                  element={
-                    <ProtectedRoute requireOrgAdmin>
-                      <DashboardProvider>
-                        <Admin />
-                      </DashboardProvider>
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Organization feedback routes */}
-                <Route path="/:orgSlug" element={<Index />} />
-                
-                {/* Legacy org routes for compatibility */}
-                <Route path="/org/:slug" element={<Index />} />
-                
-                {/* Catch-all route - MUST be last */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </OrganizationProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Router>
+      <AppContent />
+    </Router>
   );
-}
+};
+
+const AppContent: React.FC = () => {
+  const { user, isAdmin, loading } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    console.log('AppContent: User, Admin, Loading', { user: !!user, isAdmin, loading });
+  }, [user, isAdmin, loading]);
+
+  // Show a loading indicator while the auth state is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Routes>
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/upgrade" element={<Upgrade />} />
+        <Route path="/access-denied" element={<AccessDeniedPage type="default" />} />
+        
+        <Route
+          path="/"
+          element={user ? (
+            isAdmin ? (
+              <Navigate to="/admin" replace state={{ from: location }} />
+            ) : (
+              <Navigate to="/org" replace state={{ from: location }} />
+            )
+          ) : (
+            <LandingPage />
+          )}
+        />
+
+        <Route
+          path="/auth"
+          element={user ? <Navigate to="/" replace state={{ from: location }} /> : <AuthenticationRequired />}
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <SystemAdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/create-organization"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <CreateOrganization />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route 
+          path="/admin/:slug" 
+          element={
+            <ProtectedRoute requireOrgMembership={true}>
+              <OrganizationProvider>
+                <OrganizationAdminDashboard />
+              </OrganizationProvider>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Public organization page - no auth required */}
+        <Route
+          path="/org/:slug"
+          element={
+            <OrganizationProvider>
+              <div>Public Organization Page</div>
+            </OrganizationProvider>
+          }
+        />
+
+        {/* Public feedback page - no auth required */}
+        <Route
+          path="/:slug"
+          element={
+            <OrganizationProvider>
+              <div>Public Feedback Page</div>
+            </OrganizationProvider>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <ToastContainer position="bottom-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+    </>
+  );
+};
 
 export default App;
