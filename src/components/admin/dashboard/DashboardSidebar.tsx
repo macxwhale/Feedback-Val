@@ -1,10 +1,33 @@
-
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader
+} from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { tabSections } from './DashboardTabSections';
-import { RoleBasedTabFilter } from './RoleBasedTabFilter';
-import { useOrganization } from '@/context/OrganizationContext';
+import {
+  LayoutDashboard,
+  Users,
+  MessageSquare,
+  HelpCircle,
+  TrendingUp,
+  Brain,
+  Zap,
+  Settings,
+  LogOut,
+} from 'lucide-react';
+import { EnhancedLoadingSpinner } from './EnhancedLoadingSpinner';
+import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthWrapper';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface DashboardSidebarProps {
   organizationName: string;
@@ -19,95 +42,192 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   activeTab,
   onTabChange,
   stats,
-  isLoading
+  isLoading = false
 }) => {
-  const { organizationId } = useOrganization();
+  const { isMobile } = useMobileDetection();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
-  if (!organizationId) {
-    return (
-      <div className="w-64 bg-white border-r border-gray-200 p-4">
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded mb-4"></div>
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-8 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  // Organized navigation with logical grouping and consistent labeling
+  const navigationGroups = [
+    {
+      label: 'Overview',
+      items: [
+        { 
+          id: 'overview', 
+          label: 'Dashboard', 
+          icon: LayoutDashboard, 
+          badge: stats?.growth_metrics?.growth_rate > 0 ? `+${stats.growth_metrics.growth_rate}%` : undefined
+        }
+      ]
+    },
+    {
+      label: 'Analytics',
+      items: [
+        { 
+          id: 'feedback', 
+          label: 'Feedback', 
+          icon: MessageSquare, 
+          badge: stats?.total_responses || 0
+        },
+        { 
+          id: 'customer-insights', 
+          label: 'Insights', 
+          icon: TrendingUp
+        },
+        { 
+          id: 'sentiment', 
+          label: 'Sentiment', 
+          icon: Brain
+        },
+        { 
+          id: 'performance', 
+          label: 'Performance', 
+          icon: TrendingUp
+        }
+      ]
+    },
+    {
+      label: 'Management',
+      items: [
+        { 
+          id: 'questions', 
+          label: 'Questions', 
+          icon: HelpCircle, 
+          badge: stats?.total_questions || 0
+        },
+        { 
+          id: 'members', 
+          label: 'Team', 
+          icon: Users, 
+          badge: stats?.active_members || 0
+        }
+      ]
+    },
+    {
+      label: 'System',
+      items: [
+        { 
+          id: 'integrations', 
+          label: 'Integrations', 
+          icon: Zap
+        },
+        { 
+          id: 'settings', 
+          label: 'Settings', 
+          icon: Settings
+        }
+      ]
+    }
+  ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="font-semibold text-gray-900 truncate">{organizationName}</h2>
-        <p className="text-sm text-gray-500">Admin Dashboard</p>
-      </div>
-
-      <RoleBasedTabFilter
-        sections={tabSections}
-        organizationId={organizationId}
-      >
-        {(filteredSections) => (
-          <nav className="p-4 space-y-6">
-            {filteredSections.map((section) => (
-              <div key={section.label}>
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                  {section.label}
-                </h3>
-                <div className="space-y-1">
-                  {section.tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    
-                    return (
-                      <Button
-                        key={tab.id}
-                        variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start ${
-                          isActive ? "bg-blue-50 text-blue-700 border-blue-200" : ""
-                        }`}
-                        onClick={() => onTabChange(tab.id)}
-                      >
-                        <Icon className="w-4 h-4 mr-2" />
-                        {tab.label}
-                        {stats && tab.id === 'members' && stats.active_members && (
-                          <Badge variant="secondary" className="ml-auto">
-                            {stats.active_members}
-                          </Badge>
-                        )}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </nav>
-        )}
-      </RoleBasedTabFilter>
-
-      {/* Stats Summary */}
-      {stats && !isLoading && (
-        <div className="p-4 border-t border-gray-200 mt-auto">
-          <div className="text-xs text-gray-500 space-y-1">
-            <div className="flex justify-between">
-              <span>Total Sessions:</span>
-              <span>{stats.total_sessions || 0}</span>
+    <Sidebar className="border-r-0 bg-white dark:bg-slate-900 shadow-lg">
+      {/* Header with Pulsify branding */}
+      <SidebarHeader className="p-0 border-b border-slate-100 dark:border-slate-800">
+        <div className="p-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm">P</span>
             </div>
-            <div className="flex justify-between">
-              <span>Responses:</span>
-              <span>{stats.total_responses || 0}</span>
-            </div>
-            {stats.avg_session_score && (
-              <div className="flex justify-between">
-                <span>Avg Score:</span>
-                <span>{stats.avg_session_score}</span>
-              </div>
-            )}
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Pulsify
+            </h1>
           </div>
         </div>
-      )}
-    </div>
+      </SidebarHeader>
+
+      <SidebarContent className="px-3 py-2 space-y-6">
+        {navigationGroups.map((group, groupIndex) => (
+          <SidebarGroup key={group.label} className="space-y-2">
+            <SidebarGroupLabel className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3 py-1">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = activeTab === item.id;
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => onTabChange(item.id)}
+                        className={cn(
+                          "w-full h-10 px-3 rounded-md transition-all duration-200 group relative",
+                          "flex items-center justify-between gap-3",
+                          "hover:bg-orange-50 dark:hover:bg-orange-950/20",
+                          "focus:bg-orange-50 dark:focus:bg-orange-950/20",
+                          "focus:outline-none focus:ring-2 focus:ring-orange-200/50 dark:focus:ring-orange-800/50",
+                          isActive && [
+                            "bg-orange-100/70 dark:bg-orange-950/40",
+                            "text-orange-700 dark:text-orange-300",
+                            "shadow-sm shadow-orange-100/50 dark:shadow-orange-900/20",
+                            "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
+                            "before:w-0.5 before:h-6 before:bg-orange-500 before:rounded-r-full"
+                          ]
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <item.icon 
+                            className={cn(
+                              "w-4 h-4 shrink-0 transition-colors",
+                              isActive 
+                                ? "text-orange-600 dark:text-orange-400" 
+                                : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                            )} 
+                          />
+                          <span className={cn(
+                            "text-sm font-medium",
+                            isActive 
+                              ? "text-orange-700 dark:text-orange-300" 
+                              : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100"
+                          )}>
+                            {item.label}
+                          </span>
+                        </div>
+                        
+                        {(isLoading && activeTab === item.id) ? (
+                          <EnhancedLoadingSpinner size="sm" text="" className="w-4 h-4 shrink-0" />
+                        ) : (
+                          item.badge && (
+                            <Badge 
+                              variant="secondary" 
+                              className={cn(
+                                "text-xs px-1.5 py-0.5 min-w-0 shrink-0 font-medium",
+                                isActive 
+                                  ? "bg-orange-200/80 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200" 
+                                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                              )}
+                            >
+                              {item.badge}
+                            </Badge>
+                          )
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+
+      {/* Footer with logout */}
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start h-10 text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4 mr-3" />
+          Sign out
+        </Button>
+      </div>
+    </Sidebar>
   );
 };
