@@ -32,7 +32,7 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
   const { hasPermission, userRole, isLoading, isAdmin } = useRBAC(organizationId);
   const { isOrgAdmin } = useAuth();
   const { organization } = useOrganization();
-  const { requestAccess, isRequesting } = useAccessRequest();
+  const { submitAccessRequest, isSubmitting } = useAccessRequest();
 
   console.log('RoleBasedAccess check:', {
     requiredRole,
@@ -77,11 +77,10 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
         if (onRequestAccess) {
           onRequestAccess();
         } else {
-          await requestAccess({
-            type: 'role_upgrade',
-            requiredRole,
-            currentRole: userRole,
-            organizationId: organizationId || organization?.id
+          await submitAccessRequest({
+            requestType: 'role_upgrade',
+            requestedRole: requiredRole,
+            reason: `Need ${requiredRole} level access for this feature`
           });
         }
       };
@@ -138,10 +137,10 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
                 onClick={handleRequestAccess} 
                 size="sm" 
                 className="w-full"
-                disabled={isRequesting}
+                disabled={isSubmitting}
               >
                 <Mail className="w-4 h-4 mr-2" />
-                {isRequesting ? 'Requesting...' : 'Request Role Upgrade'}
+                {isSubmitting ? 'Requesting...' : 'Request Role Upgrade'}
               </Button>
               
               <p className="text-xs text-gray-500 text-center">
@@ -166,11 +165,10 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
       if (onRequestAccess) {
         onRequestAccess();
       } else {
-        await requestAccess({
-          type: 'permission',
-          requiredPermission,
-          currentRole: userRole,
-          organizationId: organizationId || organization?.id
+        await submitAccessRequest({
+          requestType: 'permission',
+          requestedPermission: requiredPermission,
+          reason: `Need ${requiredPermission} permission to access this feature`
         });
       }
     };
@@ -219,10 +217,10 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
               onClick={handleRequestAccess} 
               size="sm" 
               className="w-full"
-              disabled={isRequesting}
+              disabled={isSubmitting}
             >
               <Mail className="w-4 h-4 mr-2" />
-              {isRequesting ? 'Requesting...' : 'Request Access'}
+              {isSubmitting ? 'Requesting...' : 'Request Access'}
             </Button>
             
             <p className="text-xs text-gray-500 text-center">

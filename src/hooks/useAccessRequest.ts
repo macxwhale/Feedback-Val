@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useOrganization } from '@/context/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface AccessRequestData {
   requestType: 'role_upgrade' | 'permission' | 'admin_access';
