@@ -1,7 +1,6 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useOrganization } from '@/context/OrganizationContext';
-import { useAuth } from '@/components/auth/AuthWrapper';
 import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
@@ -80,17 +79,8 @@ const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
-  const { organization, isCurrentUserOrgAdmin, loading: orgLoading } = useOrganization();
-  const { user, isAdmin } = useAuth();
   
-  console.log('DashboardContent rendering with:', {
-    slug,
-    user: !!user,
-    isAdmin,
-    isCurrentUserOrgAdmin,
-    organization: !!organization,
-    orgLoading
-  });
+  console.log('DashboardContent rendering with slug:', slug);
 
   // Performance optimization with error handling
   const { createDebouncedFunction } = usePerformanceOptimization({
@@ -101,34 +91,18 @@ const DashboardContent: React.FC = () => {
   // Debounce tab changes to prevent rapid switching
   const debouncedSetActiveTab = createDebouncedFunction(setActiveTab);
 
-  let stats, isLoading;
+  let organization, stats, isLoading;
   
   try {
     const dashboardData = useDashboardData();
+    organization = dashboardData.organization;
     stats = dashboardData.stats;
     isLoading = dashboardData.isLoading;
   } catch (error) {
     console.error('Error getting dashboard data:', error);
+    organization = null;
     stats = null;
     isLoading = false;
-  }
-
-  // Check access permissions
-  if (!orgLoading && organization && !isCurrentUserOrgAdmin && !isAdmin) {
-    console.log('Access denied: User is not org admin', {
-      isCurrentUserOrgAdmin,
-      isAdmin,
-      organization: organization?.name
-    });
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold">Access Denied</h2>
-          <p className="text-gray-600">You don't have permission to access this organization's admin dashboard.</p>
-          <p className="text-sm text-gray-500">Contact your organization administrator for access.</p>
-        </div>
-      </div>
-    );
   }
 
   const renderTabContent = () => {
@@ -200,7 +174,7 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  if (!organization && !orgLoading) {
+  if (!organization && !isLoading) {
     console.log('No organization found and not loading');
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -212,7 +186,7 @@ const DashboardContent: React.FC = () => {
     );
   }
 
-  if (orgLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse space-y-4">
