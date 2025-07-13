@@ -26,6 +26,12 @@ interface EnhancedStatsGridProps {
   className?: string;
 }
 
+// Helper function to safely format percentage changes
+const formatPercentageChange = (value: number): string => {
+  const cappedValue = Math.max(-100, Math.min(999, Math.abs(value)));
+  return `${value > 0 ? '+' : ''}${cappedValue}`;
+};
+
 const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, isLoading }) => {
   const Icon = stat.icon;
   const { isMobile } = useResponsiveDesign();
@@ -105,7 +111,7 @@ const StatCardComponent = memo<{ stat: StatCard; isLoading: boolean }>(({ stat, 
           <div className="flex items-center space-x-1 mb-3">
             {getTrendIcon(stat.change.trend)}
             <span className={`text-sm font-medium ${getTrendColor(stat.change.trend)}`}>
-              {stat.change.value > 0 ? '+' : ''}{stat.change.value}%
+              {formatPercentageChange(stat.change.value)}%
             </span>
             <span className="text-sm text-muted-foreground">
               vs {stat.change.period}
@@ -138,7 +144,7 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
 }) => {
   const { isMobile, isTablet } = useResponsiveDesign();
   
-  // Filter out excluded cards
+  // Filter out excluded cards and validate stats
   const filteredStats = stats.filter(stat => {
     const excludedCards = [
       'quality-score', 
@@ -149,7 +155,22 @@ export const EnhancedStatsGrid = memo<EnhancedStatsGridProps>(({
       'performance-tracking',
       'enhanced-dashboard'
     ];
-    return !excludedCards.includes(stat.id);
+    
+    // Additional validation for stats
+    if (excludedCards.includes(stat.id)) return false;
+    
+    // Log extreme values for debugging
+    if (stat.change && Math.abs(stat.change.value) > 1000) {
+      console.warn('Extreme percentage value detected:', {
+        id: stat.id,
+        title: stat.title,
+        changeValue: stat.change.value
+      });
+      // Cap the change value
+      stat.change.value = Math.max(-100, Math.min(999, stat.change.value));
+    }
+    
+    return true;
   });
 
   if (filteredStats.length === 0) {

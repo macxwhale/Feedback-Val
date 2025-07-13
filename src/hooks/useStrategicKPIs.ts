@@ -32,10 +32,20 @@ export interface StrategicKPIs {
   };
 }
 
+// Helper function to safely calculate percentage change with caps
+const calculateTrendPercentage = (current: number, previous: number): number => {
+  if (previous === 0) return 0;
+  const change = ((current - previous) / previous) * 100;
+  // Cap extreme values to prevent unrealistic percentages
+  return Math.max(-100, Math.min(500, Math.round(change)));
+};
+
 export const useStrategicKPIs = (organizationId: string) => {
   return useQuery({
     queryKey: ['strategic-kpis', organizationId],
     queryFn: async (): Promise<StrategicKPIs> => {
+      console.log('Calculating Strategic KPIs for organization:', organizationId);
+      
       // Get feedback responses with scores
       const { data: responses } = await supabase
         .from('feedback_responses')
@@ -62,6 +72,24 @@ export const useStrategicKPIs = (organizationId: string) => {
         };
       }
 
+      // Calculate date boundaries for trend analysis
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      
+      const recentResponses = responses.filter(r => 
+        new Date(r.created_at) >= thirtyDaysAgo
+      );
+      const previousResponses = responses.filter(r => 
+        new Date(r.created_at) >= sixtyDaysAgo && new Date(r.created_at) < thirtyDaysAgo
+      );
+
+      console.log('Response counts:', {
+        total: responses.length,
+        recent: recentResponses.length,
+        previous: previousResponses.length
+      });
+
       // Calculate NPS (assuming 1-5 scale, converting to 0-10 NPS scale)
       const npsResponses = responses.filter(r => r.score !== null);
       const npsScores = npsResponses.map(r => {
@@ -86,36 +114,29 @@ export const useStrategicKPIs = (organizationId: string) => {
         : 0;
 
       // Calculate CES (simplified - using inverse of satisfaction for demonstration)
-      // In real implementation, this would come from specific CES questions
       const cesScore = responses.length > 0
         ? Math.round(7 - (responses.reduce((sum, r) => sum + r.score, 0) / responses.length) * 1.4)
         : 3;
 
-      // Calculate trends (simplified - comparing recent vs older data)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const recentResponses = responses.filter(r => 
-        new Date(r.created_at) >= thirtyDaysAgo
-      );
-      const olderResponses = responses.filter(r => 
-        new Date(r.created_at) < thirtyDaysAgo
-      );
-
+      // Calculate trends with proper bounds
       const recentAvg = recentResponses.length > 0
         ? recentResponses.reduce((sum, r) => sum + r.score, 0) / recentResponses.length
         : 0;
-      const olderAvg = olderResponses.length > 0
-        ? olderResponses.reduce((sum, r) => sum + r.score, 0) / olderResponses.length
+      const previousAvg = previousResponses.length > 0
+        ? previousResponses.reduce((sum, r) => sum + r.score, 0) / previousResponses.length
         : recentAvg;
 
-      const trendValue = olderAvg > 0 
-        ? Math.round(((recentAvg - olderAvg) / olderAvg) * 100)
-        : 0;
+      const trendValue = calculateTrendPercentage(recentAvg, previousAvg);
+
+      console.log('Calculated trends:', {
+        recentAvg,
+        previousAvg,
+        trendValue
+      });
 
       return {
         nps: {
-          score: npsScore,
+          score: Math.max(-100, Math.min(100, npsScore)),
           breakdown: {
             promoters: totalNPS > 0 ? Math.round((promoters / totalNPS) * 100) : 0,
             passives: totalNPS > 0 ? Math.round((passives / totalNPS) * 100) : 0,
@@ -127,7 +148,7 @@ export const useStrategicKPIs = (organizationId: string) => {
           }
         },
         csat: {
-          score: csatScore,
+          score: Math.max(0, Math.min(100, csatScore)),
           totalResponses: csatResponses.length,
           trend: {
             value: Math.abs(trendValue),
