@@ -20,16 +20,6 @@ import { AccessDeniedPage } from './components/auth/AccessDeniedPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
-  );
-};
-
 const AppContent: React.FC = () => {
   const { user, isAdmin, loading } = useAuth();
   const location = useLocation();
@@ -110,6 +100,16 @@ const AppContent: React.FC = () => {
       </Routes>
       <ToastContainer position="bottom-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
     </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 };
 
