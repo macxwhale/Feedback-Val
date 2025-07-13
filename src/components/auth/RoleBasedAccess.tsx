@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getRoleConfig } from '@/utils/roleManagement';
 import { useOrganization } from '@/context/OrganizationContext';
+import { useAccessRequest } from '@/hooks/useAccessRequest';
 
 interface RoleBasedAccessProps {
   children: React.ReactNode;
@@ -31,6 +32,7 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
   const { hasPermission, userRole, isLoading, isAdmin } = useRBAC(organizationId);
   const { isOrgAdmin } = useAuth();
   const { organization } = useOrganization();
+  const { requestAccess, isRequesting } = useAccessRequest();
 
   console.log('RoleBasedAccess check:', {
     requiredRole,
@@ -71,6 +73,22 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
       
       if (!showAccessDenied) return null;
       
+      const handleRequestAccess = async () => {
+        if (onRequestAccess) {
+          onRequestAccess();
+        } else {
+          await requestAccess({
+            type: 'role_upgrade',
+            requiredRole,
+            currentRole: userRole,
+            organizationId: organizationId || organization?.id
+          });
+        }
+      };
+      
+      const RequiredIcon = requiredRoleConfig.icon;
+      const UserIcon = userRoleConfig.icon;
+      
       return (
         <Card className="border-red-200">
           <CardHeader>
@@ -100,7 +118,7 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">Required role:</span>
                 <Badge variant={requiredRoleConfig.variant} className="flex items-center gap-1">
-                  <requiredRoleConfig.icon className="w-3 h-3" />
+                  <RequiredIcon className="w-3 h-3" />
                   {requiredRoleConfig.label}
                 </Badge>
               </div>
@@ -108,7 +126,7 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">Your role:</span>
                 <Badge variant={userRoleConfig.variant} className="flex items-center gap-1">
-                  <userRoleConfig.icon className="w-3 h-3" />
+                  <UserIcon className="w-3 h-3" />
                   {userRoleConfig.label}
                 </Badge>
               </div>
@@ -116,12 +134,15 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
             
             {/* Action buttons */}
             <div className="flex flex-col space-y-2">
-              {onRequestAccess && (
-                <Button onClick={onRequestAccess} size="sm" className="w-full">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Request Role Upgrade
-                </Button>
-              )}
+              <Button 
+                onClick={handleRequestAccess} 
+                size="sm" 
+                className="w-full"
+                disabled={isRequesting}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                {isRequesting ? 'Requesting...' : 'Request Role Upgrade'}
+              </Button>
               
               <p className="text-xs text-gray-500 text-center">
                 Contact your organization administrator to request a role upgrade.
@@ -140,6 +161,21 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
     if (fallback) return <>{fallback}</>;
     
     if (!showAccessDenied) return null;
+    
+    const handleRequestAccess = async () => {
+      if (onRequestAccess) {
+        onRequestAccess();
+      } else {
+        await requestAccess({
+          type: 'permission',
+          requiredPermission,
+          currentRole: userRole,
+          organizationId: organizationId || organization?.id
+        });
+      }
+    };
+
+    const UserIcon = userRole ? getRoleConfig(userRole).icon : null;
     
     return (
       <Card className="border-red-200">
@@ -167,11 +203,11 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
           )}
           
           {/* Current role display */}
-          {userRole && (
+          {userRole && UserIcon && (
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium">Your role:</span>
               <Badge variant={getRoleConfig(userRole).variant} className="flex items-center gap-1">
-                <getRoleConfig(userRole).icon className="w-3 h-3" />
+                <UserIcon className="w-3 h-3" />
                 {getRoleConfig(userRole).label}
               </Badge>
             </div>
@@ -179,12 +215,15 @@ export const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
           
           {/* Action buttons */}
           <div className="flex flex-col space-y-2">
-            {onRequestAccess && (
-              <Button onClick={onRequestAccess} size="sm" className="w-full">
-                <Mail className="w-4 h-4 mr-2" />
-                Request Access
-              </Button>
-            )}
+            <Button 
+              onClick={handleRequestAccess} 
+              size="sm" 
+              className="w-full"
+              disabled={isRequesting}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              {isRequesting ? 'Requesting...' : 'Request Access'}
+            </Button>
             
             <p className="text-xs text-gray-500 text-center">
               Contact your organization administrator for assistance.
