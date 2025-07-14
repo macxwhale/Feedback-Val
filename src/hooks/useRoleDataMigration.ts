@@ -27,8 +27,9 @@ export const useRoleDataMigration = () => {
 
       console.log(`Found ${usersToMigrate.length} users needing role migration`);
 
-      // Migrate each user
-      const updates = usersToMigrate.map(user => {
+      // Migrate each user individually to avoid the batch update issue
+      let migratedCount = 0;
+      for (const user of usersToMigrate) {
         let enhancedRole = 'member'; // default
         
         // Map legacy role to enhanced_role
@@ -38,23 +39,20 @@ export const useRoleDataMigration = () => {
           enhancedRole = 'member';
         }
 
-        return {
-          id: user.id,
-          enhanced_role: enhancedRole
-        };
-      });
+        const { error: updateError } = await supabase
+          .from('organization_users')
+          .update({ enhanced_role: enhancedRole as 'owner' | 'admin' | 'manager' | 'analyst' | 'member' | 'viewer' })
+          .eq('id', user.id);
 
-      // Batch update all users
-      const { error: updateError } = await supabase
-        .from('organization_users')
-        .upsert(updates, { onConflict: 'id' });
-
-      if (updateError) {
-        throw new Error(`Failed to migrate user roles: ${updateError.message}`);
+        if (updateError) {
+          console.error(`Failed to migrate user ${user.id}:`, updateError);
+        } else {
+          migratedCount++;
+        }
       }
 
-      console.log(`Successfully migrated ${updates.length} user roles`);
-      return { migratedCount: updates.length };
+      console.log(`Successfully migrated ${migratedCount} user roles`);
+      return { migratedCount };
     },
     onSuccess: (result) => {
       if (result.migratedCount > 0) {

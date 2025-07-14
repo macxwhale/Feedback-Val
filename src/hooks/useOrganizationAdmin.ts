@@ -47,19 +47,25 @@ export const useOrganizationAdmin = (organizationSlug?: string) => {
 
         setOrganizationId(org.id);
 
-        // Check if user is an admin of this specific organization
-        const { data: isOrgAdminResult, error: adminError } = await supabase
-          .rpc('is_current_user_org_admin', { org_id: org.id });
+        // Check if user is an admin of this specific organization using legacy role
+        const { data: orgUser, error: adminError } = await supabase
+          .from('organization_users')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('organization_id', org.id)
+          .eq('status', 'active')
+          .single();
 
         if (adminError) {
           console.error('useOrganizationAdmin: Error checking admin status', adminError);
           setIsOrgAdmin(false);
         } else {
-          const adminStatus = !!isOrgAdminResult;
+          const adminStatus = orgUser?.role === 'admin';
           console.log('useOrganizationAdmin: Admin status check', {
             userId: user.id,
             organizationSlug,
             organizationId: org.id,
+            role: orgUser?.role,
             isOrgAdmin: adminStatus
           });
           setIsOrgAdmin(adminStatus);
