@@ -51,9 +51,26 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
     if (!canManageUsers()) return false;
     if (!userRole) return false;
     
-    // Use enhanced_role, fallback to role only if enhanced_role is null
-    const memberRole = member.enhanced_role || member.role || 'member';
+    // Normalize member role - prioritize enhanced_role, fallback to member for null values
+    const memberRole = member.enhanced_role || 'member';
     return canManageRole(userRole, memberRole);
+  };
+
+  // Normalize member role for consistent display
+  const getMemberRole = (member: Member): string => {
+    // If enhanced_role exists and is valid, use it
+    if (member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)) {
+      return member.enhanced_role;
+    }
+    
+    // If enhanced_role is null but legacy role exists, map it
+    if (!member.enhanced_role && member.role) {
+      if (member.role === 'admin') return 'admin';
+      if (member.role === 'member') return 'member';
+    }
+    
+    // Default fallback
+    return 'member';
   };
 
   if (loading) {
@@ -96,8 +113,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
           </TableHeader>
           <TableBody>
             {members.map((member) => {
-              // Always use enhanced_role, fallback to role only if enhanced_role is null
-              const memberRole = member.enhanced_role || member.role || 'member';
+              const memberRole = getMemberRole(member);
               const canEdit = canEditMember(member);
               
               return (
@@ -140,7 +156,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="bg-white z-50">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
