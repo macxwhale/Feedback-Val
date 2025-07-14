@@ -51,6 +51,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
     if (!canManageUsers()) return false;
     if (!userRole) return false;
     
+    // Use enhanced_role, fallback to role only if enhanced_role is null
     const memberRole = member.enhanced_role || member.role || 'member';
     return canManageRole(userRole, memberRole);
   };
@@ -95,6 +96,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
           </TableHeader>
           <TableBody>
             {members.map((member) => {
+              // Always use enhanced_role, fallback to role only if enhanced_role is null
               const memberRole = member.enhanced_role || member.role || 'member';
               const canEdit = canEditMember(member);
               
@@ -125,13 +127,10 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {member.accepted_at 
-                      ? formatDate(member.accepted_at)
-                      : formatDate(member.created_at)
-                    }
+                    {member.accepted_at ? formatDate(member.accepted_at) : formatDate(member.created_at)}
                   </TableCell>
                   <TableCell>
-                    {member.invited_by?.email || '-'}
+                    {member.invited_by?.email || 'System'}
                   </TableCell>
                   <TableCell>
                     {canEdit && (
@@ -144,10 +143,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                         <DropdownMenuContent align="end">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem 
-                                className="text-red-600"
-                                onSelect={(e) => e.preventDefault()}
-                              >
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Remove Member
                               </DropdownMenuItem>
@@ -156,7 +152,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Remove Member</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to remove {member.email} from this organization? 
+                                  Are you sure you want to remove {member.email} from the organization?
                                   This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>

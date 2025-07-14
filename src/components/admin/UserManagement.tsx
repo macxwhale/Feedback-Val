@@ -85,8 +85,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({
   }
 
   const adminsCount = activeMembers.filter((m: Member) => {
-    const role = m.enhanced_role || m.role;
-    return ['admin', 'owner'].includes(role || '');
+    // Use enhanced_role, fallback to role only if enhanced_role is null
+    const role = m.enhanced_role || m.role || 'member';
+    return ['admin', 'owner'].includes(role);
   }).length;
 
   // Ensure we have the correct pending invitations count

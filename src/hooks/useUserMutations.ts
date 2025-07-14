@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -14,6 +13,7 @@ export const useUpdateUserRole = (organizationId: string) => {
         .from('organization_users')
         .update({ 
           enhanced_role: newRole as 'owner' | 'admin' | 'manager' | 'analyst' | 'member' | 'viewer',
+          // Keep legacy role for backward compatibility
           role: newRole === 'owner' || newRole === 'admin' ? 'admin' : 'member'
         })
         .eq('user_id', userId)
