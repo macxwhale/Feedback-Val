@@ -1,6 +1,7 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useOrganization } from '@/context/OrganizationContext';
+import { useAuth } from '@/components/auth/AuthWrapper';
 import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
@@ -79,8 +80,15 @@ const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
+  const { organization, loading: orgLoading } = useOrganization();
+  const { user } = useAuth();
   
-  console.log('DashboardContent rendering with slug:', slug);
+  console.log('DashboardContent rendering with:', {
+    slug,
+    user: !!user,
+    organization: !!organization,
+    orgLoading
+  });
 
   // Performance optimization with error handling
   const { createDebouncedFunction } = usePerformanceOptimization({
@@ -91,16 +99,14 @@ const DashboardContent: React.FC = () => {
   // Debounce tab changes to prevent rapid switching
   const debouncedSetActiveTab = createDebouncedFunction(setActiveTab);
 
-  let organization, stats, isLoading;
+  let stats, isLoading;
   
   try {
     const dashboardData = useDashboardData();
-    organization = dashboardData.organization;
     stats = dashboardData.stats;
     isLoading = dashboardData.isLoading;
   } catch (error) {
     console.error('Error getting dashboard data:', error);
-    organization = null;
     stats = null;
     isLoading = false;
   }
@@ -174,7 +180,7 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  if (!organization && !isLoading) {
+  if (!organization && !orgLoading) {
     console.log('No organization found and not loading');
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -186,7 +192,7 @@ const DashboardContent: React.FC = () => {
     );
   }
 
-  if (isLoading) {
+  if (orgLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse space-y-4">
