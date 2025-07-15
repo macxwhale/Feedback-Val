@@ -6,7 +6,6 @@ interface MemberWithInviter {
   id: string;
   user_id: string;
   email: string;
-  role?: string;
   enhanced_role?: string;
   status: string;
   created_at: string;
@@ -26,7 +25,6 @@ export const useOrganizationMembers = (organizationId: string) => {
           id,
           user_id,
           email,
-          role,
           enhanced_role,
           status,
           created_at,
@@ -60,19 +58,10 @@ export const useOrganizationMembers = (organizationId: string) => {
             }
           }
           
-          // Normalize enhanced_role - if null but role exists, map legacy role to enhanced_role
-          let normalizedEnhancedRole = member.enhanced_role;
-          if (!member.enhanced_role && member.role) {
-            if (member.role === 'admin') {
-              normalizedEnhancedRole = 'admin';
-            } else if (member.role === 'member') {
-              normalizedEnhancedRole = 'member';
-            }
-          }
-          // If still null, default to member
-          if (!normalizedEnhancedRole) {
-            normalizedEnhancedRole = 'member';
-          }
+          // Normalize enhanced_role - default to member if not set
+          const normalizedEnhancedRole = member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)
+            ? member.enhanced_role
+            : 'member';
           
           return {
             ...member,

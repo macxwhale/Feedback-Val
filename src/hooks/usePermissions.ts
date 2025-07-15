@@ -8,17 +8,14 @@ interface UsePermissionsProps {
 
 export const usePermissions = ({ organizationId }: UsePermissionsProps = {}) => {
   const { hasPermission, userRole, isLoading, isAdmin: isSystemAdmin } = useRBAC(organizationId);
-  const { isOrgAdmin, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
 
   const checkPermission = (permission: string): boolean => {
     // System admin has all permissions
     if (isSystemAdmin || isAdmin) return true;
     
-    // Org admin has org-level permissions (but check enhanced role first)
+    // Owner and admin roles have broad permissions
     if (userRole && ['owner', 'admin'].includes(userRole)) return true;
-    
-    // Fallback to legacy org admin check
-    if (isOrgAdmin && organizationId) return true;
     
     // Check specific permission using enhanced role
     return hasPermission(permission);
@@ -28,11 +25,8 @@ export const usePermissions = ({ organizationId }: UsePermissionsProps = {}) => 
     // System admin bypasses role checks
     if (isSystemAdmin || isAdmin) return true;
     
-    // Enhanced role check
+    // Owner and admin roles have broad access
     if (userRole && ['owner', 'admin'].includes(userRole)) return true;
-    
-    // Legacy org admin check
-    if (isOrgAdmin && organizationId) return true;
     
     // Check specific enhanced role
     return userRole === requiredRole;
@@ -44,6 +38,6 @@ export const usePermissions = ({ organizationId }: UsePermissionsProps = {}) => 
     userRole,
     isLoading,
     isSystemAdmin: isSystemAdmin || isAdmin,
-    isOrgAdmin: isOrgAdmin || (userRole && ['owner', 'admin'].includes(userRole))
+    isOrgAdmin: userRole && ['owner', 'admin'].includes(userRole)
   };
 };

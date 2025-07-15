@@ -19,19 +19,15 @@ export const useEnhancedPermissions = (organizationId?: string) => {
       
       const { data } = await supabase
         .from('organization_users')
-        .select('enhanced_role, role')
+        .select('enhanced_role')
         .eq('user_id', user.id)
         .eq('organization_id', organizationId)
         .single();
         
-      // Prioritize enhanced_role over legacy role
-      if (data?.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(data.enhanced_role)) {
-        return data.enhanced_role;
-      } else if (data?.role === 'admin') {
-        return 'admin';
-      } else {
-        return 'member';
-      }
+      // Only use enhanced_role, default to member if not set
+      return data?.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(data.enhanced_role)
+        ? data.enhanced_role
+        : 'member';
     },
     enabled: !!user?.id && !!organizationId,
   });
@@ -48,7 +44,6 @@ export const useEnhancedPermissions = (organizationId?: string) => {
         
       const permissionsMap: Record<string, Permission> = {};
       data?.forEach(({ permission_key, permission_value }) => {
-        // Safely parse the permission_value as Permission interface
         try {
           const parsedPermission = permission_value as unknown as Permission;
           if (parsedPermission && typeof parsedPermission === 'object' && 'allowed' in parsedPermission) {
@@ -77,11 +72,7 @@ export const useEnhancedPermissions = (organizationId?: string) => {
     return hasPermission(userRole, permission);
   };
 
-  const canManageUsers = () => {
-    // For enhanced roles, check specific permission
-    return checkPermission('manage_users');
-  };
-  
+  const canManageUsers = () => checkPermission('manage_users');
   const canManageOrganization = () => checkPermission('manage_organization');
   const canViewAnalytics = () => checkPermission('view_analytics');
   const canExportData = () => checkPermission('export_data');
