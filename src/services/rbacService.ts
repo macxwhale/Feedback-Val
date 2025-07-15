@@ -30,14 +30,23 @@ export class RBACService {
     try {
       const { data, error } = await supabase
         .from('organization_users')
-        .select('enhanced_role')
+        .select('enhanced_role, role')
         .eq('user_id', userId)
         .eq('organization_id', organizationId)
         .single();
 
       if (error || !data) return null;
 
-      const role = data.enhanced_role as Role;
+      // Prioritize enhanced_role, fallback to legacy role mapping
+      let role: Role;
+      if (data.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(data.enhanced_role)) {
+        role = data.enhanced_role as Role;
+      } else if (data.role === 'admin') {
+        role = 'admin';
+      } else {
+        role = 'member';
+      }
+
       this.roleCache.set(cacheKey, { role, timestamp: Date.now() });
       return role;
     } catch (error) {

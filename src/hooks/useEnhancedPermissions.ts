@@ -24,8 +24,8 @@ export const useEnhancedPermissions = (organizationId?: string) => {
         .eq('organization_id', organizationId)
         .single();
         
-      // Use enhanced_role if available, fallback to legacy role mapping
-      if (data?.enhanced_role) {
+      // Prioritize enhanced_role over legacy role
+      if (data?.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(data.enhanced_role)) {
         return data.enhanced_role;
       } else if (data?.role === 'admin') {
         return 'admin';
@@ -73,13 +73,12 @@ export const useEnhancedPermissions = (organizationId?: string) => {
       return dbPermission.allowed;
     }
     
-    // Fallback to role-based permission check
+    // Fallback to enhanced role-based permission check
     return hasPermission(userRole, permission);
   };
 
   const canManageUsers = () => {
-    // For legacy compatibility, admin role can manage users
-    if (userRole === 'admin') return true;
+    // For enhanced roles, check specific permission
     return checkPermission('manage_users');
   };
   

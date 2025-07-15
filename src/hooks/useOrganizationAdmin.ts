@@ -47,10 +47,10 @@ export const useOrganizationAdmin = (organizationSlug?: string) => {
 
         setOrganizationId(org.id);
 
-        // Check if user is an admin of this specific organization using legacy role
+        // Check enhanced role first, fallback to legacy role
         const { data: orgUser, error: adminError } = await supabase
           .from('organization_users')
-          .select('role')
+          .select('enhanced_role, role')
           .eq('user_id', user.id)
           .eq('organization_id', org.id)
           .eq('status', 'active')
@@ -60,12 +60,20 @@ export const useOrganizationAdmin = (organizationSlug?: string) => {
           console.error('useOrganizationAdmin: Error checking admin status', adminError);
           setIsOrgAdmin(false);
         } else {
-          const adminStatus = orgUser?.role === 'admin';
+          // Check enhanced role first
+          let adminStatus = false;
+          if (orgUser?.enhanced_role && ['owner', 'admin', 'manager'].includes(orgUser.enhanced_role)) {
+            adminStatus = true;
+          } else if (orgUser?.role === 'admin') {
+            adminStatus = true;
+          }
+          
           console.log('useOrganizationAdmin: Admin status check', {
             userId: user.id,
             organizationSlug,
             organizationId: org.id,
-            role: orgUser?.role,
+            enhanced_role: orgUser?.enhanced_role,
+            legacy_role: orgUser?.role,
             isOrgAdmin: adminStatus
           });
           setIsOrgAdmin(adminStatus);

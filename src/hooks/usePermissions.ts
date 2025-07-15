@@ -14,10 +14,13 @@ export const usePermissions = ({ organizationId }: UsePermissionsProps = {}) => 
     // System admin has all permissions
     if (isSystemAdmin || isAdmin) return true;
     
-    // Org admin has org-level permissions
+    // Org admin has org-level permissions (but check enhanced role first)
+    if (userRole && ['owner', 'admin'].includes(userRole)) return true;
+    
+    // Fallback to legacy org admin check
     if (isOrgAdmin && organizationId) return true;
     
-    // Check specific permission
+    // Check specific permission using enhanced role
     return hasPermission(permission);
   };
 
@@ -25,10 +28,13 @@ export const usePermissions = ({ organizationId }: UsePermissionsProps = {}) => 
     // System admin bypasses role checks
     if (isSystemAdmin || isAdmin) return true;
     
-    // Org admin bypasses most role checks
+    // Enhanced role check
+    if (userRole && ['owner', 'admin'].includes(userRole)) return true;
+    
+    // Legacy org admin check
     if (isOrgAdmin && organizationId) return true;
     
-    // TODO: Implement proper role hierarchy checking
+    // Check specific enhanced role
     return userRole === requiredRole;
   };
 
@@ -38,6 +44,6 @@ export const usePermissions = ({ organizationId }: UsePermissionsProps = {}) => 
     userRole,
     isLoading,
     isSystemAdmin: isSystemAdmin || isAdmin,
-    isOrgAdmin
+    isOrgAdmin: isOrgAdmin || (userRole && ['owner', 'admin'].includes(userRole))
   };
 };

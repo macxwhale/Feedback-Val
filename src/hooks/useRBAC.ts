@@ -23,8 +23,9 @@ export const useRBAC = (organizationId?: string) => {
       if (!context) return null;
       
       try {
+        // Prioritize enhanced_role over legacy role
         const role = await RBACService.getUserRole(context.userId, context.organizationId);
-        console.log('User role fetched:', role, 'for user:', context.userId);
+        console.log('User enhanced role fetched:', role, 'for user:', context.userId);
         return role;
       } catch (error) {
         console.error('Error fetching user role:', error);
@@ -78,6 +79,7 @@ export const useRBAC = (organizationId?: string) => {
       return true;
     }
     
+    // Use enhanced role for permission checking
     const allowed = hasPermission(userRole, permission);
     console.log('Permission check:', { permission, userRole, allowed });
     return allowed;

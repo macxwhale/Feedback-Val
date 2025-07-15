@@ -62,12 +62,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     handleUpdateRole(userId, newRole);
   };
 
-  // Normalize member role for admin counting
+  // Get member role prioritizing enhanced_role
   const getMemberRole = (member: Member): string => {
     if (member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)) {
       return member.enhanced_role;
     }
-    if (!member.enhanced_role && member.role === 'admin') return 'admin';
+    if (member.role === 'admin') return 'admin';
     return 'member';
   };
 
