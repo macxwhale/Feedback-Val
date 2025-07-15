@@ -7,8 +7,8 @@
 import { container } from './DIContainer';
 import { SERVICE_TOKENS } from './ServiceTokens';
 import { EnhancedAnalyticsService } from '@/services/EnhancedAnalyticsService';
-import { EnhancedPerformanceService } from '@/services/EnhancedPerformanceService';
-import { EnhancedNotificationService } from '@/services/EnhancedNotificationService';
+import { EnhancedPerformanceService } from '@/services/enhanced/EnhancedPerformanceService';
+import { EnhancedNotificationService } from '@/services/enhanced/EnhancedNotificationService';
 import { UserService } from '@/services/UserService';
 
 /**
