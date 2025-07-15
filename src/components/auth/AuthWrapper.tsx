@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +21,8 @@ interface AuthContextType {
   refreshUserRoles: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+// Export the AuthContext
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
