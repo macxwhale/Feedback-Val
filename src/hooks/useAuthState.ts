@@ -17,7 +17,7 @@ const checkUserRoles = async (userId: string) => {
       console.error('Error checking admin status:', adminError);
     }
     
-    // Get organization data with enhanced role (but don't use it for general org admin status)
+    // Get organization data with enhanced role
     const { data: orgData, error: orgError } = await supabase
       .from('organization_users')
       .select('organization_id, role, enhanced_role, organizations(slug)')
@@ -30,18 +30,18 @@ const checkUserRoles = async (userId: string) => {
     }
 
     const isAdmin = !!adminStatus;
-    const hasOrgMembership = !!orgData?.organization_id;
+    const hasOrgRole = !!orgData?.organization_id;
 
     console.log('User roles determined:', { 
       isAdmin, 
-      hasOrgMembership, 
+      hasOrgRole, 
       orgData,
       enhancedRole: orgData?.enhanced_role 
     });
 
     return {
       isAdmin,
-      hasOrgMembership, // Changed from isOrgAdmin to hasOrgMembership
+      isOrgAdmin: hasOrgRole,
       currentOrganization: orgData?.organization_id || null,
       currentOrganizationSlug: (orgData?.organizations as any)?.slug || null,
     };
@@ -49,7 +49,7 @@ const checkUserRoles = async (userId: string) => {
     console.error('Error checking user roles:', error);
     return {
       isAdmin: false,
-      hasOrgMembership: false,
+      isOrgAdmin: false,
       currentOrganization: null,
       currentOrganizationSlug: null,
     };
@@ -60,7 +60,7 @@ export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [hasOrgMembership, setHasOrgMembership] = useState(false); // Renamed from isOrgAdmin
+  const [isOrgAdmin, setIsOrgAdmin] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState<string | null>(null);
   const [currentOrganizationSlug, setCurrentOrganizationSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +74,7 @@ export const useAuthState = () => {
         const roles = await checkUserRoles(userId);
         if (mounted) {
           setIsAdmin(roles.isAdmin);
-          setHasOrgMembership(roles.hasOrgMembership);
+          setIsOrgAdmin(roles.isOrgAdmin);
           setCurrentOrganization(roles.currentOrganization);
           setCurrentOrganizationSlug(roles.currentOrganizationSlug);
           setLoading(false);
@@ -111,7 +111,7 @@ export const useAuthState = () => {
           }, 200); // Increased delay for better reliability
         } else {
           setIsAdmin(false);
-          setHasOrgMembership(false);
+          setIsOrgAdmin(false);
           setCurrentOrganization(null);
           setCurrentOrganizationSlug(null);
           setLoading(false);
@@ -147,7 +147,7 @@ export const useAuthState = () => {
     user, 
     session, 
     isAdmin, 
-    isOrgAdmin: hasOrgMembership, // Keep the interface the same for now, but this is now just "has any org membership"
+    isOrgAdmin, 
     currentOrganization, 
     currentOrganizationSlug, 
     loading 

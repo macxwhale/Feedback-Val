@@ -8,7 +8,6 @@ import { QuestionsManagement } from '../QuestionsManagement';
 import { AdvancedDashboardView } from './AdvancedDashboardView';
 import { CustomerInsightsDashboard } from './CustomerInsightsDashboard';
 import { SentimentAnalyticsDashboard } from './SentimentAnalyticsDashboard';
-import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 const MembersTab = React.lazy(() => import('@/components/org-admin/dashboard/MembersTab'));
 const InboxTab = React.lazy(() => import('@/components/admin/dashboard/tabs/InboxTab'));
@@ -61,83 +60,57 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     <div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsContent value="overview" className="space-y-6">
-          <PermissionGuard permission="view_analytics" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading advanced dashboard…</div>}>
-              <AdvancedDashboardTab
-                organization={organization}
-                stats={stats}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                isLiveActivity={isLiveActivity}
-                setIsLiveActivity={setIsLiveActivity}
-                handleQuickActions={handleQuickActions}
-              />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading advanced dashboard…</div>}>
+            <AdvancedDashboardTab
+              organization={organization}
+              stats={stats}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              isLiveActivity={isLiveActivity}
+              setIsLiveActivity={setIsLiveActivity}
+              handleQuickActions={handleQuickActions}
+            />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="customer-insights">
-          <PermissionGuard permission="view_analytics" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading customer insights…</div>}>
-              <CustomerInsightsTab organizationId={organization.id} />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading customer insights…</div>}>
+            <CustomerInsightsTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="sentiment">
-          <PermissionGuard permission="view_analytics" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading sentiment…</div>}>
-              <SentimentTab organizationId={organization.id} />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading sentiment…</div>}>
+            <SentimentTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="members">
-          <PermissionGuard permission="manage_users" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading members…</div>}>
-              <MembersTab organization={organization} />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading members…</div>}>
+            <MembersTab organization={organization} />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="feedback">
-          <PermissionGuard permission="view_analytics" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading feedback…</div>}>
-              <FeedbackTab organizationId={organization.id} />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading feedback…</div>}>
+            <FeedbackTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="inbox">
-          <PermissionGuard permission="view_analytics" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading inbox…</div>}>
-              <InboxTab organizationId={organization.id} />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading inbox…</div>}>
+            <InboxTab organizationId={organization.id} />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="questions">
-          <PermissionGuard permission="manage_questions" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading questions…</div>}>
-              <QuestionsTab />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading questions…</div>}>
+            <QuestionsTab />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="settings">
-          <PermissionGuard permission="manage_organization" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading settings…</div>}>
-              <SettingsTab organization={organization} />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading settings…</div>}>
+            <SettingsTab organization={organization} />
+          </React.Suspense>
         </TabsContent>
-        
         <TabsContent value="integrations">
-          <PermissionGuard permission="manage_integrations" organizationId={organization.id}>
-            <React.Suspense fallback={<div>Loading integrations…</div>}>
-              <IntegrationsTab />
-            </React.Suspense>
-          </PermissionGuard>
+          <React.Suspense fallback={<div>Loading integrations…</div>}>
+            <IntegrationsTab />
+          </React.Suspense>
         </TabsContent>
       </Tabs>
     </div>
