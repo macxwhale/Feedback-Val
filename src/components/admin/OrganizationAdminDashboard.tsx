@@ -81,7 +81,9 @@ const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
-  const { organization, isCurrentUserOrgAdmin, loading: orgLoading } = useOrganization();
+  
+  // Use the same organization context as DashboardDataProvider
+  const { organization, loading: orgLoading, isCurrentUserOrgAdmin } = useOrganization();
   const { user, isAdmin } = useAuth();
   
   console.log('DashboardContent rendering with:', {
@@ -202,18 +204,7 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  if (!organization && !orgLoading) {
-    console.log('No organization found and not loading');
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold">Organization Not Found</h2>
-          <p className="text-gray-600">The requested organization could not be found.</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Show loading state while organization is being fetched
   if (orgLoading || isLoading || !organization) {
     return (
       <div className="min-h-screen flex items-center justify-center">
