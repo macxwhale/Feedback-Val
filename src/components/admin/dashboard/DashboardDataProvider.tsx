@@ -45,16 +45,26 @@ export const DashboardDataProvider: React.FC<DashboardDataProviderProps> = ({ ch
     organizationId: organization?.id 
   });
 
+  // Analytics data is optional and shouldn't block the main dashboard
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsData(organization?.id || '');
+  console.log('Analytics query result:', {
+    hasAnalyticsData: !!analyticsData,
+    analyticsLoading,
+    organizationId: organization?.id
+  });
 
-  const isLoading = orgLoading || statsLoading || analyticsLoading;
+  // Only consider org and stats loading for main loading state
+  // Analytics loading shouldn't block the dashboard
+  const isLoading = orgLoading || statsLoading;
   const typedStats: OrganizationStats | null = stats ? (stats as unknown as OrganizationStats) : null;
 
   console.log('DashboardDataProvider state:', {
     organization: organization?.name || 'No organization',
     hasStats: !!typedStats,
     isLoading,
-    error: error?.message
+    analyticsLoading,
+    error: error?.message,
+    finalLoadingState: isLoading
   });
 
   const value: DashboardContextValue = {

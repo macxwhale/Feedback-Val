@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useOrganization } from '@/context/OrganizationContext';
@@ -111,6 +110,12 @@ const DashboardContent: React.FC = () => {
     const dashboardData = useDashboardData();
     stats = dashboardData.stats;
     isLoading = dashboardData.isLoading;
+    
+    console.log('Dashboard data from context:', {
+      hasStats: !!stats,
+      isLoading,
+      error: dashboardData.error?.message
+    });
   } catch (error) {
     console.error('Error getting dashboard data:', error);
     stats = null;
@@ -204,8 +209,18 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  // Show loading state while organization is being fetched
-  if (orgLoading || isLoading || !organization) {
+  // More specific loading conditions - only show loading if we're actually waiting for critical data
+  const showLoading = orgLoading || (isLoading && !organization);
+  
+  console.log('Loading decision:', {
+    orgLoading,
+    isLoading,
+    hasOrganization: !!organization,
+    showLoading
+  });
+
+  if (showLoading) {
+    console.log('Showing loading state');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse space-y-4">
@@ -215,6 +230,21 @@ const DashboardContent: React.FC = () => {
       </div>
     );
   }
+
+  // If we have organization data, we can render the dashboard even if stats are still loading
+  if (!organization) {
+    console.log('No organization found');
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold">Organization Not Found</h2>
+          <p className="text-gray-600">The requested organization could not be found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('Rendering dashboard with organization:', organization.name);
 
   return (
     <ErrorBoundary
