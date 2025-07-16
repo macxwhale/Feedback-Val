@@ -14,12 +14,7 @@ export const EnhancedRoleBadge: React.FC<EnhancedRoleBadgeProps> = ({
   showIcon = false, 
   className = '' 
 }) => {
-  // Normalize role - handle null/undefined/invalid roles
-  const normalizedRole = role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(role) 
-    ? role 
-    : 'member';
-    
-  const config = getRoleConfig(normalizedRole);
+  const config = getRoleConfig(role);
   const IconComponent = config.icon;
 
   return (

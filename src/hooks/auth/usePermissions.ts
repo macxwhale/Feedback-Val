@@ -1,2 +1,0 @@
-
-export { usePermissions } from '../usePermissions';

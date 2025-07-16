@@ -49,8 +49,7 @@ export const SystemUsersTable: React.FC<SystemUsersTableProps> = ({ users, onAss
                 )}
               </TableCell>
               <TableCell>
-                {/* Use enhanced_role if available, fallback to role */}
-                <EnhancedRoleBadge role={user.enhanced_role || user.role} />
+                <EnhancedRoleBadge role={user.role} />
               </TableCell>
               <TableCell>
                 <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>

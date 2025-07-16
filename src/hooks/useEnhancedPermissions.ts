@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/components/auth/AuthWrapper';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,19 +18,12 @@ export const useEnhancedPermissions = (organizationId?: string) => {
       
       const { data } = await supabase
         .from('organization_users')
-        .select('enhanced_role, role')
+        .select('enhanced_role')
         .eq('user_id', user.id)
         .eq('organization_id', organizationId)
         .single();
         
-      // Use enhanced_role if available, fallback to legacy role mapping
-      if (data?.enhanced_role) {
-        return data.enhanced_role;
-      } else if (data?.role === 'admin') {
-        return 'admin';
-      } else {
-        return 'member';
-      }
+      return data?.enhanced_role || null;
     },
     enabled: !!user?.id && !!organizationId,
   });
@@ -77,12 +69,7 @@ export const useEnhancedPermissions = (organizationId?: string) => {
     return hasPermission(userRole, permission);
   };
 
-  const canManageUsers = () => {
-    // For legacy compatibility, admin role can manage users
-    if (userRole === 'admin') return true;
-    return checkPermission('manage_users');
-  };
-  
+  const canManageUsers = () => checkPermission('manage_users');
   const canManageOrganization = () => checkPermission('manage_organization');
   const canViewAnalytics = () => checkPermission('view_analytics');
   const canExportData = () => checkPermission('export_data');
