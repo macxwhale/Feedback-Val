@@ -1,24 +1,32 @@
-import { useState, useEffect, useRef } from 'react';
-import { QuestionConfig, FeedbackResponse } from '@/components/FeedbackForm';
+import { useState, useEffect } from 'react';
 import { fetchQuestions } from '@/services/questionsService';
 import { useFormNavigation } from './useFormNavigation';
 import { useFormResponses } from './useFormResponses';
 import { useAutoSave } from './useAutoSave';
 import { useFormValidation } from './useFormValidation';
-import { useWebhooks } from './useWebhooks';
 import { useToast } from '@/components/ui/use-toast';
 import { useOrganization } from '@/hooks/useOrganization';
-import { v4 as uuidv4 } from 'uuid';
-import { responseTimeService } from '@/services/responseTimeService';
+import { useFeedbackFormState } from './useFeedbackFormState';
+import { useSessionManagement } from './useSessionManagement';
 
 export const useFeedbackForm = () => {
-  const [questions, setQuestions] = useState<QuestionConfig[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
-  const [finalResponses, setFinalResponses] = useState<FeedbackResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
-  const [questionsError, setQuestionsError] = useState<string | null>(null);
-  
+  const {
+    questions,
+    setQuestions,
+    isComplete,
+    setIsComplete,
+    finalResponses,
+    setFinalResponses,
+    isLoading,
+    setIsLoading,
+    completedQuestions,
+    setCompletedQuestions,
+    questionsError,
+    setQuestionsError,
+    questionsLoaded,
+    lastOrgId
+  } = useFeedbackFormState();
+
   const { organization, isLoading: orgLoading } = useOrganization();
   const { toast } = useToast();
   const { 
@@ -32,10 +40,7 @@ export const useFeedbackForm = () => {
   } = useFormResponses();
   const { currentQuestionIndex, goToNext, goToPrevious, resetNavigation } = useFormNavigation(questions.length);
   const { validateQuestion, getValidationResult } = useFormValidation();
-  
-  const questionsLoaded = useRef<boolean>(false);
-  const lastOrgId = useRef<string | null>(null);
-  const sessionId = useRef<string>(uuidv4());
+  const { sessionId, startNewSession, startQuestionTiming, endSession, clearSession } = useSessionManagement();
   
   const { loadSavedData, clearSavedData } = useAutoSave(
     { responses, currentQuestionIndex, completedQuestions },
@@ -67,7 +72,7 @@ export const useFeedbackForm = () => {
         questionsLoaded.current = true;
         lastOrgId.current = organization?.id || 'fallback';
         
-        responseTimeService.startSession(sessionId.current);
+        startNewSession();
 
         const savedData = loadSavedData();
         if (savedData && Object.keys(savedData.responses || {}).length > 0) {
@@ -92,7 +97,7 @@ export const useFeedbackForm = () => {
   useEffect(() => {
     if (questions.length > 0) {
       const currentQuestionId = questions[currentQuestionIndex].id;
-      responseTimeService.startQuestion(sessionId.current, currentQuestionId);
+      startQuestionTiming(currentQuestionId);
     }
   }, [currentQuestionIndex, questions]);
 
@@ -109,7 +114,6 @@ export const useFeedbackForm = () => {
   const handleQuestionResponse = (questionId: string, value: any) => {
     handleResponse(questionId, value);
     
-    // Update completed questions
     const questionIndex = questions.findIndex(q => q.id === questionId);
     if (questionIndex !== -1 && !completedQuestions.includes(questionIndex)) {
       setCompletedQuestions(prev => [...prev, questionIndex]);
@@ -120,16 +124,14 @@ export const useFeedbackForm = () => {
     try {
       console.log('Submitting feedback to database...');
       
-      responseTimeService.endSession(sessionId.current);
-      const timingData = responseTimeService.getSessionTime(sessionId.current);
-
+      const timingData = endSession();
       await submitResponses(questions, timingData);
       
       const responsesWithScores = generateFinalResponses();
       setFinalResponses(responsesWithScores);
       setIsComplete(true);
       clearSavedData();
-      responseTimeService.clearSession(sessionId.current);
+      clearSession();
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
@@ -144,10 +146,8 @@ export const useFeedbackForm = () => {
   };
 
   const resetForm = () => {
-    if (sessionId.current) {
-      responseTimeService.clearSession(sessionId.current);
-    }
-    sessionId.current = uuidv4();
+    clearSession();
+    startNewSession();
     
     resetNavigation();
     resetResponses();
