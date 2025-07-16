@@ -6,7 +6,7 @@ import { useCallback, useMemo } from 'react';
 import { hasPermission, canManageRole } from '@/utils/roleManagement';
 
 export const useRBAC = (organizationId?: string) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isOrgAdmin } = useAuth();
 
   const context = useMemo<RBACContext | null>(() => {
     if (!user?.id || !organizationId) return null;
@@ -18,13 +18,13 @@ export const useRBAC = (organizationId?: string) => {
   }, [user?.id, organizationId, isAdmin]);
 
   const { data: userRole, isLoading, error } = useQuery({
-    queryKey: ['user-enhanced-role', user?.id, organizationId],
+    queryKey: ['user-role-rbac', user?.id, organizationId],
     queryFn: async () => {
       if (!context) return null;
       
       try {
         const role = await RBACService.getUserRole(context.userId, context.organizationId);
-        console.log('User enhanced role fetched:', role, 'for user:', context.userId);
+        console.log('User role fetched:', role, 'for user:', context.userId);
         return role;
       } catch (error) {
         console.error('Error fetching user role:', error);
@@ -72,21 +72,20 @@ export const useRBAC = (organizationId?: string) => {
       return false;
     }
     
-    // System admin should have access to most permissions
-    if (isAdmin) {
+    // System admin and org admin should have access to most permissions
+    if (isAdmin || isOrgAdmin) {
       console.log('Permission granted: admin access');
       return true;
     }
     
-    // Use enhanced role for permission checking
     const allowed = hasPermission(userRole, permission);
     console.log('Permission check:', { permission, userRole, allowed });
     return allowed;
-  }, [context, userRole, isAdmin]);
+  }, [context, userRole, isAdmin, isOrgAdmin]);
 
   const canManageUser = useCallback(async (targetUserId: string): Promise<boolean> => {
     if (!context || !userRole) return false;
-    if (isAdmin) return true;
+    if (isAdmin || isOrgAdmin) return true;
 
     try {
       const targetRole = await RBACService.getUserRole(targetUserId, context.organizationId);
@@ -97,7 +96,7 @@ export const useRBAC = (organizationId?: string) => {
       console.error('Error checking user management permission:', error);
       return false;
     }
-  }, [context, userRole, isAdmin]);
+  }, [context, userRole, isAdmin, isOrgAdmin]);
 
   return {
     userRole,

@@ -1,147 +1,149 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/components/auth/AuthWrapper';
-
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  domain: string;
-  logo_url: string;
-  primary_color: string;
-  secondary_color: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  plan_type: string;
-  trial_ends_at: string;
-  billing_email: string;
-  max_responses: number;
-  created_by_user_id: string | null;
-  settings: any;
-  feedback_header_title: string;
-  feedback_header_subtitle: string;
-  welcome_screen_title: string;
-  welcome_screen_description: string;
-  thank_you_title: string;
-  thank_you_message: string;
-  custom_css: any;
-  flow_configuration: any;
-  logo_storage_path: string | null;
-  features_config: any;
-  updated_by_user_id: string | null;
-  sms_enabled: boolean;
-  sms_sender_id: string;
-  sms_settings: any;
-  webhook_secret: string;
-  flask_sms_wrapper_url: string | null;
-  sms_integration_type: string;
-}
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/auth/AuthWrapper";
 
 interface OrganizationContextType {
-  organization: Organization | null;
+  organization: any | null;
   loading: boolean;
-  error: Error | null;
+  error: string | null;
   isCurrentUserOrgAdmin: boolean;
-  refetch: () => void;
+  organizationId: string | null;
+  refreshOrganization: () => void;
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
 export const useOrganization = () => {
   const context = useContext(OrganizationContext);
-  if (context === undefined) {
-    throw new Error('useOrganization must be used within an OrganizationProvider');
+  if (!context) {
+    throw new Error("useOrganization must be used within an OrganizationProvider");
   }
   return context;
 };
 
-export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { slug } = useParams<{ slug?: string }>();
-  const { user, isAdmin } = useAuth();
-  const [isCurrentUserOrgAdmin, setIsCurrentUserOrgAdmin] = useState(false);
+const IGNORED_ROUTES = ['admin', 'auth', 'create-organization', 'login', 'terms-of-service', 'privacy-policy'];
 
-  const { data: organization, isLoading: loading, error, refetch } = useQuery({
-    queryKey: ['organization', slug],
-    queryFn: async () => {
-      if (!slug) return null;
-      
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_active', true)
+const extractSlugFromPath = (pathname: string): string | null => {
+  const pathParts = pathname.split('/').filter(p => p);
+
+  // Handles routes like /admin/:slug/...
+  if (pathParts[0] === 'admin' && pathParts.length > 1 && pathParts[1] !== 'login') {
+    return pathParts[1];
+  } 
+  // Handles legacy /org/:slug
+  else if (pathParts[0] === 'org' && pathParts.length > 1) {
+    return pathParts[1];
+  } 
+  // Handles /:orgSlug for feedback, but ignores other top-level routes
+  else if (pathParts.length > 0 && !IGNORED_ROUTES.includes(pathParts[0])) {
+    return pathParts[0];
+  }
+
+  return null;
+};
+
+export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [organization, setOrganization] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCurrentUserOrgAdmin, setIsCurrentUserOrgAdmin] = useState(false);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const location = useLocation();
+  const { user, isAdmin } = useAuth();
+
+  const fetchOrganization = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const slug = extractSlugFromPath(location.pathname);
+
+      if (!slug) {
+        setOrganization(null);
+        setOrganizationId(null);
+        setIsCurrentUserOrgAdmin(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from("organizations")
+        .select("*")
+        .eq("slug", slug)
         .single();
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!slug,
-  });
-
-  // Check if current user is org admin using enhanced_role
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user?.id || !organization?.id) {
-        setIsCurrentUserOrgAdmin(false);
-        return;
-      }
-
-      // System admins have access to all organizations
-      if (isAdmin) {
-        console.log('OrganizationProvider: System admin access granted');
-        setIsCurrentUserOrgAdmin(true);
-        return;
-      }
-
-      try {
-        const { data: orgUser, error } = await supabase
-          .from('organization_users')
-          .select('enhanced_role')
-          .eq('user_id', user.id)
-          .eq('organization_id', organization.id)
-          .eq('status', 'active')
-          .single();
-
-        if (error) {
-          console.error('OrganizationProvider: Error checking admin status', error);
-          setIsCurrentUserOrgAdmin(false);
+      if (fetchError) {
+        if (fetchError.code === 'PGRST116') {
+          setError('Organization not found');
         } else {
-          // Check enhanced_role for admin access
-          const adminStatus = orgUser?.enhanced_role && ['owner', 'admin', 'manager'].includes(orgUser.enhanced_role);
-          
-          console.log('OrganizationProvider: Admin status check', {
-            userId: user.id,
-            organizationSlug: slug,
-            organizationId: organization.id,
-            enhanced_role: orgUser?.enhanced_role,
-            isOrgAdmin: adminStatus
-          });
-          
-          setIsCurrentUserOrgAdmin(!!adminStatus);
+          setError(fetchError.message || 'Failed to load organization');
         }
-      } catch (error) {
-        console.error('OrganizationProvider: Unexpected error', error);
+        setOrganization(null);
+        setOrganizationId(null);
         setIsCurrentUserOrgAdmin(false);
+      } else {
+        setOrganization(data);
+        setOrganizationId(data.id);
+        setError(null);
+
+        // Check if current user is admin of this organization
+        if (user?.id) {
+          // System admins have access to all organizations
+          if (isAdmin) {
+            console.log('OrganizationProvider: System admin access granted');
+            setIsCurrentUserOrgAdmin(true);
+          } else {
+            try {
+              const { data: isOrgAdminResult, error: adminError } = await supabase
+                .rpc('is_current_user_org_admin', { org_id: data.id });
+
+              if (adminError) {
+                console.error('OrganizationProvider: Error checking admin status', adminError);
+                setIsCurrentUserOrgAdmin(false);
+              } else {
+                const adminStatus = !!isOrgAdminResult;
+                console.log('OrganizationProvider: Admin status check', {
+                  userId: user.id,
+                  organizationSlug: slug,
+                  organizationId: data.id,
+                  isOrgAdmin: adminStatus
+                });
+                setIsCurrentUserOrgAdmin(adminStatus);
+              }
+            } catch (error) {
+              console.error('OrganizationProvider: Error checking admin status', error);
+              setIsCurrentUserOrgAdmin(false);
+            }
+          }
+        } else {
+          setIsCurrentUserOrgAdmin(false);
+        }
       }
-    };
-
-    checkAdminStatus();
-  }, [user?.id, organization?.id, isAdmin, slug]);
-
-  const value: OrganizationContextType = {
-    organization,
-    loading,
-    error: error as Error | null,
-    isCurrentUserOrgAdmin,
-    refetch,
+    } catch (catchError: any) {
+      setError(catchError.message || 'An unexpected error occurred');
+      setOrganization(null);
+      setOrganizationId(null);
+      setIsCurrentUserOrgAdmin(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchOrganization();
+  }, [location.pathname, user?.id, isAdmin]);
+
   return (
-    <OrganizationContext.Provider value={value}>
+    <OrganizationContext.Provider value={{
+      organization,
+      loading,
+      error,
+      isCurrentUserOrgAdmin,
+      organizationId,
+      refreshOrganization: fetchOrganization,
+    }}>
       {children}
     </OrganizationContext.Provider>
   );

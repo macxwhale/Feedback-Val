@@ -2,7 +2,8 @@
 import React from 'react';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardSidebar } from './DashboardSidebar';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { tabSections } from './DashboardTabSections';
+import { RoleBasedTabFilter } from './RoleBasedTabFilter';
 
 interface EnhancedDashboardLayoutProps {
   organizationName: string;
@@ -30,8 +31,15 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-gray-50 flex w-full">
+    <div className="min-h-screen bg-gray-50">
+      <DashboardHeader 
+        organizationName={organizationName}
+        organizationId={organizationId}
+        currentPage={activeTab}
+        onNavigate={handleNavigate}
+      />
+      
+      <div className="flex">
         <DashboardSidebar
           organizationName={organizationName}
           activeTab={activeTab}
@@ -40,19 +48,10 @@ export const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = (
           isLoading={isLoading}
         />
         
-        <SidebarInset className="flex-1">
-          <DashboardHeader 
-            organizationName={organizationName}
-            organizationId={organizationId}
-            currentPage={activeTab}
-            onNavigate={handleNavigate}
-          />
-          
-          <main className="p-6">
-            {children}
-          </main>
-        </SidebarInset>
+        <main className="flex-1 p-6">
+          {children}
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };

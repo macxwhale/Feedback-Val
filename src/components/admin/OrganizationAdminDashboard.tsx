@@ -80,9 +80,7 @@ const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
-  
-  // Use the same organization context as DashboardDataProvider
-  const { organization, loading: orgLoading, isCurrentUserOrgAdmin } = useOrganization();
+  const { organization, isCurrentUserOrgAdmin, loading: orgLoading } = useOrganization();
   const { user, isAdmin } = useAuth();
   
   console.log('DashboardContent rendering with:', {
@@ -91,7 +89,6 @@ const DashboardContent: React.FC = () => {
     isAdmin,
     isCurrentUserOrgAdmin,
     organization: !!organization,
-    organizationName: organization?.name,
     orgLoading
   });
 
@@ -110,12 +107,6 @@ const DashboardContent: React.FC = () => {
     const dashboardData = useDashboardData();
     stats = dashboardData.stats;
     isLoading = dashboardData.isLoading;
-    
-    console.log('Dashboard data from context:', {
-      hasStats: !!stats,
-      isLoading,
-      error: dashboardData.error?.message
-    });
   } catch (error) {
     console.error('Error getting dashboard data:', error);
     stats = null;
@@ -209,31 +200,8 @@ const DashboardContent: React.FC = () => {
     }
   };
 
-  // More specific loading conditions - only show loading if we're actually waiting for critical data
-  const showLoading = orgLoading || (isLoading && !organization);
-  
-  console.log('Loading decision:', {
-    orgLoading,
-    isLoading,
-    hasOrganization: !!organization,
-    showLoading
-  });
-
-  if (showLoading) {
-    console.log('Showing loading state');
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-300 rounded w-48"></div>
-          <div className="h-4 bg-gray-300 rounded w-32"></div>
-        </div>
-      </div>
-    );
-  }
-
-  // If we have organization data, we can render the dashboard even if stats are still loading
-  if (!organization) {
-    console.log('No organization found');
+  if (!organization && !orgLoading) {
+    console.log('No organization found and not loading');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -244,7 +212,16 @@ const DashboardContent: React.FC = () => {
     );
   }
 
-  console.log('Rendering dashboard with organization:', organization.name);
+  if (orgLoading || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-300 rounded w-48"></div>
+          <div className="h-4 bg-gray-300 rounded w-32"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary

@@ -19,15 +19,19 @@ export const useEnhancedPermissions = (organizationId?: string) => {
       
       const { data } = await supabase
         .from('organization_users')
-        .select('enhanced_role')
+        .select('enhanced_role, role')
         .eq('user_id', user.id)
         .eq('organization_id', organizationId)
         .single();
         
-      // Only use enhanced_role, default to member if not set
-      return data?.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(data.enhanced_role)
-        ? data.enhanced_role
-        : 'member';
+      // Use enhanced_role if available, fallback to legacy role mapping
+      if (data?.enhanced_role) {
+        return data.enhanced_role;
+      } else if (data?.role === 'admin') {
+        return 'admin';
+      } else {
+        return 'member';
+      }
     },
     enabled: !!user?.id && !!organizationId,
   });
@@ -44,6 +48,7 @@ export const useEnhancedPermissions = (organizationId?: string) => {
         
       const permissionsMap: Record<string, Permission> = {};
       data?.forEach(({ permission_key, permission_value }) => {
+        // Safely parse the permission_value as Permission interface
         try {
           const parsedPermission = permission_value as unknown as Permission;
           if (parsedPermission && typeof parsedPermission === 'object' && 'allowed' in parsedPermission) {
@@ -68,11 +73,16 @@ export const useEnhancedPermissions = (organizationId?: string) => {
       return dbPermission.allowed;
     }
     
-    // Fallback to enhanced role-based permission check
+    // Fallback to role-based permission check
     return hasPermission(userRole, permission);
   };
 
-  const canManageUsers = () => checkPermission('manage_users');
+  const canManageUsers = () => {
+    // For legacy compatibility, admin role can manage users
+    if (userRole === 'admin') return true;
+    return checkPermission('manage_users');
+  };
+  
   const canManageOrganization = () => checkPermission('manage_organization');
   const canViewAnalytics = () => checkPermission('view_analytics');
   const canExportData = () => checkPermission('export_data');

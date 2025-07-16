@@ -34,7 +34,22 @@ describe('ErrorBoundary', () => {
     )
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument()
-    expect(screen.getByText('Try Again')).toBeInTheDocument()
+    expect(screen.getByText('Try refreshing the page')).toBeInTheDocument()
+
+    consoleSpy.mockRestore()
+  })
+
+  it('displays custom fallback when provided', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const CustomFallback = React.createElement('div', null, 'Custom error message')
+
+    render(
+      <ErrorBoundary fallback={CustomFallback}>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>
+    )
+
+    expect(screen.getByText('Custom error message')).toBeInTheDocument()
 
     consoleSpy.mockRestore()
   })

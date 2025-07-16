@@ -37,11 +37,7 @@ export class RBACService {
 
       if (error || !data) return null;
 
-      // Only use enhanced_role, default to member if not set
-      const role: Role = data.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(data.enhanced_role)
-        ? data.enhanced_role as Role
-        : 'member';
-
+      const role = data.enhanced_role as Role;
       this.roleCache.set(cacheKey, { role, timestamp: Date.now() });
       return role;
     } catch (error) {

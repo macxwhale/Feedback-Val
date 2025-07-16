@@ -21,6 +21,7 @@ interface Member {
   id: string;
   user_id: string;
   email: string;
+  role?: string;
   enhanced_role?: string;
   status: string;
   created_at: string;
@@ -61,11 +62,13 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     handleUpdateRole(userId, newRole);
   };
 
-  // Get member role using only enhanced_role
+  // Normalize member role for admin counting
   const getMemberRole = (member: Member): string => {
-    return member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)
-      ? member.enhanced_role
-      : 'member';
+    if (member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)) {
+      return member.enhanced_role;
+    }
+    if (!member.enhanced_role && member.role === 'admin') return 'admin';
+    return 'member';
   };
 
   if (rbacLoading || membersLoading) {
@@ -95,6 +98,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     return ['admin', 'owner'].includes(role);
   }).length;
 
+  // Ensure we have the correct pending invitations count
   const actualPendingCount = pendingInvitations?.length || 0;
 
   return (

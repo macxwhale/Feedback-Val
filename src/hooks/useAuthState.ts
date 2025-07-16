@@ -7,6 +7,7 @@ const checkUserRoles = async (userId: string) => {
   try {
     console.log('Checking user roles for:', userId);
     
+    // Add a small delay to ensure database consistency
     await new Promise(resolve => setTimeout(resolve, 100));
     
     const { data: adminStatus, error: adminError } = await supabase
@@ -16,10 +17,10 @@ const checkUserRoles = async (userId: string) => {
       console.error('Error checking admin status:', adminError);
     }
     
-    // Get organization data with enhanced role only
+    // Get organization data with enhanced role (but don't use it for general org admin status)
     const { data: orgData, error: orgError } = await supabase
       .from('organization_users')
-      .select('organization_id, enhanced_role, organizations(slug)')
+      .select('organization_id, role, enhanced_role, organizations(slug)')
       .eq('user_id', userId)
       .eq('status', 'active')
       .single();
@@ -40,7 +41,7 @@ const checkUserRoles = async (userId: string) => {
 
     return {
       isAdmin,
-      hasOrgMembership,
+      hasOrgMembership, // Changed from isOrgAdmin to hasOrgMembership
       currentOrganization: orgData?.organization_id || null,
       currentOrganizationSlug: (orgData?.organizations as any)?.slug || null,
     };
@@ -59,7 +60,7 @@ export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [hasOrgMembership, setHasOrgMembership] = useState(false);
+  const [hasOrgMembership, setHasOrgMembership] = useState(false); // Renamed from isOrgAdmin
   const [currentOrganization, setCurrentOrganization] = useState<string | null>(null);
   const [currentOrganizationSlug, setCurrentOrganizationSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,6 +87,7 @@ export const useAuthState = () => {
       }
     };
 
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -95,16 +97,18 @@ export const useAuthState = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Clear any pending role checks
         if (roleCheckTimeout) {
           clearTimeout(roleCheckTimeout);
         }
         
         if (session?.user) {
+          // Use setTimeout to prevent potential deadlocks and ensure proper sequencing
           roleCheckTimeout = setTimeout(() => {
             if (mounted) {
               updateUserRoles(session.user.id);
             }
-          }, 200);
+          }, 200); // Increased delay for better reliability
         } else {
           setIsAdmin(false);
           setHasOrgMembership(false);
@@ -115,6 +119,7 @@ export const useAuthState = () => {
       }
     );
 
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       if (mounted) {
         console.log('Initial session check:', existingSession?.user?.email);
@@ -142,7 +147,7 @@ export const useAuthState = () => {
     user, 
     session, 
     isAdmin, 
-    isOrgAdmin: hasOrgMembership,
+    isOrgAdmin: hasOrgMembership, // Keep the interface the same for now, but this is now just "has any org membership"
     currentOrganization, 
     currentOrganizationSlug, 
     loading 

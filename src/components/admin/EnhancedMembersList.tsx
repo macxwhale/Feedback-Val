@@ -18,6 +18,7 @@ interface Member {
   id: string;
   user_id: string;
   email: string;
+  role?: string;
   enhanced_role?: string;
   status: string;
   created_at: string;
@@ -50,15 +51,32 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
     if (!canManageUsers()) return false;
     if (!userRole) return false;
     
+    // Get the actual role for this member - prioritize enhanced_role, fallback to mapped legacy role
     const memberRole = getMemberRole(member);
+    
+    // For legacy compatibility: admin role can manage all roles except other admins
+    if (userRole === 'admin') {
+      return memberRole !== 'admin';
+    }
+    
     return canManageRole(userRole, memberRole);
   };
 
-  // Get member role using only enhanced_role
+  // Normalize member role for consistent display and logic
   const getMemberRole = (member: Member): string => {
-    return member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)
-      ? member.enhanced_role
-      : 'member';
+    // If enhanced_role exists and is valid, use it
+    if (member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)) {
+      return member.enhanced_role;
+    }
+    
+    // If enhanced_role is null but legacy role exists, map it
+    if (!member.enhanced_role && member.role) {
+      if (member.role === 'admin') return 'admin';
+      if (member.role === 'member') return 'member';
+    }
+    
+    // Default fallback
+    return 'member';
   };
 
   if (loading) {

@@ -27,7 +27,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     label: 'Admin',
     description: 'Full access except billing and ownership changes',
     level: 5,
-    permissions: ['manage_users', 'manage_questions', 'view_analytics', 'export_data', 'manage_integrations', 'manage_organization']
+    permissions: ['manage_users', 'manage_questions', 'view_analytics', 'export_data', 'manage_integrations']
   },
   manager: {
     variant: 'secondary',
@@ -35,7 +35,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     label: 'Manager',
     description: 'Team management and question creation',
     level: 4,
-    permissions: ['manage_users', 'manage_questions', 'view_analytics', 'export_data', 'invite_users']
+    permissions: ['manage_questions', 'view_analytics', 'export_data', 'invite_users']
   },
   analyst: {
     variant: 'outline',
@@ -64,21 +64,17 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
 };
 
 export const getRoleConfig = (role: string): RoleDefinition => {
-  // Handle enhanced roles properly
-  const normalizedRole = role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(role) 
-    ? role as Role 
-    : 'member';
-  return ROLE_DEFINITIONS[normalizedRole];
+  return ROLE_DEFINITIONS[role as Role] || ROLE_DEFINITIONS.member;
 };
 
 export const canManageRole = (managerRole: string, targetRole: string): boolean => {
-  const managerLevel = getRoleConfig(managerRole).level;
-  const targetLevel = getRoleConfig(targetRole).level;
+  const managerLevel = ROLE_DEFINITIONS[managerRole as Role]?.level || 0;
+  const targetLevel = ROLE_DEFINITIONS[targetRole as Role]?.level || 0;
   return managerLevel > targetLevel;
 };
 
 export const getAvailableRoles = (userRole: string): Role[] => {
-  const userLevel = getRoleConfig(userRole).level;
+  const userLevel = ROLE_DEFINITIONS[userRole as Role]?.level || 0;
   
   return Object.entries(ROLE_DEFINITIONS)
     .filter(([, config]) => config.level < userLevel)
@@ -86,7 +82,7 @@ export const getAvailableRoles = (userRole: string): Role[] => {
 };
 
 export const hasPermission = (role: string, permission: string): boolean => {
-  const roleConfig = getRoleConfig(role);
+  const roleConfig = ROLE_DEFINITIONS[role as Role];
   if (!roleConfig) return false;
   
   // Owner has all permissions
