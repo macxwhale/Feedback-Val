@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useOrganization } from '@/context/OrganizationContext';
@@ -89,6 +90,7 @@ const DashboardContent: React.FC = () => {
     isAdmin,
     isCurrentUserOrgAdmin,
     organization: !!organization,
+    organizationName: organization?.name,
     orgLoading
   });
 
@@ -212,7 +214,7 @@ const DashboardContent: React.FC = () => {
     );
   }
 
-  if (orgLoading || isLoading) {
+  if (orgLoading || isLoading || !organization) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse space-y-4">
