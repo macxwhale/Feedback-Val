@@ -1,104 +1,68 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/components/auth/AuthWrapper';
-import { useOrganization } from '@/hooks/useOrganization';
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardTabsDevPanel } from './DashboardTabsDevPanel';
 
-export type DashboardModuleKey = 
-  | 'dashboard'
-  | 'feedback'
-  | 'users'
-  | 'questions'
-  | 'analytics'
-  | 'settings'
-  | 'integrations'
-  | 'billing'
-  | 'api';
+export type DashboardModuleKey = 'overview' | 'users' | 'questions' | 'responses' | 'analytics' | 'integrations' | 'billing' | 'settings';
 
-interface DashboardTab {
-  id: string;
-  label: string;
-  module: DashboardModuleKey;
-  badge?: number;
-}
-
-interface DashboardTabsProps {
+export interface DashboardTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  tabs: DashboardTab[];
+  organization?: any;
 }
 
-export const DashboardTabs: React.FC<DashboardTabsProps> = ({
-  activeTab,
+export const DashboardTabs: React.FC<DashboardTabsProps> = ({ 
+  activeTab, 
   onTabChange,
-  tabs,
+  organization 
 }) => {
-  const { isAdmin } = useAuth();
-  const { organization } = useOrganization();
-  const [isDev] = useState(process.env.NODE_ENV === 'development');
+  const availableModules: DashboardModuleKey[] = [
+    'overview',
+    'users', 
+    'questions',
+    'responses',
+    'analytics',
+    'integrations',
+    'billing',
+    'settings'
+  ];
 
-  const hasModuleAccess = (module: DashboardModuleKey): boolean => {
-    if (!organization?.features_config) return true;
-    
-    const features = organization.features_config;
-    const planType = organization.plan_type || 'starter';
-    
-    // Basic access rules based on plan type
-    const planAccess = {
-      starter: ['dashboard', 'feedback', 'users', 'questions', 'analytics'],
-      professional: ['dashboard', 'feedback', 'users', 'questions', 'analytics', 'integrations'],
-      enterprise: ['dashboard', 'feedback', 'users', 'questions', 'analytics', 'integrations', 'settings', 'billing', 'api']
+  const getTabLabel = (module: DashboardModuleKey): string => {
+    const labels = {
+      overview: 'Overview',
+      users: 'Users',
+      questions: 'Questions',
+      responses: 'Responses', 
+      analytics: 'Analytics',
+      integrations: 'Integrations',
+      billing: 'Billing',
+      settings: 'Settings'
     };
-    
-    const allowedModules = planAccess[planType as keyof typeof planAccess] || planAccess.starter;
-    
-    // Check if module is in allowed list for plan
-    if (!allowedModules.includes(module)) return false;
-    
-    // Check specific feature flags
-    if (features.disable_analytics && module === 'analytics') return false;
-    if (features.disable_integrations && module === 'integrations') return false;
-    if (features.disable_api && module === 'api') return false;
-    
-    return true;
+    return labels[module];
   };
 
   return (
-    <div className="mb-6">
-      <DashboardTabsDevPanel 
-        isDev={isDev}
-        organization={organization}
-        tabs={tabs}
-        hasModuleAccess={hasModuleAccess}
-      />
+    <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
+      <TabsList className="grid w-full grid-cols-8">
+        {availableModules.map((module) => (
+          <TabsTrigger 
+            key={module} 
+            value={module}
+            className="text-sm"
+          >
+            {getTabLabel(module)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
       
-      <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm">
-        {tabs.map((tab) => {
-          const isAccessible = hasModuleAccess(tab.module);
-          const isActive = activeTab === tab.id;
-          
-          return (
-            <Button
-              key={tab.id}
-              variant={isActive ? "default" : "ghost"}
-              onClick={() => isAccessible && onTabChange(tab.id)}
-              disabled={!isAccessible}
-              className={`flex items-center space-x-2 ${
-                isActive ? "bg-sunset-100 text-sunset-700" : "text-gray-500 hover:text-sunset-600"
-              } ${!isAccessible ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              <span>{tab.label}</span>
-              {tab.badge && tab.badge > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {tab.badge}
-                </Badge>
-              )}
-            </Button>
-          );
-        })}
-      </div>
-    </div>
+      {availableModules.map((module) => (
+        <TabsContent key={module} value={module} className="mt-6">
+          <DashboardTabsDevPanel 
+            module={module}
+            organization={organization}
+          />
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 };
