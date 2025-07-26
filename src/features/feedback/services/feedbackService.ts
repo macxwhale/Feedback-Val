@@ -24,7 +24,7 @@ export class FeedbackService {
       organization_id: result.organization_id,
       started_at: result.started_at,
       completed_at: result.completed_at,
-      status: result.status,
+      status: result.status as 'started' | 'in_progress' | 'completed' | 'abandoned',
       created_at: result.created_at,
       user_id: result.user_id,
       phone_number: result.phone_number,
