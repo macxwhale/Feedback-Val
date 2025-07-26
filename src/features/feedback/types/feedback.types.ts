@@ -7,6 +7,13 @@ export interface FeedbackResponse {
   organization_id: string;
   question_category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikelyRecommend' | 'DidWeMakeEasy' | 'Comments' | 'Satisfaction';
   created_at: string;
+  question_snapshot?: any;
+  score?: number;
+  question_started_at?: string;
+  question_completed_at?: string;
+  response_time_ms?: number;
+  question_type_snapshot?: string;
+  question_text_snapshot?: string;
 }
 
 export interface FeedbackSession {
@@ -14,9 +21,18 @@ export interface FeedbackSession {
   organization_id: string;
   started_at: string;
   completed_at?: string;
-  status: 'active' | 'completed' | 'abandoned';
-  // Make session_token optional since it's not always required
-  session_token?: string;
+  // Match the actual database enum values
+  status: 'started' | 'in_progress' | 'completed' | 'abandoned';
+  created_at: string;
+  user_id?: string;
+  phone_number?: string;
+  sms_session_id?: string;
+  total_score?: number;
+  category_scores?: any;
+  metadata?: any;
+  total_response_time_ms?: number;
+  avg_question_time_ms?: number;
+  timing_metadata?: any;
 }
 
 export interface CreateFeedbackResponse {
@@ -25,9 +41,19 @@ export interface CreateFeedbackResponse {
   response_value: any;
   organization_id: string;
   question_category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikelyRecommend' | 'DidWeMakeEasy' | 'Comments' | 'Satisfaction';
+  question_snapshot?: any;
+  score?: number;
+  question_started_at?: string;
+  question_completed_at?: string;
+  response_time_ms?: number;
+  question_type_snapshot?: string;
+  question_text_snapshot?: string;
 }
 
 export interface CreateFeedbackSession {
   organization_id: string;
-  status?: 'active' | 'completed' | 'abandoned';
+  status?: 'started' | 'in_progress' | 'completed' | 'abandoned';
+  user_id?: string;
+  phone_number?: string;
+  metadata?: any;
 }
