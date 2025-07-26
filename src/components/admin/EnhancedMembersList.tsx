@@ -51,8 +51,32 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
     if (!canManageUsers()) return false;
     if (!userRole) return false;
     
-    const memberRole = member.enhanced_role || member.role || 'member';
+    // Get the actual role for this member - prioritize enhanced_role, fallback to mapped legacy role
+    const memberRole = getMemberRole(member);
+    
+    // For legacy compatibility: admin role can manage all roles except other admins
+    if (userRole === 'admin') {
+      return memberRole !== 'admin';
+    }
+    
     return canManageRole(userRole, memberRole);
+  };
+
+  // Normalize member role for consistent display and logic
+  const getMemberRole = (member: Member): string => {
+    // If enhanced_role exists and is valid, use it
+    if (member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)) {
+      return member.enhanced_role;
+    }
+    
+    // If enhanced_role is null but legacy role exists, map it
+    if (!member.enhanced_role && member.role) {
+      if (member.role === 'admin') return 'admin';
+      if (member.role === 'member') return 'member';
+    }
+    
+    // Default fallback
+    return 'member';
   };
 
   if (loading) {
@@ -95,7 +119,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
           </TableHeader>
           <TableBody>
             {members.map((member) => {
-              const memberRole = member.enhanced_role || member.role || 'member';
+              const memberRole = getMemberRole(member);
               const canEdit = canEditMember(member);
               
               return (
@@ -125,13 +149,10 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {member.accepted_at 
-                      ? formatDate(member.accepted_at)
-                      : formatDate(member.created_at)
-                    }
+                    {member.accepted_at ? formatDate(member.accepted_at) : formatDate(member.created_at)}
                   </TableCell>
                   <TableCell>
-                    {member.invited_by?.email || '-'}
+                    {member.invited_by?.email || 'System'}
                   </TableCell>
                   <TableCell>
                     {canEdit && (
@@ -141,13 +162,10 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="bg-white z-50">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem 
-                                className="text-red-600"
-                                onSelect={(e) => e.preventDefault()}
-                              >
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Remove Member
                               </DropdownMenuItem>
@@ -156,7 +174,7 @@ export const EnhancedMembersList: React.FC<EnhancedMembersListProps> = ({
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Remove Member</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to remove {member.email} from this organization? 
+                                  Are you sure you want to remove {member.email} from the organization?
                                   This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>

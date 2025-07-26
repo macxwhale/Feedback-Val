@@ -60,8 +60,23 @@ export const useOrganizationMembers = (organizationId: string) => {
             }
           }
           
+          // Normalize enhanced_role - if null but role exists, map legacy role to enhanced_role
+          let normalizedEnhancedRole = member.enhanced_role;
+          if (!member.enhanced_role && member.role) {
+            if (member.role === 'admin') {
+              normalizedEnhancedRole = 'admin';
+            } else if (member.role === 'member') {
+              normalizedEnhancedRole = 'member';
+            }
+          }
+          // If still null, default to member
+          if (!normalizedEnhancedRole) {
+            normalizedEnhancedRole = 'member';
+          }
+          
           return {
             ...member,
+            enhanced_role: normalizedEnhancedRole,
             invited_by
           };
         })

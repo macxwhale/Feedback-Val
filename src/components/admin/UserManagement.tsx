@@ -62,6 +62,15 @@ export const UserManagement: React.FC<UserManagementProps> = ({
     handleUpdateRole(userId, newRole);
   };
 
+  // Normalize member role for admin counting
+  const getMemberRole = (member: Member): string => {
+    if (member.enhanced_role && ['owner', 'admin', 'manager', 'analyst', 'member', 'viewer'].includes(member.enhanced_role)) {
+      return member.enhanced_role;
+    }
+    if (!member.enhanced_role && member.role === 'admin') return 'admin';
+    return 'member';
+  };
+
   if (rbacLoading || membersLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -85,8 +94,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({
   }
 
   const adminsCount = activeMembers.filter((m: Member) => {
-    const role = m.enhanced_role || m.role;
-    return ['admin', 'owner'].includes(role || '');
+    const role = getMemberRole(m);
+    return ['admin', 'owner'].includes(role);
   }).length;
 
   // Ensure we have the correct pending invitations count
