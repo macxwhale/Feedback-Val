@@ -1,40 +1,32 @@
 
 import { supabase } from '@/integrations/supabase/client';
-
-export interface FeedbackResponse {
-  id: string;
-  question_id: string;
-  session_id: string;
-  response_value: any;
-  organization_id: string;
-  created_at: string;
-}
-
-export interface FeedbackSession {
-  id: string;
-  organization_id: string;
-  session_token: string;
-  started_at: string;
-  completed_at?: string;
-  status: 'active' | 'completed' | 'abandoned';
-}
+import { FeedbackResponse, FeedbackSession, CreateFeedbackResponse, CreateFeedbackSession } from '../types/feedback.types';
 
 export class FeedbackService {
-  static async createSession(organizationId: string): Promise<FeedbackSession> {
-    const { data, error } = await supabase
+  static async createSession(data: CreateFeedbackSession): Promise<FeedbackSession> {
+    const { data: result, error } = await supabase
       .from('feedback_sessions')
       .insert({
-        organization_id: organizationId,
-        status: 'active'
+        organization_id: data.organization_id,
+        status: data.status || 'active'
       })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Transform the result to match our interface, making session_token optional
+    return {
+      id: result.id,
+      organization_id: result.organization_id,
+      started_at: result.created_at,
+      completed_at: result.completed_at,
+      status: result.status,
+      session_token: result.session_token
+    };
   }
 
-  static async submitResponse(response: Omit<FeedbackResponse, 'id' | 'created_at'>) {
+  static async submitResponse(response: CreateFeedbackResponse): Promise<FeedbackResponse> {
     const { data, error } = await supabase
       .from('feedback_responses')
       .insert(response)
@@ -45,7 +37,7 @@ export class FeedbackService {
     return data;
   }
 
-  static async getFeedbackResponses(organizationId: string) {
+  static async getFeedbackResponses(organizationId: string): Promise<FeedbackResponse[]> {
     const { data, error } = await supabase
       .from('feedback_responses')
       .select('*')
@@ -53,6 +45,6 @@ export class FeedbackService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   }
 }

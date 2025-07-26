@@ -1,29 +1,33 @@
 
-export interface Question {
-  id: string;
-  organization_id: string;
-  question_text: string;
-  question_type: 'text' | 'rating' | 'multiple_choice' | 'yes_no';
-  is_required: boolean;
-  order_index: number;
-  is_active: boolean;
-  category?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface QuestionOption {
+export interface FeedbackResponse {
   id: string;
   question_id: string;
-  option_text: string;
-  option_value: string;
-  display_order: number;
-  is_active: boolean;
+  session_id: string;
+  response_value: any;
+  organization_id: string;
+  question_category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikelyRecommend' | 'DidWeMakeEasy' | 'Comments' | 'Satisfaction';
+  created_at: string;
 }
 
-export interface FeedbackMetrics {
-  totalResponses: number;
-  completionRate: number;
-  averageRating?: number;
-  responsesByDay: Array<{ date: string; count: number }>;
+export interface FeedbackSession {
+  id: string;
+  organization_id: string;
+  started_at: string;
+  completed_at?: string;
+  status: 'active' | 'completed' | 'abandoned';
+  // Make session_token optional since it's not always required
+  session_token?: string;
+}
+
+export interface CreateFeedbackResponse {
+  question_id: string;
+  session_id: string;
+  response_value: any;
+  organization_id: string;
+  question_category: 'QualityCommunication' | 'QualityStaff' | 'ValueForMoney' | 'QualityService' | 'LikelyRecommend' | 'DidWeMakeEasy' | 'Comments' | 'Satisfaction';
+}
+
+export interface CreateFeedbackSession {
+  organization_id: string;
+  status?: 'active' | 'completed' | 'abandoned';
 }

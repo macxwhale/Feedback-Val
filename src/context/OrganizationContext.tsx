@@ -10,7 +10,8 @@ interface OrganizationContextType {
   refreshOrganization: () => void;
 }
 
-const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
+// Export the context for use in other hooks
+export const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
 export const useOrganization = () => {
   const context = useContext(OrganizationContext);
