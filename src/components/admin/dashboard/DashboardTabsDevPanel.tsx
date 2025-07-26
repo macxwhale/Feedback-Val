@@ -1,104 +1,57 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DashboardModuleKey } from './DashboardTabs';
+import React from "react";
+import { type DashboardModuleKey } from "./DashboardTabs";
 
 interface DashboardTabsDevPanelProps {
-  module: DashboardModuleKey;
-  organization?: any;
+  isDev: boolean;
+  organization: any;
+  tabs: { id: string; label: string; module: DashboardModuleKey }[];
+  hasModuleAccess: (module: DashboardModuleKey) => boolean;
 }
 
-export const DashboardTabsDevPanel: React.FC<DashboardTabsDevPanelProps> = ({ 
-  module,
-  organization 
+export const DashboardTabsDevPanel: React.FC<DashboardTabsDevPanelProps> = ({
+  isDev,
+  organization,
+  tabs,
+  hasModuleAccess,
 }) => {
-  const getModuleContent = () => {
-    switch (module) {
-      case 'overview':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Organization Overview</h3>
-            {organization && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground">Organization Name</p>
-                  <p className="font-medium">{organization.name}</p>
-                </div>
-                <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground">Plan Type</p>
-                  <p className="font-medium">{organization.plan_type}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      case 'users':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">User Management</h3>
-            <p className="text-muted-foreground">Manage organization users and permissions</p>
-          </div>
-        );
-      case 'questions':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Question Management</h3>
-            <p className="text-muted-foreground">Create and manage feedback questions</p>
-          </div>
-        );
-      case 'responses':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Response Management</h3>
-            <p className="text-muted-foreground">View and analyze feedback responses</p>
-          </div>
-        );
-      case 'analytics':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Analytics</h3>
-            <p className="text-muted-foreground">View detailed analytics and insights</p>
-          </div>
-        );
-      case 'integrations':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Integrations</h3>
-            <p className="text-muted-foreground">Manage third-party integrations</p>
-          </div>
-        );
-      case 'billing':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Billing</h3>
-            <p className="text-muted-foreground">Manage subscription and billing</p>
-          </div>
-        );
-      case 'settings':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Settings</h3>
-            <p className="text-muted-foreground">Configure organization settings</p>
-          </div>
-        );
-      default:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Development Panel</h3>
-            <p className="text-muted-foreground">Module: {module}</p>
-          </div>
-        );
-    }
-  };
+  if (!isDev) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="capitalize">{module} Module</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {getModuleContent()}
-      </CardContent>
-    </Card>
+    <div className="mb-3 text-xs px-2 py-2 bg-yellow-50 border border-yellow-200 rounded flex flex-col gap-2">
+      {/* Organization info */}
+      <div>
+        <span className="font-bold">DEBUG:</span> plan_type: <span className="font-mono">{organization?.plan_type ?? "N/A"}</span>
+        {' | '}
+        features_config: <span className="font-mono break-all">{organization?.features_config ? JSON.stringify(organization.features_config) : "N/A"}</span>
+      </div>
+      {/* Table for module access */}
+      <div className="mt-2">
+        <table className="table-auto w-full border text-[11px]">
+          <thead>
+            <tr>
+              <th className="border px-2 py-1">Tab</th>
+              <th className="border px-2 py-1">Module Key</th>
+              <th className="border px-2 py-1">Accessible?</th>
+              <th className="border px-2 py-1">hasModuleAccess Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tabs.map(tab => (
+              <tr key={tab.id}>
+                <td className="border px-2 py-1">{tab.label} ({tab.id})</td>
+                <td className="border px-2 py-1">{tab.module}</td>
+                <td className={`border px-2 py-1 font-bold ${hasModuleAccess(tab.module) ? 'text-green-700' : 'text-red-700'}`}>
+                  {hasModuleAccess(tab.module) ? 'YES' : 'NO'}
+                </td>
+                <td className="border px-2 py-1">
+                  <code>{String(hasModuleAccess(tab.module))}</code>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };

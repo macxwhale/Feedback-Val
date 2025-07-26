@@ -1,44 +1,206 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useOrganization } from '@/context/OrganizationContext';
+import { useAuth } from '@/components/auth/AuthWrapper';
 import { EnhancedDashboardLayout } from './dashboard/EnhancedDashboardLayout';
-import { DashboardTabs } from './dashboard/DashboardTabs';
 import { FloatingActionButton, ScrollToTopFAB } from '@/components/ui/floating-action-button';
 import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 import { usePerformanceOptimization } from '@/hooks/usePerformanceOptimization';
 import { Plus } from 'lucide-react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+
+// Data Provider
 import { DashboardDataProvider, useDashboardData } from './dashboard/DashboardDataProvider';
+
+// Lazy load tab components for better performance with error handling
+const DashboardOverviewContent = React.lazy(() => 
+  import('./dashboard/DashboardOverviewContent').then(module => ({ default: module.DashboardOverviewContent })).catch(err => {
+    console.error('Failed to load DashboardOverviewContent:', err);
+    return { default: () => <div className="p-4">Error loading overview content</div> };
+  })
+);
+
+const MembersTab = React.lazy(() => 
+  import('./dashboard/tabs/MembersTab').then(module => ({ default: module.default })).catch(err => {
+    console.error('Failed to load MembersTab:', err);
+    return { default: () => <div className="p-4">Error loading members tab</div> };
+  })
+);
+
+const FeedbackTab = React.lazy(() => 
+  import('./dashboard/tabs/FeedbackTab').then(module => ({ default: module.FeedbackTab })).catch(err => {
+    console.error('Failed to load FeedbackTab:', err);
+    return { default: () => <div className="p-4">Error loading feedback tab</div> };
+  })
+);
+
+const QuestionsTab = React.lazy(() => 
+  import('./dashboard/tabs/QuestionsTab').then(module => ({ default: module.QuestionsTab })).catch(err => {
+    console.error('Failed to load QuestionsTab:', err);
+    return { default: () => <div className="p-4">Error loading questions tab</div> };
+  })
+);
+
+const SettingsTab = React.lazy(() => 
+  import('./dashboard/tabs/SettingsTab').then(module => ({ default: module.SettingsTab })).catch(err => {
+    console.error('Failed to load SettingsTab:', err);
+    return { default: () => <div className="p-4">Error loading settings tab</div> };
+  })
+);
+
+const IntegrationsTab = React.lazy(() => 
+  import('./dashboard/tabs/IntegrationsTab').then(module => ({ default: module.IntegrationsTab })).catch(err => {
+    console.error('Failed to load IntegrationsTab:', err);
+    return { default: () => <div className="p-4">Error loading integrations tab</div> };
+  })
+);
+
+const SentimentTab = React.lazy(() => 
+  import('./dashboard/tabs/SentimentTab').then(module => ({ default: module.SentimentTab })).catch(err => {
+    console.error('Failed to load SentimentTab:', err);
+    return { default: () => <div className="p-4">Error loading sentiment tab</div> };
+  })
+);
+
+const PerformanceTab = React.lazy(() => 
+  import('./dashboard/tabs/PerformanceTab').then(module => ({ default: module.PerformanceTab })).catch(err => {
+    console.error('Failed to load PerformanceTab:', err);
+    return { default: () => <div className="p-4">Error loading performance tab</div> };
+  })
+);
+
+const CustomerInsightsTab = React.lazy(() => 
+  import('./dashboard/tabs/CustomerInsightsTab').then(module => ({ default: module.CustomerInsightsTab })).catch(err => {
+    console.error('Failed to load CustomerInsightsTab:', err);
+    return { default: () => <div className="p-4">Error loading customer insights tab</div> };
+  })
+);
 
 const DashboardContent: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { isMobile } = useResponsiveDesign();
+  const { organization, isCurrentUserOrgAdmin, loading: orgLoading } = useOrganization();
+  const { user, isAdmin } = useAuth();
   
-  console.log('DashboardContent rendering with slug:', slug);
+  console.log('DashboardContent rendering with:', {
+    slug,
+    user: !!user,
+    isAdmin,
+    isCurrentUserOrgAdmin,
+    organization: !!organization,
+    orgLoading
+  });
 
+  // Performance optimization with error handling
   const { createDebouncedFunction } = usePerformanceOptimization({
     enableMemoryCleanup: true,
     debounceDelay: 250
   });
 
+  // Debounce tab changes to prevent rapid switching
   const debouncedSetActiveTab = createDebouncedFunction(setActiveTab);
 
-  let organization, stats, isLoading;
+  let stats, isLoading;
   
   try {
     const dashboardData = useDashboardData();
-    organization = dashboardData.organization;
     stats = dashboardData.stats;
     isLoading = dashboardData.isLoading;
   } catch (error) {
     console.error('Error getting dashboard data:', error);
-    organization = null;
     stats = null;
     isLoading = false;
   }
 
-  if (!organization && !isLoading) {
+  // Check access permissions
+  if (!orgLoading && organization && !isCurrentUserOrgAdmin && !isAdmin) {
+    console.log('Access denied: User is not org admin', {
+      isCurrentUserOrgAdmin,
+      isAdmin,
+      organization: organization?.name
+    });
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold">Access Denied</h2>
+          <p className="text-gray-600">You don't have permission to access this organization's admin dashboard.</p>
+          <p className="text-sm text-gray-500">Contact your organization administrator for access.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const renderTabContent = () => {
+    const tabProps = {
+      organizationId: organization?.id || '',
+      organization
+    };
+
+    try {
+      switch (activeTab) {
+        case 'members':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <MembersTab {...tabProps} />
+            </React.Suspense>
+          );
+        case 'feedback':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <FeedbackTab organizationId={tabProps.organizationId} />
+            </React.Suspense>
+          );
+        case 'questions':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <QuestionsTab />
+            </React.Suspense>
+          );
+        case 'settings':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <SettingsTab {...tabProps} />
+            </React.Suspense>
+          );
+        case 'integrations':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <IntegrationsTab />
+            </React.Suspense>
+          );
+        case 'sentiment':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <SentimentTab organizationId={tabProps.organizationId} />
+            </React.Suspense>
+          );
+        case 'performance':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <PerformanceTab organizationId={tabProps.organizationId} />
+            </React.Suspense>
+          );
+        case 'customer-insights':
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <CustomerInsightsTab organizationId={tabProps.organizationId} />
+            </React.Suspense>
+          );
+        default:
+          return (
+            <React.Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded"></div>}>
+              <DashboardOverviewContent onTabChange={debouncedSetActiveTab} />
+            </React.Suspense>
+          );
+      }
+    } catch (error) {
+      console.error('Error rendering tab content:', error);
+      return <div className="p-4">Error loading tab content</div>;
+    }
+  };
+
+  if (!organization && !orgLoading) {
     console.log('No organization found and not loading');
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -50,7 +212,7 @@ const DashboardContent: React.FC = () => {
     );
   }
 
-  if (isLoading) {
+  if (orgLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse space-y-4">
@@ -75,13 +237,10 @@ const DashboardContent: React.FC = () => {
         stats={stats}
         isLoading={isLoading}
       >
-        <DashboardTabs 
-          activeTab={activeTab}
-          organization={organization}
-          onTabChange={debouncedSetActiveTab}
-        />
+        {renderTabContent()}
       </EnhancedDashboardLayout>
       
+      {/* Floating Action Button for mobile quick actions */}
       {isMobile && activeTab === 'overview' && (
         <FloatingActionButton
           onClick={() => debouncedSetActiveTab('members')}

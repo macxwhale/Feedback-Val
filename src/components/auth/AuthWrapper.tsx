@@ -22,8 +22,7 @@ interface AuthContextType {
   refreshUserRoles: () => Promise<void>;
 }
 
-// Export the context for use in other hooks
-export const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
