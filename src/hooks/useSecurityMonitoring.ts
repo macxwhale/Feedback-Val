@@ -1,6 +1,5 @@
 
 import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthWrapper';
 
 interface SecurityEvent {
@@ -15,20 +14,11 @@ interface SecurityEvent {
 export const useSecurityMonitoring = () => {
   const { user } = useAuth();
 
+  // Mock implementation since security monitoring was disabled
   const logSecurityEvent = useMutation({
     mutationFn: async (event: SecurityEvent) => {
-      const { data, error } = await supabase.rpc('log_security_event', {
-        p_event_type: event.eventType,
-        p_user_id: user?.id || null,
-        p_organization_id: event.organizationId || null,
-        p_ip_address: event.ipAddress || null,
-        p_user_agent: event.userAgent || navigator.userAgent,
-        p_event_data: event.eventData || {},
-        p_severity: event.severity || 'medium'
-      });
-
-      if (error) throw error;
-      return data;
+      console.log('Security event would be logged:', event);
+      return { success: true };
     }
   });
 

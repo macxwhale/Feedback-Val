@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, Eye, Search, Filter } from 'lucide-react';
-import { format } from 'date-fns';
 
 interface SecurityEvent {
   id: string;
@@ -29,33 +26,9 @@ export const SecurityDashboard: React.FC = () => {
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [eventTypeFilter, setEventTypeFilter] = useState<string>('all');
 
-  const { data: securityEvents, isLoading } = useQuery({
-    queryKey: ['security-events', searchTerm, severityFilter, eventTypeFilter],
-    queryFn: async () => {
-      let query = supabase
-        .from('security_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (searchTerm) {
-        query = query.or(`event_type.ilike.%${searchTerm}%,ip_address.ilike.%${searchTerm}%`);
-      }
-
-      if (severityFilter !== 'all') {
-        query = query.eq('severity', severityFilter);
-      }
-
-      if (eventTypeFilter !== 'all') {
-        query = query.eq('event_type', eventTypeFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as SecurityEvent[];
-    },
-    staleTime: 30 * 1000, // 30 seconds
-  });
+  // Mock data since security_events table was removed
+  const securityEvents: SecurityEvent[] = [];
+  const isLoading = false;
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -93,24 +66,13 @@ export const SecurityDashboard: React.FC = () => {
         </Button>
       </div>
 
-      {/* Security Alerts */}
-      {(criticalEvents.length > 0 || highEvents.length > 0) && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-700">
-            {criticalEvents.length > 0 && (
-              <span className="font-semibold">
-                {criticalEvents.length} critical security event{criticalEvents.length > 1 ? 's' : ''} detected.
-              </span>
-            )}
-            {highEvents.length > 0 && (
-              <span className="ml-2">
-                {highEvents.length} high-severity event{highEvents.length > 1 ? 's' : ''} require attention.
-              </span>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Notice about disabled security monitoring */}
+      <Alert className="border-yellow-200 bg-yellow-50">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-yellow-700">
+          Security monitoring is currently disabled. No security events are being tracked.
+        </AlertDescription>
+      </Alert>
 
       {/* Security Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -119,7 +81,7 @@ export const SecurityDashboard: React.FC = () => {
             <CardTitle className="text-sm font-medium">Total Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{securityEvents?.length || 0}</div>
+            <div className="text-2xl font-bold">0</div>
           </CardContent>
         </Card>
         
@@ -128,7 +90,7 @@ export const SecurityDashboard: React.FC = () => {
             <CardTitle className="text-sm font-medium">Critical Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{criticalEvents.length}</div>
+            <div className="text-2xl font-bold text-red-600">0</div>
           </CardContent>
         </Card>
         
@@ -137,7 +99,7 @@ export const SecurityDashboard: React.FC = () => {
             <CardTitle className="text-sm font-medium">Failed Logins</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{recentFailedLogins.length}</div>
+            <div className="text-2xl font-bold text-orange-600">0</div>
           </CardContent>
         </Card>
         
@@ -146,7 +108,7 @@ export const SecurityDashboard: React.FC = () => {
             <CardTitle className="text-sm font-medium">High Priority</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{highEvents.length}</div>
+            <div className="text-2xl font-bold text-yellow-600">0</div>
           </CardContent>
         </Card>
       </div>
@@ -158,7 +120,7 @@ export const SecurityDashboard: React.FC = () => {
             <Filter className="h-5 w-5" />
             Security Events
           </CardTitle>
-          <CardDescription>Real-time security monitoring and event analysis</CardDescription>
+          <CardDescription>Security monitoring is currently disabled</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-4">
@@ -168,9 +130,10 @@ export const SecurityDashboard: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
+                disabled
               />
             </div>
-            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+            <Select value={severityFilter} onValueChange={setSeverityFilter} disabled>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Severity" />
               </SelectTrigger>
@@ -182,7 +145,7 @@ export const SecurityDashboard: React.FC = () => {
                 <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={eventTypeFilter} onValueChange={setEventTypeFilter}>
+            <Select value={eventTypeFilter} onValueChange={setEventTypeFilter} disabled>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Event Type" />
               </SelectTrigger>
@@ -207,43 +170,11 @@ export const SecurityDashboard: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
-                    Loading security events...
-                  </TableCell>
-                </TableRow>
-              ) : securityEvents?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
-                    No security events found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                securityEvents?.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getEventTypeIcon(event.event_type)}
-                        <span className="font-medium">{event.event_type.replace('_', ' ')}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getSeverityColor(event.severity)}>
-                        {event.severity}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{event.ip_address || 'N/A'}</TableCell>
-                    <TableCell>{format(new Date(event.created_at), 'MMM d, HH:mm')}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  Security monitoring is disabled - no events to display
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </CardContent>
