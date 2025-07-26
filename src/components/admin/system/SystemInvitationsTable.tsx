@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -48,8 +47,7 @@ export const SystemInvitationsTable: React.FC<SystemInvitationsTableProps> = ({ 
                   </div>
                 </TableCell>
                 <TableCell>
-                  {/* Use enhanced_role if available, fallback to role */}
-                  <EnhancedRoleBadge role={invitation.enhanced_role || invitation.role} />
+                  <EnhancedRoleBadge role={invitation.role} />
                 </TableCell>
                 <TableCell>
                   <Badge variant="secondary">{invitation.status}</Badge>

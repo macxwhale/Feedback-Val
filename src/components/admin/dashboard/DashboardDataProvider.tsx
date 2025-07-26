@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useOrganization } from '@/context/OrganizationContext';
-import { useOrganizationStats } from '@/hooks/organization/useOrganizationData';
+import { getOrganizationStatsEnhanced } from '@/services/organizationQueries';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { OrganizationStats } from '@/types/organizationStats';
 
@@ -35,7 +35,15 @@ export const DashboardDataProvider: React.FC<DashboardDataProviderProps> = ({ ch
   const { organization, loading: orgLoading } = useOrganization();
   console.log('Organization from context:', { organization, orgLoading });
 
-  const { data: stats, isLoading: statsLoading, error } = useOrganizationStats(organization?.id || '');
+  const { data: stats, isLoading: statsLoading, error } = useQuery({
+    queryKey: ['organization-stats', organization?.id],
+    queryFn: () => {
+      console.log('Fetching stats for organization:', organization?.id);
+      return getOrganizationStatsEnhanced(organization!.id);
+    },
+    enabled: !!organization?.id,
+  });
+
   console.log('Stats query result:', { stats, statsLoading, error });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalyticsData(organization?.id || '');

@@ -2,14 +2,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/components/auth/AuthWrapper";
 
 interface OrganizationContextType {
   organization: any | null;
   loading: boolean;
   error: string | null;
-  isCurrentUserOrgAdmin: boolean;
-  organizationId: string | null;
   refreshOrganization: () => void;
 }
 
@@ -48,10 +45,7 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [organization, setOrganization] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isCurrentUserOrgAdmin, setIsCurrentUserOrgAdmin] = useState(false);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const location = useLocation();
-  const { user, isAdmin } = useAuth();
 
   const fetchOrganization = async () => {
     setLoading(true);
@@ -62,8 +56,6 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (!slug) {
         setOrganization(null);
-        setOrganizationId(null);
-        setIsCurrentUserOrgAdmin(false);
         setLoading(false);
         return;
       }
@@ -81,51 +73,13 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setError(fetchError.message || 'Failed to load organization');
         }
         setOrganization(null);
-        setOrganizationId(null);
-        setIsCurrentUserOrgAdmin(false);
       } else {
         setOrganization(data);
-        setOrganizationId(data.id);
         setError(null);
-
-        // Check if current user is admin of this organization
-        if (user?.id) {
-          // System admins have access to all organizations
-          if (isAdmin) {
-            console.log('OrganizationProvider: System admin access granted');
-            setIsCurrentUserOrgAdmin(true);
-          } else {
-            try {
-              const { data: isOrgAdminResult, error: adminError } = await supabase
-                .rpc('is_current_user_org_admin', { org_id: data.id });
-
-              if (adminError) {
-                console.error('OrganizationProvider: Error checking admin status', adminError);
-                setIsCurrentUserOrgAdmin(false);
-              } else {
-                const adminStatus = !!isOrgAdminResult;
-                console.log('OrganizationProvider: Admin status check', {
-                  userId: user.id,
-                  organizationSlug: slug,
-                  organizationId: data.id,
-                  isOrgAdmin: adminStatus
-                });
-                setIsCurrentUserOrgAdmin(adminStatus);
-              }
-            } catch (error) {
-              console.error('OrganizationProvider: Error checking admin status', error);
-              setIsCurrentUserOrgAdmin(false);
-            }
-          }
-        } else {
-          setIsCurrentUserOrgAdmin(false);
-        }
       }
     } catch (catchError: any) {
       setError(catchError.message || 'An unexpected error occurred');
       setOrganization(null);
-      setOrganizationId(null);
-      setIsCurrentUserOrgAdmin(false);
     } finally {
       setLoading(false);
     }
@@ -133,15 +87,13 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     fetchOrganization();
-  }, [location.pathname, user?.id, isAdmin]);
+  }, [location.pathname]);
 
   return (
     <OrganizationContext.Provider value={{
       organization,
       loading,
       error,
-      isCurrentUserOrgAdmin,
-      organizationId,
       refreshOrganization: fetchOrganization,
     }}>
       {children}

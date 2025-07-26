@@ -2,7 +2,7 @@
 import React from 'react';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { UserManagement } from './UserManagement';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useRBAC } from '@/hooks/useRBAC';
 
 interface EnhancedUserManagementProps {
   organizationId: string;
@@ -13,12 +13,13 @@ export const EnhancedUserManagement: React.FC<EnhancedUserManagementProps> = ({
   organizationId,
   organizationName
 }) => {
-  const { userRole, isLoading } = usePermissions({ organizationId });
+  const { userRole, isLoading, hasPermission } = useRBAC(organizationId);
 
   console.log('EnhancedUserManagement:', {
     organizationId,
     userRole,
-    isLoading
+    isLoading,
+    hasManageUsersPermission: hasPermission('manage_users')
   });
 
   return (
